@@ -1,0 +1,11 @@
+dist: trusty
+sudo: false
+
+language: scala
+
+scala:
+  - 2.11.8
+  - 2.12.1
+
+jdk:
+  - oraclejdk8
