@@ -1,5 +1,7 @@
 # rere
 
+[![Build status](https://travis-ci.org/pbaun/rere.svg?branch=master)](https://travis-ci.org/pbaun/rere)
+
 Reactive [RethinkDB][rethinkdb] driver for Scala
 
 ## License
