@@ -1,5 +1,8 @@
 package rere.ql.shapes
 
+import cats.free.Trampoline
+import cats.free.Trampoline._
+import cats.instances.function._
 import io.circe.{Decoder, Json, ObjectEncoder}
 import rere.ql.types._
 import rere.ql.values.{ReqlJsonObjectQuery, ReqlMakeObjFromMapQuery}
@@ -121,7 +124,7 @@ abstract class Shape[Constructor <: AnyRef, Args <: HList, ModelType](
 
     def simpleList: List[FieldAux[_, _]]
 
-    def argsProducer: Json => ModelShape.DecodingResult[ArgsList]
+    def argsProducer(json: Json): Trampoline[ModelShape.DecodingResult[ArgsList]]
 
     def verifiableShape(f: FunctionType): VerifiableShape[ArgsList, FunctionType]
 
@@ -141,34 +144,41 @@ abstract class Shape[Constructor <: AnyRef, Args <: HList, ModelType](
 
     override def simpleList: List[FieldAux[_, _]] = Nil
 
-    override def argsProducer: Json => ModelShape.DecodingResult[HNil] = { _ => Right(HNil) }
+    override def argsProducer(json: Json): Trampoline[ModelShape.DecodingResult[HNil]] = {
+      done(Right(HNil))
+    }
 
     override def verifiableShape(f: FunctionType): VerifiableShape[HNil, FunctionType] = {
       VerifiableShape(this, f)
     }
   }
 
-  class ShapeBlueprintCons[HeadName, HeadValue, PrevArgs <: HList, FnType](
+  class ShapeBlueprintCons[HeadName, HeadValue, TailValues <: HList, FnType](
       val simpleList: List[FieldAux[_, _]],
       headField: FieldAux[HeadName, HeadValue],
-      prev: ShapeBlueprint[PrevArgs]
-    ) extends ShapeBlueprint[HeadValue :: PrevArgs] {
+      tailBlueprint: ShapeBlueprint[TailValues]
+    ) extends ShapeBlueprint[HeadValue :: TailValues] {
 
     type FunctionType = FnType
 
-    override def argsProducer: Json => ModelShape.DecodingResult[HeadValue :: PrevArgs] = { json =>
-      //TODO: trampoline?
-      headField.fromJson(json) match {
-        case Right(headValue) =>
-          prev.argsProducer(json) match {
-            case Right(other) => Right(headValue :: other)
+    override def argsProducer(json: Json): Trampoline[ModelShape.DecodingResult[HeadValue :: TailValues]] = {
+      for {
+        head <- done(headField.fromJson(json))
+        tail <- suspend(tailBlueprint.argsProducer(json))
+        list <- done {
+          head match {
+            case Right(headValue) =>
+              tail match {
+                case Right(tailValues) => Right(headValue :: tailValues)
+                case Left(err) => Left(err)
+              }
             case Left(err) => Left(err)
           }
-        case Left(err) => Left(err)
-      }
+        }
+      } yield list
     }
 
-    override def verifiableShape(f: FunctionType): VerifiableShape[HeadValue :: PrevArgs, FunctionType] = {
+    override def verifiableShape(f: FunctionType): VerifiableShape[HeadValue :: TailValues, FunctionType] = {
       VerifiableShape(this, f)
     }
   }
@@ -182,10 +192,9 @@ abstract class Shape[Constructor <: AnyRef, Args <: HList, ModelType](
   }
 
   final override def fromJson(json: Json): ModelShape.DecodingResult[ModelType] = {
-    projection.blueprint.argsProducer(json) match {
+    projection.blueprint.argsProducer(json).run match {
       case Right(args) =>
-        val f = FnToProduct[Constructor].apply(constructor)
-        Right(f(args))
+        Right(FnToProduct[Constructor].apply(constructor)(args))
 
       case Left(err) => Left(err)
     }
