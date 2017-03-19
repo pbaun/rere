@@ -12,8 +12,7 @@ object building {
 
       val renderer = new ByteStringRenderer(StandardCharsets.UTF_8)
       val rasterizer = query.getTrampolinedRasterizer(renderer)
-      rasterizer.rasterize().run
-      renderer.get
+      rasterizer.rasterize().run.get
     }
   }
 }

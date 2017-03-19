@@ -25,27 +25,25 @@ final class ReqlStartCommand[T <: ReqlExpr](val expression: T, val options: Opti
 
   override def commandType = ql2.Query.QueryType.START
 
-  override def render(r: Renderer): Renderer = {
-    r ~~ "[" ~~ commandType.toString ~~ ","
-    expression.getTrampolinedRasterizer(r).rasterize().run
-    r ~~ ","
-    options.getTrampolinedRasterizer(r).rasterize().run
-    r ~~ "]"
+  override def render(renderer: Renderer): Renderer = {
+    val r1 = renderer ~~ "[" ~~ commandType.toString ~~ ","
+    val r2 = expression.getTrampolinedRasterizer(r1).rasterize().run ~~ ","
+    options.getTrampolinedRasterizer(r2).rasterize().run ~~ "]"
   }
 }
 
 final class ReqlContinueCommand extends ReqlCommand {
   override def commandType = ql2.Query.QueryType.CONTINUE
 
-  override def render(r: Renderer): Renderer = {
-    r ~~ "[" ~~ commandType.toString ~~ "]"
+  override def render(renderer: Renderer): Renderer = {
+    renderer ~~ "[" ~~ commandType.toString ~~ "]"
   }
 }
 
 final class ReqlStopCommand extends ReqlCommand {
   override def commandType = ql2.Query.QueryType.STOP
 
-  override def render(r: Renderer): Renderer = {
-    r ~~ "[" ~~ commandType.toString ~~ "]"
+  override def render(renderer: Renderer): Renderer = {
+    renderer ~~ "[" ~~ commandType.toString ~~ "]"
   }
 }

@@ -12,54 +12,50 @@ import rere.ql.types.ReqlExpr
 object trampolined {
 
   trait Rasterizer {
-    def rasterize(): Trampoline[Unit]
+    def rasterize(): Trampoline[Renderer]
   }
 
   class QueryRasterizer(renderer: Renderer, query: ReqlExpr) extends Rasterizer {
-    def rasterize(): Trampoline[Unit] = {
-      def rasterizeArgs(): Trampoline[Unit] = {
-        query.arguments.zipWithIndex.traverse[Trampoline, Unit] {
+    def rasterize(): Trampoline[Renderer] = {
+
+      def rasterizeArgs(r: Renderer): Trampoline[Renderer] = {
+        query.arguments.zipWithIndex.traverse[Trampoline, Renderer] {
           case (arg, index) =>
-            if (index == 0) {
-              arg.getTrampolinedRasterizer(renderer).rasterize()
-            } else {
-              for {
-                _ <- delay { renderer ~~ "," }
-                _ <- arg.getTrampolinedRasterizer(renderer).rasterize()
-              } yield ()
-            }
-        } map { _ => () }
+            for {
+              r <- if (index == 0) done(r) else delay(r ~~ ",")
+              r <- arg.getTrampolinedRasterizer(r).rasterize()
+            } yield r
+        } map { renderers =>
+          if (renderers.nonEmpty) renderers.last else r
+        }
       }
 
-      def rasterizeOptions(): Trampoline[Unit] = {
-        query.options.getTrampolinedRasterizer(renderer).rasterize()
+      def rasterizeOptions(r: Renderer): Trampoline[Renderer] = {
+        query.options.getTrampolinedRasterizer(r).rasterize()
       }
 
       for {
-        _ <- delay { renderer ~~ "[" ~~ query.command.toString ~~ ",[" }
-        _ <- rasterizeArgs()
-        _ <- delay { renderer ~~ "]" }
-        _ <- suspend {
+        r <- done(renderer ~~ "[" ~~ query.command.toString ~~ ",[")
+        r <- rasterizeArgs(r)
+        r <- done(r ~~ "]")
+        r <- suspend {
           if (!query.options.isEmpty) {
             for {
-              _ <- delay { renderer ~~ "," }
-              _ <- rasterizeOptions()
-            } yield ()
+              r <- done(r ~~ ",")
+              r <- rasterizeOptions(r)
+            } yield r
           } else {
-            done(())
+            done(r)
           }
         }
-        _ <- delay { renderer ~~ "]" }
-      } yield ()
+        r <- done(r ~~ "]")
+      } yield r
     }
   }
 
   class PrimitiveRasterizer(renderer: Renderer, representation: String) extends Rasterizer {
-    def rasterize(): Trampoline[Unit] = {
-      delay {
-        renderer ~~ representation
-        ()
-      }
+    def rasterize(): Trampoline[Renderer] = {
+      done(renderer ~~ representation)
     }
   }
 
@@ -67,27 +63,23 @@ object trampolined {
 
     private def encloseJsonString(value: String): String = Json.fromString(value).noSpaces
 
-    def rasterize(): Trampoline[Unit] = {
+    def rasterize(): Trampoline[Renderer] = {
       for {
-        _ <- delay { renderer ~~ "{" }
-        _ <- obj.toList.zipWithIndex.traverse[Trampoline, Unit] {
-          case ((key, value), index) =>
-            val comma = if (index == 0) {
-              done(())
-            } else {
-              delay[Unit] {
-                renderer ~~ ","
-                ()
-              }
-            }
-            for {
-              _ <- comma
-              _ <- delay { renderer ~~ encloseJsonString(key) ~~ ":" }
-              _ <- value.getTrampolinedRasterizer(renderer).rasterize()
-            } yield ()
+        r <- done(renderer ~~ "{")
+        r <- {
+          obj.toList.zipWithIndex.traverse[Trampoline, Renderer] {
+            case ((key, value), index) =>
+              for {
+                r <- if (index == 0) done(r) else delay(r ~~ ",")
+                r <- done(r ~~ encloseJsonString(key) ~~ ":")
+                r <- value.getTrampolinedRasterizer(r).rasterize()
+              } yield r
+          } map { renderers =>
+            if (renderers.nonEmpty) renderers.last else r
+          }
         }
-        _ <- delay { renderer ~~ "}" }
-      } yield ()
+        r <- done(r ~~ "}")
+      } yield r
     }
   }
 
@@ -95,73 +87,53 @@ object trampolined {
 
     private def encloseJsonString(value: String): String = Json.fromString(value).noSpaces
 
-    def rasterize(): Trampoline[Unit] = {
+    def rasterize(): Trampoline[Renderer] = {
       if (pairs.isEmpty) {
-        done {
-          renderer ~~ "{}"
-          ()
-        }
+        done(renderer ~~ "{}")
       } else {
         for {
-          _ <- delay {
-            renderer ~~ "{"
-            ()
+          r <- done(renderer ~~ "{")
+          r <- {
+            pairs.zipWithIndex.traverse[Trampoline, Renderer] {
+              case ((key, value), index) =>
+                for {
+                  r <- if (index == 0) done(r) else delay(r ~~ ",")
+                  r <- done(r ~~ encloseJsonString(key) ~~ ":")
+                  r <- value.getTrampolinedRasterizer(r).rasterize()
+                } yield r
+            } map { renderers =>
+              if (renderers.nonEmpty) renderers.last else r
+            }
           }
-          _ <- pairs.zipWithIndex.traverse[Trampoline, Unit] {
-            case ((key, value), index) =>
-              val comma = if (index == 0) {
-                done(())
-              } else {
-                delay[Unit] {
-                  renderer ~~ ","
-                  ()
-                }
-              }
-              for {
-                _ <- comma
-                _ <- delay { renderer ~~ encloseJsonString(key) ~~ ":" }
-                _ <- value.getTrampolinedRasterizer(renderer).rasterize()
-              } yield ()
-          }
-          _ <- delay { renderer ~~ "}" }
-        } yield ()
+          r <- done(r ~~ "}")
+        } yield r
       }
     }
   }
 
   class ListOfDSLPairsRasterizer(renderer: Renderer, pairs: List[DSLKeyValuePair]) extends Rasterizer {
 
-    def rasterize(): Trampoline[Unit] = {
+    def rasterize(): Trampoline[Renderer] = {
       if (pairs.isEmpty) {
-        done {
-          renderer ~~ "{}"
-          ()
-        }
+        done(renderer ~~ "{}")
       } else {
         for {
-          _ <- delay {
-            renderer ~~ "{"
-            ()
+          r <- done(renderer ~~ "{")
+          r <- {
+            pairs.zipWithIndex.traverse[Trampoline, Renderer] {
+              case (pair, index) =>
+                for {
+                  r <- if (index == 0) done(r) else delay(r ~~ ",")
+                  r <- pair.key.getTrampolinedRasterizer(r).rasterize()
+                  r <- done(r ~~ ":")
+                  r <- pair.datum.getTrampolinedRasterizer(r).rasterize()
+                } yield r
+            } map { renderers =>
+              if (renderers.nonEmpty) renderers.last else r
+            }
           }
-          _ <- pairs.zipWithIndex.traverse[Trampoline, Unit] {
-            case (pair, index) =>
-              val comma = if (index == 0) {
-                done(())
-              } else {
-                delay[Unit] {
-                  renderer ~~ ","
-                  ()
-                }
-              }
-              for {
-                _ <- comma
-                _ <- pair.key.getTrampolinedRasterizer(renderer).rasterize()
-                _ <- delay { renderer ~~ ":" }
-                _ <- pair.datum.getTrampolinedRasterizer(renderer).rasterize()
-              } yield ()
-          }
-          _ <- delay { renderer ~~ "}" }
-        } yield ()
+          r <- done(r ~~ "}")
+        } yield r
       }
     }
   }
@@ -169,12 +141,12 @@ object trampolined {
   private val base64Encoder = java.util.Base64.getEncoder
 
   class BinaryRasterizer(renderer: Renderer, binary: ByteString) extends Rasterizer {
-    def rasterize(): Trampoline[Unit] = {
+    def rasterize(): Trampoline[Renderer] = {
       for {
-        _ <- delay { renderer ~~ """{"$reql_type$":"BINARY","data":"""" }
-        _ <- delay { renderer ~~ ByteString(base64Encoder.encode(binary.asByteBuffer)) }
-        _ <- delay { renderer ~~ """"}""" }
-      } yield ()
+        r <- done(renderer ~~ """{"$reql_type$":"BINARY","data":"""")
+        r <- done(r ~~ ByteString(base64Encoder.encode(binary.asByteBuffer)))
+        r <- done(r ~~ """"}""")
+      } yield r
     }
   }
 }
