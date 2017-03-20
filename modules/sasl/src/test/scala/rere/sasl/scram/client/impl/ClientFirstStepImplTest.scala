@@ -1,7 +1,7 @@
 package rere.sasl.scram.client.impl
 
 import akka.util.ByteString
-import org.mockito.ArgumentMatchers._
+import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec

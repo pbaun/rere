@@ -1,7 +1,7 @@
 package rere.sasl.util
 
 import akka.util.ByteString
-import org.mockito.ArgumentMatchers.any
+import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{FlatSpec, Matchers}

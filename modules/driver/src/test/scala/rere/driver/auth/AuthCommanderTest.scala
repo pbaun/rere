@@ -10,7 +10,7 @@ import akka.testkit.TestKit
 import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
 import io.circe.{DecodingFailure, ParsingFailure}
-import org.mockito.ArgumentMatchers._
+import org.mockito.Matchers.any
 import org.mockito.Mockito._
 import org.parboiled2.ParseError
 import org.scalatest.concurrent.ScalaFutures

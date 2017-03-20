@@ -63,7 +63,7 @@ lazy val akkaActor    = "com.typesafe.akka"      %% "akka-actor"              % 
 lazy val akkaStream   = "com.typesafe.akka"      %% "akka-stream"             % akkaVersion          // ApacheV2
 
 lazy val scalatest    = "org.scalatest"          %% "scalatest"               % "3.0.1"              // ApacheV2
-lazy val mockito      = "org.mockito"             % "mockito-core"            % "2.7.17"             // MIT
+lazy val mockito      = "org.mockito"             % "mockito-core"            % "1.10.19"            // MIT
 lazy val akkaTK       = "com.typesafe.akka"      %% "akka-testkit"            % akkaVersion          // ApacheV2
 lazy val akkaStreamTK = "com.typesafe.akka"      %% "akka-stream-testkit"     % akkaVersion          // ApacheV2
 
