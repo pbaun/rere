@@ -17,11 +17,11 @@ object recursive {
       renderer ~~ "[" ~~ query.command.toString ~~ ","
 
       renderer ~~ "["
-      var first = true
+      var isFirst = true
       query.arguments foreach { arg =>
-        if (first) {
+        if (isFirst) {
           arg.recursiveRasterizer.rasterize(renderer)
-          first = false
+          isFirst = false
         } else {
           renderer ~~ ","
           arg.recursiveRasterizer.rasterize(renderer)
@@ -50,11 +50,11 @@ object recursive {
     def rasterize(renderer: Renderer): Renderer = {
       renderer ~~ "{"
 
-      var first = true
+      var isFirst = true
       recursiveMap foreach {
         case (key, value) =>
-          if (first) {
-            first = false
+          if (isFirst) {
+            isFirst = false
           } else {
             renderer ~~ ","
           }
@@ -75,11 +75,11 @@ object recursive {
       } else {
         renderer ~~ "{"
 
-        var first = true
+        var isFirst = true
         pairs foreach {
           case (key, value) =>
-            if (first) {
-              first = false
+            if (isFirst) {
+              isFirst = false
             } else {
               renderer ~~ ","
             }
@@ -99,11 +99,11 @@ object recursive {
       } else {
         renderer ~~ "{"
 
-        var first = true
+        var isFirst = true
         pairs foreach {
           pair: DSLKeyValuePair =>
-            if (first) {
-              first = false
+            if (isFirst) {
+              isFirst = false
             } else {
               renderer ~~ ","
             }

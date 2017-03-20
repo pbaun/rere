@@ -3,8 +3,6 @@ package rere.ql.rasterization
 import akka.util.ByteString
 import cats.free.Trampoline
 import cats.free.Trampoline._
-import cats.instances.list._
-import cats.syntax.traverse._
 import io.circe.Json
 import rere.ql.queries.DSLKeyValuePair
 import rere.ql.types.ReqlExpr
@@ -15,18 +13,33 @@ object trampolined {
     def rasterize(renderer: Renderer): Trampoline[Renderer]
   }
 
+  private def trampolinedFoldLeft[T, U](
+    list: List[T])(
+    zero: U)(
+    op: (Boolean, U, T) => Trampoline[U]
+  ): Trampoline[U] = {
+    var acc = done(zero)
+    var isFirstIteration = true
+    var these = list
+    while (these.nonEmpty) {
+      val isFirst = isFirstIteration
+      val head = these.head
+      acc = acc.flatMap(op(isFirst, _, head))
+      isFirstIteration = false
+      these = these.tail
+    }
+    acc
+  }
+
   class QueryRasterizer(query: ReqlExpr) extends Rasterizer {
     def rasterize(renderer: Renderer): Trampoline[Renderer] = {
 
       def rasterizeArgs(r: Renderer): Trampoline[Renderer] = {
-        query.arguments.zipWithIndex.traverse[Trampoline, Renderer] {
-          case (arg, index) =>
-            for {
-              r <- if (index == 0) done(r) else delay(r ~~ ",")
-              r <- arg.trampolinedRasterizer.rasterize(r)
-            } yield r
-        } map { renderers =>
-          if (renderers.nonEmpty) renderers.last else r
+        trampolinedFoldLeft(query.arguments)(r) { (isFirst, r, arg) =>
+          for {
+            r <- if (isFirst) done(r) else done(r ~~ ",")
+            r <- arg.trampolinedRasterizer.rasterize(r)
+          } yield r
         }
       }
 
@@ -66,17 +79,12 @@ object trampolined {
     def rasterize(renderer: Renderer): Trampoline[Renderer] = {
       for {
         r <- done(renderer ~~ "{")
-        r <- {
-          obj.toList.zipWithIndex.traverse[Trampoline, Renderer] {
-            case ((key, value), index) =>
-              for {
-                r <- if (index == 0) done(r) else delay(r ~~ ",")
-                r <- done(r ~~ encloseJsonString(key) ~~ ":")
-                r <- value.trampolinedRasterizer.rasterize(r)
-              } yield r
-          } map { renderers =>
-            if (renderers.nonEmpty) renderers.last else r
-          }
+        r <- trampolinedFoldLeft(obj.toList)(r: Renderer) { case (isFirst, r, (key, value)) =>
+          for {
+            r <- if (isFirst) done(r) else done(r ~~ ",")
+            r <- done(r ~~ encloseJsonString(key) ~~ ":")
+            r <- value.trampolinedRasterizer.rasterize(r)
+          } yield r
         }
         r <- done(r ~~ "}")
       } yield r
@@ -93,17 +101,12 @@ object trampolined {
       } else {
         for {
           r <- done(renderer ~~ "{")
-          r <- {
-            pairs.zipWithIndex.traverse[Trampoline, Renderer] {
-              case ((key, value), index) =>
-                for {
-                  r <- if (index == 0) done(r) else delay(r ~~ ",")
-                  r <- done(r ~~ encloseJsonString(key) ~~ ":")
-                  r <- value.trampolinedRasterizer.rasterize(r)
-                } yield r
-            } map { renderers =>
-              if (renderers.nonEmpty) renderers.last else r
-            }
+          r <- trampolinedFoldLeft(pairs)(r: Renderer) { case (isFirst, r, (key, value)) =>
+            for {
+              r <- if (isFirst) done(r) else done(r ~~ ",")
+              r <- done(r ~~ encloseJsonString(key) ~~ ":")
+              r <- value.trampolinedRasterizer.rasterize(r)
+            } yield r
           }
           r <- done(r ~~ "}")
         } yield r
@@ -119,18 +122,13 @@ object trampolined {
       } else {
         for {
           r <- done(renderer ~~ "{")
-          r <- {
-            pairs.zipWithIndex.traverse[Trampoline, Renderer] {
-              case (pair, index) =>
-                for {
-                  r <- if (index == 0) done(r) else delay(r ~~ ",")
-                  r <- pair.key.trampolinedRasterizer.rasterize(r)
-                  r <- done(r ~~ ":")
-                  r <- pair.datum.trampolinedRasterizer.rasterize(r)
-                } yield r
-            } map { renderers =>
-              if (renderers.nonEmpty) renderers.last else r
-            }
+          r <- trampolinedFoldLeft(pairs)(r: Renderer) { (isFirst, r, pair) =>
+            for {
+              r <- if (isFirst) done(r) else done(r ~~ ",")
+              r <- pair.key.trampolinedRasterizer.rasterize(r)
+              r <- done(r ~~ ":")
+              r <- pair.datum.trampolinedRasterizer.rasterize(r)
+            } yield r
           }
           r <- done(r ~~ "}")
         } yield r
