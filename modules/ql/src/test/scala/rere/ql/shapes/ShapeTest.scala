@@ -238,9 +238,9 @@ class ShapeTest extends FlatSpec with Matchers with Inside {
 
   it should "work with complex shapes" in {
     def toJsonString(reqlObject: ReqlObject): String = {
-      val rend = new ByteStringRenderer(StandardCharsets.UTF_8)
-      reqlObject.getRasterizer(rend).rasterize()
-      rend.get.utf8String
+      import cats.instances.function._
+      val renderer = new ByteStringRenderer(StandardCharsets.UTF_8)
+      reqlObject.trampolinedRasterizer.rasterize(renderer).run.get.utf8String
     }
 
     import UserShape.ByNameGetter

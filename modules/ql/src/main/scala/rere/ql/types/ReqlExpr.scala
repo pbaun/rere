@@ -1,7 +1,7 @@
 package rere.ql.types
 
 import rere.ql.options.Options
-import rere.ql.rasterization.{Renderer, recursive, trampolined}
+import rere.ql.rasterization.{recursive, trampolined}
 
 /**
   *
@@ -15,12 +15,12 @@ trait ReqlExpr {
   def arguments: List[ReqlExpr]    // arguments
   def options: Options             // options
 
-  def getRasterizer(renderer: Renderer): recursive.Rasterizer = {
-    new recursive.QueryRasterizer(renderer, this)
+  def recursiveRasterizer: recursive.Rasterizer = {
+    new recursive.QueryRasterizer(this)
   }
 
-  def getTrampolinedRasterizer(renderer: Renderer): trampolined.Rasterizer = {
-    new trampolined.QueryRasterizer(renderer, this)
+  def trampolinedRasterizer: trampolined.Rasterizer = {
+    new trampolined.QueryRasterizer(this)
   }
 }
 

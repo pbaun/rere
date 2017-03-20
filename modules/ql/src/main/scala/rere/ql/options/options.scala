@@ -1,7 +1,7 @@
 package rere.ql.options
 
 import rere.ql.ql2.Term.TermType
-import rere.ql.rasterization.{Renderer, recursive, trampolined}
+import rere.ql.rasterization.{recursive, trampolined}
 import rere.ql.types.{ReqlExpr, ReqlObject, ReqlPrimitiveExpr}
 
 import scala.collection.mutable
@@ -11,12 +11,8 @@ trait Options {
   def isEmpty: Boolean
   def innerQuery: ReqlExpr
 
-  def getRasterizer(renderer: Renderer): recursive.Rasterizer = {
-    innerQuery.getRasterizer(renderer)
-  }
-  def getTrampolinedRasterizer(renderer: Renderer): trampolined.Rasterizer = {
-    innerQuery.getTrampolinedRasterizer(renderer)
-  }
+  def recursiveRasterizer: recursive.Rasterizer = innerQuery.recursiveRasterizer
+  def trampolinedRasterizer: trampolined.Rasterizer = innerQuery.trampolinedRasterizer
 }
 
 object Options {
@@ -62,12 +58,12 @@ object ComposableOptions {
     def arguments = Nil
     def options = Options.empty
 
-    override def getRasterizer(renderer: Renderer): recursive.Rasterizer = {
-      new recursive.ListOfPairsRasterizer(renderer, optionsView)
+    override def recursiveRasterizer: recursive.Rasterizer = {
+      new recursive.ListOfPairsRasterizer(optionsView)
     }
 
-    override def getTrampolinedRasterizer(renderer: Renderer): trampolined.Rasterizer = {
-      new trampolined.ListOfPairsRasterizer(renderer, optionsView)
+    override def trampolinedRasterizer: trampolined.Rasterizer = {
+      new trampolined.ListOfPairsRasterizer(optionsView)
     }
   }
 }

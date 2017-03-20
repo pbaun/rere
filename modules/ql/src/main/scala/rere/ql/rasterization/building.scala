@@ -11,8 +11,7 @@ object building {
       import cats.instances.function._
 
       val renderer = new ByteStringRenderer(StandardCharsets.UTF_8)
-      val rasterizer = query.getTrampolinedRasterizer(renderer)
-      rasterizer.rasterize().run.get
+      query.trampolinedRasterizer.rasterize(renderer).run.get
     }
   }
 }

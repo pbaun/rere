@@ -27,8 +27,8 @@ final class ReqlStartCommand[T <: ReqlExpr](val expression: T, val options: Opti
 
   override def render(renderer: Renderer): Renderer = {
     val r1 = renderer ~~ "[" ~~ commandType.toString ~~ ","
-    val r2 = expression.getTrampolinedRasterizer(r1).rasterize().run ~~ ","
-    options.getTrampolinedRasterizer(r2).rasterize().run ~~ "]"
+    val r2 = expression.trampolinedRasterizer.rasterize(r1).run ~~ ","
+    options.trampolinedRasterizer.rasterize(r2).run ~~ "]"
   }
 }
 

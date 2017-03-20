@@ -3,7 +3,7 @@ package rere.ql.values
 import akka.util.ByteString
 import rere.ql.options.Options
 import rere.ql.ql2.Term.TermType
-import rere.ql.rasterization.{Renderer, recursive, trampolined}
+import rere.ql.rasterization.{recursive, trampolined}
 import rere.ql.types.ReqlBinary
 
 class ReqlBinaryQuery(binary: ByteString) extends ReqlBinary {
@@ -12,11 +12,11 @@ class ReqlBinaryQuery(binary: ByteString) extends ReqlBinary {
   def arguments = Nil
   def options = Options.empty
 
-  override def getRasterizer(renderer: Renderer): recursive.Rasterizer = {
-    new recursive.BinaryRasterizer(renderer, binary)
+  override def recursiveRasterizer: recursive.Rasterizer = {
+    new recursive.BinaryRasterizer(binary)
   }
 
-  override def getTrampolinedRasterizer(renderer: Renderer): trampolined.Rasterizer = {
-    new trampolined.BinaryRasterizer(renderer, binary)
+  override def trampolinedRasterizer: trampolined.Rasterizer = {
+    new trampolined.BinaryRasterizer(binary)
   }
 }
