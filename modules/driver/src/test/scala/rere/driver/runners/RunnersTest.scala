@@ -4,10 +4,8 @@ import java.time.ZonedDateTime
 
 import akka.Done
 import akka.stream.scaladsl.Sink
-import org.mockito.Mockito._
-import org.scalatest.mockito.MockitoSugar
+import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FlatSpec, Inside, Matchers}
-import rere.driver.CaptorSugar
 import rere.driver.pool.{AcquireConnection, ConnectionPool, ConnectionPoolIncomingMessages}
 import rere.driver.protocol.{Atom, Stream}
 import rere.driver.runners.ready.{FiniteStreamReadyToGo, InfiniteStreamReadyToGo, SingleValueReadyToGo}
@@ -17,7 +15,7 @@ import rere.ql.types.ReqlJsonObject
 
 import scala.concurrent.Future
 
-class RunnersTest extends FlatSpec with Matchers with MockitoSugar with CaptorSugar with Inside {
+class RunnersTest extends FlatSpec with Matchers with MockFactory with Inside {
 
   import rere.driver.runners.all._
 
@@ -36,54 +34,57 @@ class RunnersTest extends FlatSpec with Matchers with MockitoSugar with CaptorSu
 
   behavior of "Runners object and implicit classes inside it"
 
-  it should "allow to build single value selection query" in {
+  it should "not actually run atom query after .run call" in {
     import rere.ql.queries.all._
 
     val pool = mock[ConnectionPool]
 
     r.now().run(pool)
-
     val q: SingleValueReadyToGo[ZonedDateTime] = r.now().run(pool)
-
-    verifyZeroInteractions(pool)
-
-
-    val f: Future[ZonedDateTime] = r.now().run(pool).future()
-    val msgCaptor = captor(classOf[ConnectionPoolIncomingMessages])
-    verify(pool).send(msgCaptor.capture())
-
-    inside(msgCaptor.getValue) {
-      case AcquireConnection(responseType, _, _) =>
-        responseType shouldBe Atom
-    }
-    verifyNoMoreInteractions(pool)
   }
 
-  it should "allow to build single json object selection query" in {
+  it should "allow to run single value selection query" in {
+    import rere.ql.queries.all._
+
+    val pool = stub[ConnectionPool]
+    val f: Future[ZonedDateTime] = r.now().run(pool).future()
+
+    pool.send _ verify where { msg: ConnectionPoolIncomingMessages =>
+      inside(msg) {
+        case AcquireConnection(responseType, _, _) =>
+          responseType shouldBe Atom
+          true
+      }
+    }
+  }
+
+  it should "not actually run single json object selection query after .run call" in {
     import io.circe.JsonObject
     import rere.ql.queries.all._
 
     val pool = mock[ConnectionPool]
 
     r.table[ReqlJsonObject]("abc").get("uuid").run(pool)
-
     val q: SingleValueReadyToGo[JsonObject] = r.table[ReqlJsonObject]("abc").get("uuid").run(pool)
-
-    verifyZeroInteractions(pool)
-
-
-    val f: Future[JsonObject] = r.table[ReqlJsonObject]("abc").get("uuid").run(pool).future()
-    val msgCaptor = captor(classOf[ConnectionPoolIncomingMessages])
-    verify(pool).send(msgCaptor.capture())
-
-    inside(msgCaptor.getValue) {
-      case AcquireConnection(responseType, _, _) =>
-        responseType shouldBe Atom
-    }
-    verifyNoMoreInteractions(pool)
   }
 
-  it should "allow to build single model selection query" in {
+  it should "allow to run single json object selection query" in {
+    import io.circe.JsonObject
+    import rere.ql.queries.all._
+
+    val pool = stub[ConnectionPool]
+    val f: Future[JsonObject] = r.table[ReqlJsonObject]("abc").get("uuid").run(pool).future()
+
+    pool.send _ verify where { msg: ConnectionPoolIncomingMessages =>
+      inside(msg) {
+        case AcquireConnection(responseType, _, _) =>
+          responseType shouldBe Atom
+          true
+      }
+    }
+  }
+
+  it should "not actually run single model selection query after .run call" in {
     import rere.ql.queries.all._
 
     val pool = mock[ConnectionPool]
@@ -91,74 +92,82 @@ class RunnersTest extends FlatSpec with Matchers with MockitoSugar with CaptorSu
     implicit val abcShape = AbcShape
 
     TestDatabase.abc.table().get("uuid").run(pool)
-
     val q: SingleValueReadyToGo[Abc] = TestDatabase.abc.table().get("uuid").run(pool)
-
-    verifyZeroInteractions(pool)
-
-
-    val f: Future[Abc] = TestDatabase.abc.table().get("uuid").run(pool).future()
-    val msgCaptor = captor(classOf[ConnectionPoolIncomingMessages])
-    verify(pool).send(msgCaptor.capture())
-
-    inside(msgCaptor.getValue) {
-      case AcquireConnection(responseType, _, _) =>
-        responseType shouldBe Atom
-    }
-    verifyNoMoreInteractions(pool)
   }
 
-  it should "allow to build finite stream selection query" in {
+  it should "allow to run single model selection query" in {
+    import rere.ql.queries.all._
+
+    val pool = stub[ConnectionPool]
+
+    implicit val abcShape = AbcShape
+
+    val f: Future[Abc] = TestDatabase.abc.table().get("uuid").run(pool).future()
+
+    pool.send _ verify where { msg: ConnectionPoolIncomingMessages =>
+      inside(msg) {
+        case AcquireConnection(responseType, _, _) =>
+          responseType shouldBe Atom
+          true
+      }
+    }
+  }
+
+  it should "not actually run finite stream selection query after .run call" in {
     import rere.ql.queries.all._
 
     val pool = mock[ConnectionPool]
 
     r.range(0, 1000).run(pool)
-
     val q: FiniteStreamReadyToGo[Long, _] = r.range(0, 1000).run(pool)
+  }
 
-    verifyZeroInteractions(pool)
+  it should "allow to run finite stream selection query" in {
+    import rere.ql.queries.all._
 
+    val pool = stub[ConnectionPool]
 
     val sink = Sink.seq[Long]
     val (futureMat: Future[Future[Seq[Long]]], futureDone: Future[Done]) =
       r.range(0, 1000).run(pool).drainTo(sink)
-    val msgCaptor = captor(classOf[ConnectionPoolIncomingMessages])
-    verify(pool).send(msgCaptor.capture())
 
-    inside(msgCaptor.getValue) {
-      case AcquireConnection(responseType, _, _) =>
-        responseType shouldBe Stream
+    pool.send _ verify where { msg: ConnectionPoolIncomingMessages =>
+      inside(msg) {
+        case AcquireConnection(responseType, _, _) =>
+          responseType shouldBe Stream
+          true
+      }
     }
-    verifyNoMoreInteractions(pool)
   }
 
-  it should "allow to build infinite stream selection query" in {
+  it should "not actually run infinite stream selection query after .run call" in {
     import rere.ql.queries.all._
 
     val pool = mock[ConnectionPool]
 
     r.range().run(pool)
-
     val q: InfiniteStreamReadyToGo[Long, _] = r.range().run(pool)
+  }
 
-    verifyZeroInteractions(pool)
+  it should "allow to run infinite stream selection query" in {
+    import rere.ql.queries.all._
 
+    val pool = stub[ConnectionPool]
 
     val sink = Sink.seq[Long]
     val (futureMat: Future[Future[Seq[Long]]], futureDone: Future[Done]) =
       r.range().run(pool).drainTo(sink)
-    val msgCaptor = captor(classOf[ConnectionPoolIncomingMessages])
-    verify(pool).send(msgCaptor.capture())
 
-    inside(msgCaptor.getValue) {
-      case AcquireConnection(responseType, _, _) =>
-        responseType shouldBe Stream
+    pool.send _ verify where { msg: ConnectionPoolIncomingMessages =>
+      inside(msg) {
+        case AcquireConnection(responseType, _, _) =>
+          responseType shouldBe Stream
+          true
+      }
     }
-    verifyNoMoreInteractions(pool)
   }
 
-  it should "allow to build changefeed selection query" in {
+  it should "not actually run changefeed selection query after .run call" in {
     import rere.ql.queries.all._
 
     val pool = mock[ConnectionPool]
@@ -169,24 +178,29 @@ class RunnersTest extends FlatSpec with Matchers with MockitoSugar with CaptorSu
 
     val q: InfiniteStreamReadyToGo[ChangefeedNotification[Abc], _] =
       TestDatabase.abc.table().get("uuid").changes().run(pool)
+  }
 
-    verifyZeroInteractions(pool)
+  it should "allow to run changefeed selection query" in {
+    import rere.ql.queries.all._
 
+    val pool = stub[ConnectionPool]
+
+    implicit val abcShape = AbcShape
 
     val sink = Sink.seq[ChangefeedNotification[Abc]]
     val (futureMat: Future[Future[Seq[ChangefeedNotification[Abc]]]], futureDone: Future[Done]) =
       TestDatabase.abc.table().get("uuid").changes().run(pool).drainTo(sink)
-    val msgCaptor = captor(classOf[ConnectionPoolIncomingMessages])
-    verify(pool).send(msgCaptor.capture())
 
-    inside(msgCaptor.getValue) {
-      case AcquireConnection(responseType, _, _) =>
-        responseType shouldBe Stream
+    pool.send _ verify where { msg: ConnectionPoolIncomingMessages =>
+      inside(msg) {
+        case AcquireConnection(responseType, _, _) =>
+          responseType shouldBe Stream
+          true
+      }
     }
-    verifyNoMoreInteractions(pool)
   }
 
-  it should "allow to build single model insertion query" in {
+  it should "not actually run single model insertion query after .run call" in {
     import rere.ql.queries.all._
 
     val pool = mock[ConnectionPool]
@@ -198,22 +212,28 @@ class RunnersTest extends FlatSpec with Matchers with MockitoSugar with CaptorSu
 
     val q: SingleValueReadyToGo[ModificationResult[Abc]] =
       TestDatabase.abc.table().insert(model).run(pool)
-
-    verifyZeroInteractions(pool)
-
-
-    val f: Future[ModificationResult[Abc]] = TestDatabase.abc.table().insert(model).run(pool).future()
-    val msgCaptor = captor(classOf[ConnectionPoolIncomingMessages])
-    verify(pool).send(msgCaptor.capture())
-
-    inside(msgCaptor.getValue) {
-      case AcquireConnection(responseType, _, _) =>
-        responseType shouldBe Atom
-    }
-    verifyNoMoreInteractions(pool)
   }
 
-  it should "allow to build single json object insertion query" in {
+  it should "allow to run single model insertion query" in {
+    import rere.ql.queries.all._
+
+    val pool = stub[ConnectionPool]
+
+    implicit val abcShape = AbcShape
+    val model: Abc = Abc("123", Some("abc name"))
+
+    val f: Future[ModificationResult[Abc]] = TestDatabase.abc.table().insert(model).run(pool).future()
+
+    pool.send _ verify where { msg: ConnectionPoolIncomingMessages =>
+      inside(msg) {
+        case AcquireConnection(responseType, _, _) =>
+          responseType shouldBe Atom
+          true
+      }
+    }
+  }
+
+  it should "not actually run single json object insertion query after .run call" in {
     import io.circe.{Json, JsonObject}
     import rere.ql.queries.all._
 
@@ -225,20 +245,26 @@ class RunnersTest extends FlatSpec with Matchers with MockitoSugar with CaptorSu
 
     val q: SingleValueReadyToGo[ModificationResult[JsonObject]] =
       r.db("test").table[ReqlJsonObject]("abc").insert(obj).run(pool)
+  }
 
-    verifyZeroInteractions(pool)
+  it should "allow to run single json object insertion query" in {
+    import io.circe.{Json, JsonObject}
+    import rere.ql.queries.all._
 
+    val pool = stub[ConnectionPool]
+
+    val obj = JsonObject.fromMap(Map("field" -> Json.fromString("data")))
 
     val f: Future[ModificationResult[JsonObject]] =
       r.db("test").table[ReqlJsonObject]("abc").insert(obj).run(pool).future()
-    val msgCaptor = captor(classOf[ConnectionPoolIncomingMessages])
-    verify(pool).send(msgCaptor.capture())
 
-    inside(msgCaptor.getValue) {
-      case AcquireConnection(responseType, _, _) =>
-        responseType shouldBe Atom
+    pool.send _ verify where { msg: ConnectionPoolIncomingMessages =>
+      inside(msg) {
+        case AcquireConnection(responseType, _, _) =>
+          responseType shouldBe Atom
+          true
+      }
     }
-    verifyNoMoreInteractions(pool)
   }
 
 }

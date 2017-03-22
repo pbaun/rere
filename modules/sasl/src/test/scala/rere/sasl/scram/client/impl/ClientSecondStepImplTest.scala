@@ -1,11 +1,8 @@
 package rere.sasl.scram.client.impl
 
 import akka.util.ByteString
-import org.mockito.Matchers.any
-import org.mockito.Mockito._
-import org.scalatest.Matchers._
-import org.scalatest.WordSpec
-import org.scalatest.mockito.MockitoSugar
+import org.scalamock.scalatest.MockFactory
+import org.scalatest.{Matchers, WordSpec}
 import rere.sasl._
 import rere.sasl.gs2.ChannelBindingFlag.NotSupports
 import rere.sasl.scram.client.{AuthError, SaltedPasswordCache}
@@ -15,18 +12,20 @@ import rere.sasl.scram.crypto.{NoOpErrorReporter, ScramAuthMechanism}
 import rere.sasl.scram.messages._
 import rere.sasl.util._
 
-class ClientSecondStepImplTest extends WordSpec with MockitoSugar {
+class ClientSecondStepImplTest extends WordSpec with Matchers with MockFactory {
 
   private val sha1Mechanism = ScramSha1AuthMechanismFactory.getMechanism(new NoOpErrorReporter)
   private val sha256Mechanism = ScramSha256AuthMechanismFactory.getMechanism(new NoOpErrorReporter)
 
   trait mocks {
     val cache = mock[SaltedPasswordCache]
-    when(cache.get(any[String](), any[String](), any[Int]())).thenReturn(None)
   }
 
   "ClientSecondStepImpl.process" should {
     "process incoming server message and compute proof (rfc 5802)" in new mocks {
+      cache.get _ expects (*, *, *) returning None
+      cache.put _ expects (*, *, *, *)
+
       val clientFirstMessage = ClientFirstMessage(
         gs2.Header(NotSupports, None),
         ClientFirstMessageBare(
@@ -52,11 +51,13 @@ class ClientSecondStepImplTest extends WordSpec with MockitoSugar {
       msgByteString shouldBe
         ByteString("c=biws,r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j,p=v0X8v3Bz2T0CJGbJQyF0X+HI4Ts=")
 
-      nextClient.expectedServerSignature shouldBe
-        new Base64String("rmF9pqV8S7suAoZWja4dJRkFsKQ=")
+      nextClient.isValidServerSignature(new Base64String("rmF9pqV8S7suAoZWja4dJRkFsKQ=")) shouldBe true
     }
 
     "process incoming server message and compute proof (rfc 7677)" in new mocks {
+      cache.get _ expects (*, *, *) returning None
+      cache.put _ expects (*, *, *, *)
+
       val clientFirstMessage = ClientFirstMessage(
         gs2.Header(NotSupports, None),
         ClientFirstMessageBare(
@@ -82,12 +83,13 @@ class ClientSecondStepImplTest extends WordSpec with MockitoSugar {
       msgByteString shouldBe
         ByteString("c=biws,r=rOprNGfwEbeRWgbNEkqO%hvYDpWUa2RaTCAfuxFIlj)hNlF$k0,p=dHzbZapWIk4jUhN+Ute9ytag9zjfMHgsqmmiz7AndVQ=")
 
-      nextClient.expectedServerSignature shouldBe
-        new Base64String("6rriTRBi23WpRR/wtup+mMhUZUn/dB5nLTJRsjl95G4=")
+      nextClient.isValidServerSignature(new Base64String("6rriTRBi23WpRR/wtup+mMhUZUn/dB5nLTJRsjl95G4=")) shouldBe true
     }
 
     "normalize password (not by spec)" in new mocks {
       //values in this test computed for normalized password, then password replaced with not normalized form
+      cache.get _ expects (*, *, *) returning None
+      cache.put _ expects (*, *, *, *)
 
       val clientFirstMessage = ClientFirstMessage(
         gs2.Header(NotSupports, None),
@@ -115,8 +117,7 @@ class ClientSecondStepImplTest extends WordSpec with MockitoSugar {
       msgByteString shouldBe
         ByteString("c=biws,r=rOprNGfwEbeRWgbNEkqO%hvYDpWUa2RaTCAfuxFIlj)hNlF$k0,p=LT3ZBu4t+rgkg6duKgE79P/AyASWqGzvgFZn4h1Wab0=")
 
-      nextClient.expectedServerSignature shouldBe
-        new Base64String("h1T0nttwSEJqrMdKDMRkScLdk6jWTDBkHHzz8KQIvrU=")
+      nextClient.isValidServerSignature(new Base64String("h1T0nttwSEJqrMdKDMRkScLdk6jWTDBkHHzz8KQIvrU=")) shouldBe true
     }
 
     "check that server nonce is starts with previously sent client nonce" in new mocks {
@@ -146,6 +147,9 @@ class ClientSecondStepImplTest extends WordSpec with MockitoSugar {
     }
 
     "raise auth error if auth mechanism generate keys with different length" in new mocks {
+      cache.get _ expects (*, *, *) returning None
+      cache.put _ expects (*, *, *, *)
+
       val badAuthMechanism = new ScramAuthMechanism {
         override def hi(password: String, salt: BinaryString, iterations: Int): BinaryString =
           sha256Mechanism.hi(password, salt, iterations)
@@ -197,6 +201,16 @@ class ClientSecondStepImplTest extends WordSpec with MockitoSugar {
     }
 
     "try to get salted password from cache and put in cache if not found" in new mocks {
+      cache.get _ expects ("pencil", "W22ZaJ0SNY7soEsUEjb6gQ==", 4096) returning None
+      cache.put _ expects where { (password, salt, iterations, salted) =>
+        password == "pencil" &&
+        salt == "W22ZaJ0SNY7soEsUEjb6gQ==" &&
+        iterations == 4096 &&
+        salted.toVector == Base64.from(
+          new Base64String("xKSVEDI6tPlSysH6mUQZOeeOp01r6B3fcJbodRPcYV0=")
+        ).toVector
+      }
+
       val clientFirstMessage = ClientFirstMessage(
         gs2.Header(NotSupports, None),
         ClientFirstMessageBare(
@@ -218,18 +232,12 @@ class ClientSecondStepImplTest extends WordSpec with MockitoSugar {
       )
 
       val Right(_) = client.process(serverFirstMessage)
-
-      verify(cache).get("pencil", "W22ZaJ0SNY7soEsUEjb6gQ==", 4096)
-      verify(cache).put("pencil", "W22ZaJ0SNY7soEsUEjb6gQ==", 4096, Base64.from(
-        new Base64String("xKSVEDI6tPlSysH6mUQZOeeOp01r6B3fcJbodRPcYV0=")
-      ))
-      verifyNoMoreInteractions(cache)
     }
 
     "try get salted password from cache and use it if it found" in new mocks {
-      when(cache.get(any[String](), any[String](), any[Int]())).thenReturn(Some(Base64.from(new Base64String(
+      cache.get _ expects ("pencil", "W22ZaJ0SNY7soEsUEjb6gQ==", 4096) returning Some(Base64.from(new Base64String(
         "PGS8BrhyGs5f2F60qETDRM+yrUL0QYtLg6+76ad46yc="    // key from ~ test
-      ))))
+      )))
 
       val clientFirstMessage = ClientFirstMessage(
         gs2.Header(NotSupports, None),
@@ -256,11 +264,7 @@ class ClientSecondStepImplTest extends WordSpec with MockitoSugar {
       msgByteString shouldBe
         ByteString("c=biws,r=rOprNGfwEbeRWgbNEkqO%hvYDpWUa2RaTCAfuxFIlj)hNlF$k0,p=LT3ZBu4t+rgkg6duKgE79P/AyASWqGzvgFZn4h1Wab0=")
 
-      nextClient.expectedServerSignature shouldBe
-        new Base64String("h1T0nttwSEJqrMdKDMRkScLdk6jWTDBkHHzz8KQIvrU=")
-
-      verify(cache).get("pencil", "W22ZaJ0SNY7soEsUEjb6gQ==", 4096)
-      verifyNoMoreInteractions(cache)
+      nextClient.isValidServerSignature(new Base64String("h1T0nttwSEJqrMdKDMRkScLdk6jWTDBkHHzz8KQIvrU=")) shouldBe true
     }
   }
 

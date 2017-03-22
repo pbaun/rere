@@ -1,6 +1,5 @@
 package rere.sasl.scram.server.impl
 
-import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{Matchers, WordSpec}
 import rere.sasl.gs2
 import rere.sasl.gs2.ChannelBindingFlag
@@ -11,7 +10,7 @@ import rere.sasl.scram.messages.{ServerFinalMessage, _}
 import rere.sasl.scram.server.AuthData
 import rere.sasl.util._
 
-class ServerFinalStepImplTest extends WordSpec with MockitoSugar with Matchers {
+class ServerFinalStepImplTest extends WordSpec with Matchers {
 
   private val mechanism = ScramSha1AuthMechanismFactory.getMechanism(new NoOpErrorReporter)
 

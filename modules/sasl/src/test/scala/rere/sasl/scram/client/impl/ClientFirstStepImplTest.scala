@@ -1,11 +1,8 @@
 package rere.sasl.scram.client.impl
 
 import akka.util.ByteString
-import org.mockito.Matchers.any
-import org.mockito.Mockito._
-import org.scalatest.Matchers._
-import org.scalatest.WordSpec
-import org.scalatest.mockito.MockitoSugar
+import org.scalamock.scalatest.MockFactory
+import org.scalatest.{Matchers, WordSpec}
 import rere.sasl.gs2.ChannelBindingFlag._
 import rere.sasl.scram.client.SaltedPasswordCache
 import rere.sasl.scram.crypto.NoOpErrorReporter
@@ -13,13 +10,12 @@ import rere.sasl.scram.crypto.entropy.impl.ConstantEntropySource
 import rere.sasl.scram.crypto.sha1.ScramSha1AuthMechanismFactory
 import rere.sasl.util.{Base64String, PrintableString}
 
-class ClientFirstStepImplTest extends WordSpec with MockitoSugar {
+class ClientFirstStepImplTest extends WordSpec with Matchers with MockFactory {
 
   private val mechanism = ScramSha1AuthMechanismFactory.getMechanism(new NoOpErrorReporter)
 
   trait mocks {
     val cache = mock[SaltedPasswordCache]
-    when(cache.get(any[String](), any[String](), any[Int]())).thenReturn(None)
 
     val sha1EntropySource = new ConstantEntropySource(new Base64String(""), new PrintableString("fyko+d2lbbFgONRv9qkxdawL"))
     val sha256EntropySource = new ConstantEntropySource(new Base64String(""), new PrintableString("rOprNGfwEbeRWgbNEkqO"))
@@ -88,8 +84,6 @@ class ClientFirstStepImplTest extends WordSpec with MockitoSugar {
       val client = new ClientFirstStepImpl(mechanism, sha256EntropySource, cache)
       val (msgByteString, nextClient) =
         client.auth("user", "pencil", NotSupports, None, Nil)
-
-      verifyZeroInteractions(cache)
     }
   }
 

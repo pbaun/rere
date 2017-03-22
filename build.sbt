@@ -47,25 +47,25 @@ val akkaVersion = "2.4.17"
 val circeVersion = "0.7.0"
 val catsVersion = "0.9.0"
 
-lazy val parboiled    = "org.parboiled"          %% "parboiled"               % "2.1.4"              // Apache 2
+lazy val parboiled    = "org.parboiled"          %% "parboiled"                   % "2.1.4"             // Apache 2
 
-lazy val shapeless    = "com.chuusai"            %% "shapeless"               % "2.3.2"              // Apache 2
+lazy val shapeless    = "com.chuusai"            %% "shapeless"                   % "2.3.2"             // Apache 2
 
-lazy val circeCore    = "io.circe"               %% "circe-core"              % circeVersion         // Apache 2
-lazy val circeGeneric = "io.circe"               %% "circe-generic"           % circeVersion         // Apache 2
-lazy val circeParser  = "io.circe"               %% "circe-parser"            % circeVersion         // Apache 2
-lazy val circeLiteral = "io.circe"               %% "circe-literal"           % circeVersion         // Apache 2
-lazy val circeShapes  = "io.circe"               %% "circe-shapes"            % circeVersion         // Apache 2
+lazy val circeCore    = "io.circe"               %% "circe-core"                  % circeVersion        // Apache 2
+lazy val circeGeneric = "io.circe"               %% "circe-generic"               % circeVersion        // Apache 2
+lazy val circeParser  = "io.circe"               %% "circe-parser"                % circeVersion        // Apache 2
+lazy val circeLiteral = "io.circe"               %% "circe-literal"               % circeVersion        // Apache 2
+lazy val circeShapes  = "io.circe"               %% "circe-shapes"                % circeVersion        // Apache 2
 
-lazy val cats         = "org.typelevel"          %% "cats"                    % catsVersion          // MIT
+lazy val cats         = "org.typelevel"          %% "cats"                        % catsVersion         // MIT
 
-lazy val akkaActor    = "com.typesafe.akka"      %% "akka-actor"              % akkaVersion          // ApacheV2
-lazy val akkaStream   = "com.typesafe.akka"      %% "akka-stream"             % akkaVersion          // ApacheV2
+lazy val akkaActor    = "com.typesafe.akka"      %% "akka-actor"                  % akkaVersion         // ApacheV2
+lazy val akkaStream   = "com.typesafe.akka"      %% "akka-stream"                 % akkaVersion         // ApacheV2
 
-lazy val scalatest    = "org.scalatest"          %% "scalatest"               % "3.0.1"              // ApacheV2
-lazy val mockito      = "org.mockito"             % "mockito-core"            % "1.10.19"            // MIT
-lazy val akkaTK       = "com.typesafe.akka"      %% "akka-testkit"            % akkaVersion          // ApacheV2
-lazy val akkaStreamTK = "com.typesafe.akka"      %% "akka-stream-testkit"     % akkaVersion          // ApacheV2
+lazy val scalatest    = "org.scalatest"          %% "scalatest"                   % "3.0.1"             // ApacheV2
+lazy val scalamock    = "org.scalamock"          %% "scalamock-scalatest-support" % "3.5.0"             // MIT
+lazy val akkaTK       = "com.typesafe.akka"      %% "akka-testkit"                % akkaVersion         // ApacheV2
+lazy val akkaStreamTK = "com.typesafe.akka"      %% "akka-stream-testkit"         % akkaVersion         // ApacheV2
 
 
 val modules = file("modules")
@@ -82,7 +82,7 @@ lazy val sasl = (project in modules / "sasl")
       parboiled,
       akkaActor,
       scalatest % Test,
-      mockito % Test
+      scalamock % Test
     )
   )
 
@@ -132,7 +132,7 @@ lazy val driver = (project in modules / "driver")
       akkaActor,
       akkaStream,
       scalatest % "test,it",
-      mockito % Test,
+      scalamock % Test,
       akkaTK % Test,
       akkaStreamTK % Test
     )
