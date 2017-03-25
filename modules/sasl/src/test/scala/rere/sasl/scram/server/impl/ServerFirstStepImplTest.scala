@@ -1,6 +1,5 @@
 package rere.sasl.scram.server.impl
 
-import akka.util.ByteString
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}
 import rere.sasl._
@@ -8,7 +7,7 @@ import rere.sasl.gs2.ChannelBindingFlag.NotSupports
 import rere.sasl.scram.crypto.NoOpErrorReporter
 import rere.sasl.scram.crypto.entropy.impl.ConstantEntropySource
 import rere.sasl.scram.crypto.sha1.ScramSha1AuthMechanismFactory
-import rere.sasl.scram.messages.{ClientFirstMessage, ClientFirstMessageBare}
+import rere.sasl.scram.messages.{ClientFirstMessage, ClientFirstMessageBare, ServerFirstMessage}
 import rere.sasl.scram.server.{AuthData, SaltedPasswordStorage}
 import rere.sasl.util.{Base64, Base64String, EscapedString, PrintableString}
 
@@ -42,9 +41,15 @@ class ServerFirstStepImplTest extends WordSpec with Matchers with MockFactory {
         )
       )
 
-      val (msgByteString, nextServer) = server.process(clientFirstMessage)
+      val nextServer = server.process(clientFirstMessage)
 
-      msgByteString shouldBe ByteString("r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j,s=QSXCR+Q6sek8bf92,i=4096")
+      nextServer.firstMessage shouldBe ServerFirstMessage(
+        None,
+        new PrintableString("fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j"),
+        new Base64String("QSXCR+Q6sek8bf92"),
+        4096,
+        Seq.empty
+      )
 
       nextServer should not be null
 

@@ -80,7 +80,6 @@ lazy val sasl = (project in modules / "sasl")
   .settings(
     libraryDependencies ++= Seq(
       parboiled,
-      akkaActor,
       scalatest % Test,
       scalamock % Test
     )

@@ -1,10 +1,16 @@
 package rere.sasl.scram.client.impl
 
 import rere.sasl.scram.client.{AuthError, ClientFinalStep}
-import rere.sasl.scram.messages.{ServerError, ServerFinalMessage}
+import rere.sasl.scram.messages.{ClientFinalMessage, ServerError, ServerFinalMessage}
 import rere.sasl.util.Base64String
 
-class ClientFinalStepImpl(expectedServerSignature: Base64String) extends ClientFinalStep {
+class ClientFinalStepImpl(
+    clientFinalMessage: ClientFinalMessage,
+    expectedServerSignature: Base64String
+  ) extends ClientFinalStep {
+
+  override def finalMessage: ClientFinalMessage = clientFinalMessage
+
   override def process(serverFinalMessage: ServerFinalMessage): Either[AuthError, String] = {
     serverFinalMessage.errorOrVerifier match {
       case Left(ServerError(serverErrorType)) =>

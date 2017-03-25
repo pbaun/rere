@@ -19,6 +19,8 @@ import rere.sasl.scram.client.impl.ClientFirstStepImpl
 import rere.sasl.scram.crypto.ScramShaAuthMechanism
 import rere.sasl.scram.crypto.entropy.EntropySource
 import rere.sasl.scram.parsers.SCRAMParser
+import rere.sasl.scram.rendering._
+import rere.sasl.util.Renderer
 
 class AuthCommander(
     scramClient: ClientFirstStep,
@@ -57,7 +59,7 @@ class AuthCommander(
     min_protocol_version: Int,
     server_version: String)
   private case class FirstServerAuthMessage(authentication: String)
-  private case class SecondClientAuthMessage(authentication: String)
+  private case class FinalClientAuthMessage(authentication: String)
   private case class FinalServerAuthMessage(authentication: String)
 
   private def handleHandshakeError(errorCode: Option[Int], errorMessage: Option[String]): Exception = {
@@ -149,9 +151,9 @@ class AuthCommander(
                         StreamsDebugging.log("after processing")
 
                         processingResult match {
-                          case Right((secondMessage, nextStepClient)) =>
+                          case Right(nextStepClient) =>
 
-                            val message = SecondClientAuthMessage(secondMessage.utf8String)
+                            val message = FinalClientAuthMessage(Renderer.renderToString(nextStepClient.finalMessage))
                             val toSent = ByteString(message.asJson.noSpaces.getBytes(CHARSET))
                             push(toServer, toSent)
 
@@ -232,9 +234,13 @@ class AuthCommander(
               val builder = ByteString.newBuilder
               builder.putInt(ql2.VersionDummy.Version.V1_0)
 
-              val (authMessage, nextClient) = scramClient.auth(login, password, ChannelBindingFlag.NotSupports, None, Nil)
+              val nextClient = scramClient.auth(login, password, ChannelBindingFlag.NotSupports, None, Nil)
 
-              val message = FirstClientAuthMessage(PROTOCOL_SUB_VERSION, AUTHENTICATION_METHOD, authMessage.utf8String)
+              val message = FirstClientAuthMessage(
+                PROTOCOL_SUB_VERSION,
+                AUTHENTICATION_METHOD,
+                Renderer.renderToString(nextClient.firstMessage)
+              )
 
               builder.putBytes(message.asJson.noSpaces.getBytes(CHARSET))
               val firstMessage = builder.result()

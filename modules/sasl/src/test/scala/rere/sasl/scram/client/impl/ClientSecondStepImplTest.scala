@@ -1,6 +1,5 @@
 package rere.sasl.scram.client.impl
 
-import akka.util.ByteString
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}
 import rere.sasl._
@@ -46,10 +45,16 @@ class ClientSecondStepImplTest extends WordSpec with Matchers with MockFactory {
         Nil
       )
 
-      val Right((msgByteString, nextClient)) = client.process(serverFirstMessage)
+      val Right(nextClient) = client.process(serverFirstMessage)
 
-      msgByteString shouldBe
-        ByteString("c=biws,r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j,p=v0X8v3Bz2T0CJGbJQyF0X+HI4Ts=")
+      nextClient.finalMessage shouldBe ClientFinalMessage(
+        ClientFinalMessageWithoutProof(
+          new Base64String("biws"),
+          new PrintableString("fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j"),
+          Nil
+        ),
+        new Base64String("v0X8v3Bz2T0CJGbJQyF0X+HI4Ts=")
+      )
 
       nextClient.isValidServerSignature(new Base64String("rmF9pqV8S7suAoZWja4dJRkFsKQ=")) shouldBe true
     }
@@ -78,10 +83,16 @@ class ClientSecondStepImplTest extends WordSpec with Matchers with MockFactory {
         Nil
       )
 
-      val Right((msgByteString, nextClient)) = client.process(serverFirstMessage)
+      val Right(nextClient) = client.process(serverFirstMessage)
 
-      msgByteString shouldBe
-        ByteString("c=biws,r=rOprNGfwEbeRWgbNEkqO%hvYDpWUa2RaTCAfuxFIlj)hNlF$k0,p=dHzbZapWIk4jUhN+Ute9ytag9zjfMHgsqmmiz7AndVQ=")
+      nextClient.finalMessage shouldBe ClientFinalMessage(
+        ClientFinalMessageWithoutProof(
+          new Base64String("biws"),
+          new PrintableString("rOprNGfwEbeRWgbNEkqO%hvYDpWUa2RaTCAfuxFIlj)hNlF$k0"),
+          Nil
+        ),
+        new Base64String("dHzbZapWIk4jUhN+Ute9ytag9zjfMHgsqmmiz7AndVQ=")
+      )
 
       nextClient.isValidServerSignature(new Base64String("6rriTRBi23WpRR/wtup+mMhUZUn/dB5nLTJRsjl95G4=")) shouldBe true
     }
@@ -112,10 +123,16 @@ class ClientSecondStepImplTest extends WordSpec with Matchers with MockFactory {
         Nil
       )
 
-      val Right((msgByteString, nextClient)) = client.process(serverFirstMessage)
+      val Right(nextClient) = client.process(serverFirstMessage)
 
-      msgByteString shouldBe
-        ByteString("c=biws,r=rOprNGfwEbeRWgbNEkqO%hvYDpWUa2RaTCAfuxFIlj)hNlF$k0,p=LT3ZBu4t+rgkg6duKgE79P/AyASWqGzvgFZn4h1Wab0=")
+      nextClient.finalMessage shouldBe ClientFinalMessage(
+        ClientFinalMessageWithoutProof(
+          new Base64String("biws"),
+          new PrintableString("rOprNGfwEbeRWgbNEkqO%hvYDpWUa2RaTCAfuxFIlj)hNlF$k0"),
+          Nil
+        ),
+        new Base64String("LT3ZBu4t+rgkg6duKgE79P/AyASWqGzvgFZn4h1Wab0=")
+      )
 
       nextClient.isValidServerSignature(new Base64String("h1T0nttwSEJqrMdKDMRkScLdk6jWTDBkHHzz8KQIvrU=")) shouldBe true
     }
@@ -259,10 +276,16 @@ class ClientSecondStepImplTest extends WordSpec with Matchers with MockFactory {
         Nil
       )
 
-      val Right((msgByteString, nextClient)) = client.process(serverFirstMessage)
+      val Right(nextClient) = client.process(serverFirstMessage)
 
-      msgByteString shouldBe
-        ByteString("c=biws,r=rOprNGfwEbeRWgbNEkqO%hvYDpWUa2RaTCAfuxFIlj)hNlF$k0,p=LT3ZBu4t+rgkg6duKgE79P/AyASWqGzvgFZn4h1Wab0=")
+      nextClient.finalMessage shouldBe ClientFinalMessage(
+        ClientFinalMessageWithoutProof(
+          new Base64String("biws"),
+          new PrintableString("rOprNGfwEbeRWgbNEkqO%hvYDpWUa2RaTCAfuxFIlj)hNlF$k0"),
+          Nil
+        ),
+        new Base64String("LT3ZBu4t+rgkg6duKgE79P/AyASWqGzvgFZn4h1Wab0=")
+      )
 
       nextClient.isValidServerSignature(new Base64String("h1T0nttwSEJqrMdKDMRkScLdk6jWTDBkHHzz8KQIvrU=")) shouldBe true
     }

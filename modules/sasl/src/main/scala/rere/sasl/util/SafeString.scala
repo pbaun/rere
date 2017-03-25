@@ -34,6 +34,15 @@ final class PrintableString private[sasl](private[sasl] val str: String) extends
   override def toString(): String = str
 }
 
+object PrintableString {
+  private[rere] def apply(str: String): PrintableString = {
+    val filtered = str.filter { char =>
+      ('\u0021' <= char && char <= '\u002b') || ('\u002d' <= char && char <= '\u007e')
+    }
+    new PrintableString(filtered)
+  }
+}
+
 /**
   * Base64 encoded string. Also with only printable chars and without comma
   * @param str - representation

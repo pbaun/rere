@@ -1,6 +1,5 @@
 package rere.sasl.scram.client.impl
 
-import akka.util.ByteString
 import rere.sasl.scram._
 import rere.sasl.scram.client.{AuthError, ClientFinalStep, ClientSecondStep, SaltedPasswordCache}
 import rere.sasl.scram.crypto.ScramAuthMechanism
@@ -15,7 +14,9 @@ class ClientSecondStepImpl(
     cache: SaltedPasswordCache
   ) extends ClientSecondStep {
 
-  override def process(serverFirstMessage: ServerFirstMessage): Either[AuthError, (ByteString, ClientFinalStep)] = {
+  override def firstMessage: ClientFirstMessage = clientFirstMessage
+
+  override def process(serverFirstMessage: ServerFirstMessage): Either[AuthError, ClientFinalStep] = {
 
     if (serverFirstMessage.serverNonce.toString.startsWith(clientFirstMessage.bare.clientNonce.toString)) {
 
@@ -64,10 +65,7 @@ class ClientSecondStepImpl(
           val serverKey = authMechanism.hmac(saltedPassword, crypto.SERVER_KEY)
           val serverSignature = authMechanism.hmac(serverKey, renderedAuthMessage)
 
-          Right((
-            Renderer.renderToByteString(clientFinalMessage),
-            new ClientFinalStepImpl(Base64.to(serverSignature))
-          ))
+          Right(new ClientFinalStepImpl(clientFinalMessage, Base64.to(serverSignature)))
 
         case Left(errorMessage) => Left(AuthError(errorMessage))
       }

@@ -16,7 +16,9 @@ class ServerFinalStepImpl(
     authMechanism: ScramAuthMechanism
   ) extends ServerFinalStep {
 
-  def process(clientFinalMessage: ClientFinalMessage): ServerFinalMessage = {
+  override def firstMessage: ServerFirstMessage = serverFirstMessage
+
+  override def process(clientFinalMessage: ClientFinalMessage): ServerFinalMessage = {
 
     if (authData.isReal) {
       if (clientFinalMessage.bare.nonce.toString == serverNonce.toString) {

@@ -1,8 +1,8 @@
 package rere.sasl.scram.client
 
-import akka.util.ByteString
-import rere.sasl.scram.messages.ServerFirstMessage
+import rere.sasl.scram.messages.{ClientFirstMessage, ServerFirstMessage}
 
 trait ClientSecondStep {
-  def process(serverFirstMessage: ServerFirstMessage): Either[AuthError, (ByteString, ClientFinalStep)]
+  def firstMessage: ClientFirstMessage
+  def process(serverFirstMessage: ServerFirstMessage): Either[AuthError, ClientFinalStep]
 }

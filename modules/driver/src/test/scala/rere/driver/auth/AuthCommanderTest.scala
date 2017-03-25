@@ -15,9 +15,12 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{FlatSpecLike, Inside, Matchers}
 import rere.driver.exceptions.{ReqlAuthError, ReqlDriverError}
+import rere.sasl.gs2
 import rere.sasl.gs2.ChannelBindingFlag
+import rere.sasl.gs2.ChannelBindingFlag.NotSupports
 import rere.sasl.scram.client._
-import rere.sasl.scram.messages.{ServerFinalMessage, ServerFirstMessage}
+import rere.sasl.scram.messages._
+import rere.sasl.util.{Base64, Base64String, EscapedString, PrintableString}
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -35,9 +38,32 @@ class AuthCommanderTest
       ActorMaterializerSettings.create(system).withInputBuffer(16, 16)
     )
 
+    def base64(str: String): Base64String = {
+      Base64.to(java.util.Base64.getDecoder.decode(str))
+    }
+
     val clientFirstStep = stub[ClientFirstStep]
     val clientSecondStep = stub[ClientSecondStep]
     val clientFinalStep = stub[ClientFinalStep]
+
+    val firstMessage = ClientFirstMessage(
+      gs2.Header(NotSupports, None),
+      ClientFirstMessageBare(
+        None,
+        EscapedString.to("user"),
+        PrintableString("fyko+d2lbbFgONRv9qkxdawL"),
+        Nil
+      )
+    )
+
+    val finalMessage = ClientFinalMessage(
+      ClientFinalMessageWithoutProof(
+        base64("biws"),
+        base64("fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7j"),
+        Nil
+      ),
+      base64("v0X8v3Bz2T0CJGbJQyF0X+HI4Ts=")
+    )
 
     def getCommander(login: String, password: String): ((TestPublisher.Probe[ByteString], Future[Done]), TestSubscriber.Probe[ByteString]) = {
       val fromServer = TestSource.probe[ByteString]
@@ -51,8 +77,10 @@ class AuthCommanderTest
   behavior of "AuthCommander"
 
   it should "send all messages and finish when all goes well" in new mocks {
-    clientFirstStep.auth _ when (*, *, *, *, *) returns ((ByteString("__first_msg__"), clientSecondStep))
-    clientSecondStep.process _ when * returns Right((ByteString("second_msg"), clientFinalStep))
+    clientFirstStep.auth _ when (*, *, *, *, *) returns clientSecondStep
+    clientSecondStep.firstMessage _ when () returns firstMessage
+    clientSecondStep.process _ when * returns Right(clientFinalStep)
+    clientFinalStep.finalMessage _ when () returns finalMessage
     clientFinalStep.process _ when * returns Right("OK")
 
     val ((fromServer, doneFuture), toServer) = getCommander("admin", "")
@@ -64,7 +92,7 @@ class AuthCommanderTest
     toServer.request(1L)
     toServer.expectNext(
       ByteString(0xc3, 0xbd, 0xc2, 0x34) ++ // protocol version
-      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"__first_msg__"}""")
+      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL"}""")
     )
 
     clientFirstStep.auth _ verify ("admin", "", ChannelBindingFlag.NotSupports, None, Nil)
@@ -75,7 +103,7 @@ class AuthCommanderTest
 
     // when server ready to receive data
     toServer.request(1L)
-    toServer.expectNext(ByteString("""{"authentication":"second_msg"}"""))
+    toServer.expectNext(ByteString("""{"authentication":"c=biws,r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7g==,p=v0X8v3Bz2T0CJGbJQyF0X+HI4Ts="}"""))
 
     // server received message, time to validate how client parsed previous message
     clientSecondStep.process _ verify where { firstMessage: ServerFirstMessage =>
@@ -109,8 +137,10 @@ class AuthCommanderTest
   }
 
   it should "raise an error when final server message came with bad verifier" in new mocks {
-    clientFirstStep.auth _ when (*, *, *, *, *) returns ((ByteString("__first_msg__"), clientSecondStep))
-    clientSecondStep.process _ when * returns Right((ByteString("second_msg"), clientFinalStep))
+    clientFirstStep.auth _ when (*, *, *, *, *) returns clientSecondStep
+    clientSecondStep.firstMessage _ when () returns firstMessage
+    clientSecondStep.process _ when * returns Right(clientFinalStep)
+    clientFinalStep.finalMessage _ when () returns finalMessage
     clientFinalStep.process _ when * returns Left(AuthError("Verification failed :("))
 
     val ((fromServer, doneFuture), toServer) = getCommander("admin", "")
@@ -122,7 +152,7 @@ class AuthCommanderTest
     toServer.request(1L)
     toServer.expectNext(
       ByteString(0xc3, 0xbd, 0xc2, 0x34) ++ // protocol version
-      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"__first_msg__"}""")
+      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL"}""")
     )
 
     clientFirstStep.auth _ verify("admin", "", ChannelBindingFlag.NotSupports, None, Nil)
@@ -133,7 +163,7 @@ class AuthCommanderTest
 
     // when server ready to receive data
     toServer.request(1L)
-    toServer.expectNext(ByteString("""{"authentication":"second_msg"}"""))
+    toServer.expectNext(ByteString("""{"authentication":"c=biws,r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7g==,p=v0X8v3Bz2T0CJGbJQyF0X+HI4Ts="}"""))
 
     // server received message, time to validate how client parsed previous message
     clientSecondStep.process _ verify where { firstMessage: ServerFirstMessage =>
@@ -169,8 +199,10 @@ class AuthCommanderTest
   }
 
   it should "raise an error when final server message came with damaged scram message" in new mocks {
-    clientFirstStep.auth _ when (*, *, *, *, *) returns ((ByteString("__first_msg__"), clientSecondStep))
-    clientSecondStep.process _ when * returns Right((ByteString("second_msg"), clientFinalStep))
+    clientFirstStep.auth _ when (*, *, *, *, *) returns clientSecondStep
+    clientSecondStep.firstMessage _ when () returns firstMessage
+    clientSecondStep.process _ when * returns Right(clientFinalStep)
+    clientFinalStep.finalMessage _ when () returns finalMessage
 
     val ((fromServer, doneFuture), toServer) = getCommander("admin", "")
 
@@ -181,7 +213,7 @@ class AuthCommanderTest
     toServer.request(1L)
     toServer.expectNext(
       ByteString(0xc3, 0xbd, 0xc2, 0x34) ++ // protocol version
-      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"__first_msg__"}""")
+      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL"}""")
     )
 
     clientFirstStep.auth _ verify("admin", "", ChannelBindingFlag.NotSupports, None, Nil)
@@ -192,7 +224,7 @@ class AuthCommanderTest
 
     // when server ready to receive data
     toServer.request(1L)
-    toServer.expectNext(ByteString("""{"authentication":"second_msg"}"""))
+    toServer.expectNext(ByteString("""{"authentication":"c=biws,r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7g==,p=v0X8v3Bz2T0CJGbJQyF0X+HI4Ts="}"""))
 
     // server received message, time to validate how client parsed previous message
     clientSecondStep.process _ verify where { firstMessage: ServerFirstMessage =>
@@ -225,8 +257,10 @@ class AuthCommanderTest
   }
 
   it should "raise an error when final server message can't be parsed" in new mocks {
-    clientFirstStep.auth _ when (*, *, *, *, *) returns ((ByteString("__first_msg__"), clientSecondStep))
-    clientSecondStep.process _ when * returns Right((ByteString("second_msg"), clientFinalStep))
+    clientFirstStep.auth _ when (*, *, *, *, *) returns clientSecondStep
+    clientSecondStep.firstMessage _ when () returns firstMessage
+    clientSecondStep.process _ when * returns Right(clientFinalStep)
+    clientFinalStep.finalMessage _ when () returns finalMessage
 
     val ((fromServer, doneFuture), toServer) = getCommander("admin", "")
 
@@ -237,7 +271,7 @@ class AuthCommanderTest
     toServer.request(1L)
     toServer.expectNext(
       ByteString(0xc3, 0xbd, 0xc2, 0x34) ++ // protocol version
-      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"__first_msg__"}""")
+      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL"}""")
     )
 
     clientFirstStep.auth _ verify("admin", "", ChannelBindingFlag.NotSupports, None, Nil)
@@ -248,7 +282,7 @@ class AuthCommanderTest
 
     // when server ready to receive data
     toServer.request(1L)
-    toServer.expectNext(ByteString("""{"authentication":"second_msg"}"""))
+    toServer.expectNext(ByteString("""{"authentication":"c=biws,r=fyko+d2lbbFgONRv9qkxdawL3rfcNHYJY1ZVvWVs7g==,p=v0X8v3Bz2T0CJGbJQyF0X+HI4Ts="}"""))
 
     // server received message, time to validate how client parsed previous message
     clientSecondStep.process _ verify where { firstMessage: ServerFirstMessage =>
@@ -281,7 +315,8 @@ class AuthCommanderTest
   }
 
   it should "raise an error when first server message came with bad nonce" in new mocks {
-    clientFirstStep.auth _ when (*, *, *, *, *) returns ((ByteString("__first_msg__"), clientSecondStep))
+    clientFirstStep.auth _ when (*, *, *, *, *) returns clientSecondStep
+    clientSecondStep.firstMessage _ when () returns firstMessage
     clientSecondStep.process _ when * returns Left(AuthError("Invalid nonce :("))
 
     val ((fromServer, doneFuture), toServer) = getCommander("admin", "")
@@ -293,7 +328,7 @@ class AuthCommanderTest
     toServer.request(1L)
     toServer.expectNext(
       ByteString(0xc3, 0xbd, 0xc2, 0x34) ++ // protocol version
-      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"__first_msg__"}""")
+      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL"}""")
     )
 
     clientFirstStep.auth _ verify("admin", "", ChannelBindingFlag.NotSupports, None, Nil)
@@ -327,7 +362,8 @@ class AuthCommanderTest
   }
 
   it should "raise an error when first server message came with damaged scram message" in new mocks {
-    clientFirstStep.auth _ when (*, *, *, *, *) returns ((ByteString("__first_msg__"), clientSecondStep))
+    clientFirstStep.auth _ when (*, *, *, *, *) returns clientSecondStep
+    clientSecondStep.firstMessage _ when () returns firstMessage
 
     val ((fromServer, doneFuture), toServer) = getCommander("admin", "")
 
@@ -338,7 +374,7 @@ class AuthCommanderTest
     toServer.request(1L)
     toServer.expectNext(
       ByteString(0xc3, 0xbd, 0xc2, 0x34) ++ // protocol version
-      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"__first_msg__"}""")
+      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL"}""")
     )
 
     clientFirstStep.auth _ verify("admin", "", ChannelBindingFlag.NotSupports, None, Nil)
@@ -366,7 +402,8 @@ class AuthCommanderTest
   }
 
   it should "raise an error when first server message can't be parsed" in new mocks {
-    clientFirstStep.auth _ when (*, *, *, *, *) returns ((ByteString("__first_msg__"), clientSecondStep))
+    clientFirstStep.auth _ when (*, *, *, *, *) returns clientSecondStep
+    clientSecondStep.firstMessage _ when () returns firstMessage
 
     val ((fromServer, doneFuture), toServer) = getCommander("admin", "")
 
@@ -377,7 +414,7 @@ class AuthCommanderTest
     toServer.request(1L)
     toServer.expectNext(
       ByteString(0xc3, 0xbd, 0xc2, 0x34) ++ // protocol version
-      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"__first_msg__"}""")
+      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL"}""")
     )
 
     clientFirstStep.auth _ verify("admin", "", ChannelBindingFlag.NotSupports, None, Nil)
@@ -405,7 +442,8 @@ class AuthCommanderTest
   }
 
   it should "raise an error when protocol version is not supported by driver" in new mocks {
-    clientFirstStep.auth _ when (*, *, *, *, *) returns ((ByteString("__first_msg__"), clientSecondStep))
+    clientFirstStep.auth _ when (*, *, *, *, *) returns clientSecondStep
+    clientSecondStep.firstMessage _ when () returns firstMessage
 
     val ((fromServer, doneFuture), toServer) = getCommander("admin", "")
 
@@ -416,7 +454,7 @@ class AuthCommanderTest
     toServer.request(1L)
     toServer.expectNext(
       ByteString(0xc3, 0xbd, 0xc2, 0x34) ++ // protocol version
-      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"__first_msg__"}""")
+      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL"}""")
     )
 
     clientFirstStep.auth _ verify("admin", "", ChannelBindingFlag.NotSupports, None, Nil)
@@ -442,7 +480,8 @@ class AuthCommanderTest
   }
 
   it should "raise an error when protocol version message can't be parsed" in new mocks {
-    clientFirstStep.auth _ when (*, *, *, *, *) returns ((ByteString("__first_msg__"), clientSecondStep))
+    clientFirstStep.auth _ when (*, *, *, *, *) returns clientSecondStep
+    clientSecondStep.firstMessage _ when () returns firstMessage
 
     val ((fromServer, doneFuture), toServer) = getCommander("admin", "")
 
@@ -453,7 +492,7 @@ class AuthCommanderTest
     toServer.request(1L)
     toServer.expectNext(
       ByteString(0xc3, 0xbd, 0xc2, 0x34) ++ // protocol version
-      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"__first_msg__"}""")
+      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL"}""")
     )
 
     clientFirstStep.auth _ verify("admin", "", ChannelBindingFlag.NotSupports, None, Nil)
@@ -480,7 +519,8 @@ class AuthCommanderTest
   }
 
   it should "raise an error when server returned verbose auth error" in new mocks {
-    clientFirstStep.auth _ when (*, *, *, *, *) returns ((ByteString("__first_msg__"), clientSecondStep))
+    clientFirstStep.auth _ when (*, *, *, *, *) returns clientSecondStep
+    clientSecondStep.firstMessage _ when () returns firstMessage
 
     val ((fromServer, doneFuture), toServer) = getCommander("admin", "")
 
@@ -491,7 +531,7 @@ class AuthCommanderTest
     toServer.request(1L)
     toServer.expectNext(
       ByteString(0xc3, 0xbd, 0xc2, 0x34) ++ // protocol version
-      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"__first_msg__"}""")
+      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL"}""")
     )
 
     clientFirstStep.auth _ verify("admin", "", ChannelBindingFlag.NotSupports, None, Nil)
@@ -517,7 +557,8 @@ class AuthCommanderTest
   }
 
   it should "raise an error when server returned error with some error code" in new mocks {
-    clientFirstStep.auth _ when (*, *, *, *, *) returns ((ByteString("__first_msg__"), clientSecondStep))
+    clientFirstStep.auth _ when (*, *, *, *, *) returns clientSecondStep
+    clientSecondStep.firstMessage _ when () returns firstMessage
 
     val ((fromServer, doneFuture), toServer) = getCommander("admin", "")
 
@@ -528,7 +569,7 @@ class AuthCommanderTest
     toServer.request(1L)
     toServer.expectNext(
       ByteString(0xc3, 0xbd, 0xc2, 0x34) ++ // protocol version
-        ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"__first_msg__"}""")
+        ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL"}""")
     )
 
     clientFirstStep.auth _ verify("admin", "", ChannelBindingFlag.NotSupports, None, Nil)
@@ -554,7 +595,8 @@ class AuthCommanderTest
   }
 
   it should "raise an error when server returned error without error code" in new mocks {
-    clientFirstStep.auth _ when (*, *, *, *, *) returns ((ByteString("__first_msg__"), clientSecondStep))
+    clientFirstStep.auth _ when (*, *, *, *, *) returns clientSecondStep
+    clientSecondStep.firstMessage _ when () returns firstMessage
 
     val ((fromServer, doneFuture), toServer) = getCommander("admin", "")
 
@@ -565,7 +607,7 @@ class AuthCommanderTest
     toServer.request(1L)
     toServer.expectNext(
       ByteString(0xc3, 0xbd, 0xc2, 0x34) ++ // protocol version
-        ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"__first_msg__"}""")
+        ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL"}""")
     )
 
     clientFirstStep.auth _ verify("admin", "", ChannelBindingFlag.NotSupports, None, Nil)
@@ -591,7 +633,8 @@ class AuthCommanderTest
   }
 
   it should "raise an error when server message can't be parsed by general protocol rules" in new mocks {
-    clientFirstStep.auth _ when (*, *, *, *, *) returns ((ByteString("__first_msg__"), clientSecondStep))
+    clientFirstStep.auth _ when (*, *, *, *, *) returns clientSecondStep
+    clientSecondStep.firstMessage _ when () returns firstMessage
 
     val ((fromServer, doneFuture), toServer) = getCommander("admin", "")
 
@@ -602,7 +645,7 @@ class AuthCommanderTest
     toServer.request(1L)
     toServer.expectNext(
       ByteString(0xc3, 0xbd, 0xc2, 0x34) ++ // protocol version
-      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"__first_msg__"}""")
+      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL"}""")
     )
 
     clientFirstStep.auth _ verify("admin", "", ChannelBindingFlag.NotSupports, None, Nil)
@@ -629,7 +672,8 @@ class AuthCommanderTest
   }
 
   it should "raise an error when server message can't be parsed as json" in new mocks {
-    clientFirstStep.auth _ when (*, *, *, *, *) returns ((ByteString("__first_msg__"), clientSecondStep))
+    clientFirstStep.auth _ when (*, *, *, *, *) returns clientSecondStep
+    clientSecondStep.firstMessage _ when () returns firstMessage
 
     val ((fromServer, doneFuture), toServer) = getCommander("admin", "")
 
@@ -640,7 +684,7 @@ class AuthCommanderTest
     toServer.request(1L)
     toServer.expectNext(
       ByteString(0xc3, 0xbd, 0xc2, 0x34) ++ // protocol version
-      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"__first_msg__"}""")
+      ByteString("""{"protocol_version":0,"authentication_method":"SCRAM-SHA-256","authentication":"n,,n=user,r=fyko+d2lbbFgONRv9qkxdawL"}""")
     )
 
     clientFirstStep.auth _ verify("admin", "", ChannelBindingFlag.NotSupports, None, Nil)
