@@ -31,29 +31,29 @@ object ToUpper extends LowPriorityDoTransmuter {
     def toUpper(query: ReqlExpr): ReqlBoolean = Transmuter.booleanTransmuter.transmute(query)
   }
 
-  implicit def tableTransmuter[T <: ReqlObject]: Projection[ReqlTable[T]] = new ToUpper[ReqlTable[T]] {
-    final type UpperType = ReqlTable[T]
-    def toUpper(query: ReqlExpr): ReqlTable[T] = Transmuter.tableTransmuter.transmute(query)
+  implicit def tableTransmuter[T <: ReqlObject, PK]: Projection[ReqlTable[T, PK]] = new ToUpper[ReqlTable[T, PK]] {
+    final type UpperType = ReqlTable[T, PK]
+    def toUpper(query: ReqlExpr): ReqlTable[T, PK] = Transmuter.tableTransmuter.transmute(query)
   }
 
-  implicit def tableSliceTransmuter[T <: ReqlObject]: Projection[ReqlTableSlice[T]] = new ToUpper[ReqlTableSlice[T]] {
-    final type UpperType = ReqlTableSlice[T]
-    def toUpper(query: ReqlExpr): ReqlTableSlice[T] = Transmuter.tableSliceTransmuter.transmute(query)
+  implicit def tableSliceTransmuter[T <: ReqlObject, PK]: Projection[ReqlTableSlice[T, PK]] = new ToUpper[ReqlTableSlice[T, PK]] {
+    final type UpperType = ReqlTableSlice[T, PK]
+    def toUpper(query: ReqlExpr): ReqlTableSlice[T, PK] = Transmuter.tableSliceTransmuter.transmute(query)
   }
 
-  implicit def selectionOfArrayTransmuter[T <: ReqlObject]: Projection[ReqlSelectionOfArray[T]] = new ToUpper[ReqlSelectionOfArray[T]] {
-    final type UpperType = ReqlSelectionOfArray[T]
-    def toUpper(query: ReqlExpr): ReqlSelectionOfArray[T] = Transmuter.selectionOfArrayTransmuter.transmute(query)
+  implicit def selectionOfArrayTransmuter[T <: ReqlObject, PK]: Projection[ReqlSelectionOfArray[T, PK]] = new ToUpper[ReqlSelectionOfArray[T, PK]] {
+    final type UpperType = ReqlSelectionOfArray[T, PK]
+    def toUpper(query: ReqlExpr): ReqlSelectionOfArray[T, PK] = Transmuter.selectionOfArrayTransmuter.transmute(query)
   }
 
-  implicit def selectionOfStreamTransmuter[T <: ReqlObject]: Projection[ReqlSelectionOfStream[T]] = new ToUpper[ReqlSelectionOfStream[T]] {
-    final type UpperType = ReqlSelectionOfStream[T]
-    def toUpper(query: ReqlExpr): ReqlSelectionOfStream[T] = Transmuter.selectionOfStreamTransmuter.transmute(query)
+  implicit def selectionOfStreamTransmuter[T <: ReqlObject, PK]: Projection[ReqlSelectionOfStream[T, PK]] = new ToUpper[ReqlSelectionOfStream[T, PK]] {
+    final type UpperType = ReqlSelectionOfStream[T, PK]
+    def toUpper(query: ReqlExpr): ReqlSelectionOfStream[T, PK] = Transmuter.selectionOfStreamTransmuter.transmute(query)
   }
 
-  implicit def selectionOfObjectTransmuter[T <: ReqlObject]: Projection[ReqlSelectionOfObject[T]] = new ToUpper[ReqlSelectionOfObject[T]] {
-    final type UpperType = ReqlSelectionOfObject[T]
-    def toUpper(query: ReqlExpr): ReqlSelectionOfObject[T] = Transmuter.selectionOfObjectTransmuter.transmute(query)
+  implicit def selectionOfObjectTransmuter[T <: ReqlObject, PK]: Projection[ReqlSelectionOfObject[T, PK]] = new ToUpper[ReqlSelectionOfObject[T, PK]] {
+    final type UpperType = ReqlSelectionOfObject[T, PK]
+    def toUpper(query: ReqlExpr): ReqlSelectionOfObject[T, PK] = Transmuter.selectionOfObjectTransmuter.transmute(query)
   }
 
   implicit def finiteStreamTransmuter[T <: ReqlDatum]: Projection[ReqlFiniteStream[T]] = new ToUpper[ReqlFiniteStream[T]] {

@@ -4,6 +4,7 @@ import java.util.UUID
 
 import akka.stream.scaladsl.Sink
 import rere.driver.pool.ConnectionPool
+import rere.ql.data.ChangefeedNotification
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -18,9 +19,9 @@ class TaskService(pool: ConnectionPool)(implicit executor: ExecutionContext) {
     seq.flatten
   }
 
-  def create(task: Task): Future[Long] = {
-    tasks.table().insert(task).run(pool).future().map { result =>
-      result.inserted
+  def create(task: Task): Future[Option[UUID]] = {
+    tasks.table().insertAuto(task).run(pool).future().map { result =>
+      result.generatedKeys.flatMap(_.headOption)
     }
   }
 
@@ -28,6 +29,11 @@ class TaskService(pool: ConnectionPool)(implicit executor: ExecutionContext) {
     tasks.table().get(uuid.toString).delete().run(pool).future().map { result =>
       result.deleted
     }
+  }
+
+  def subscribeToChanges[Mat](sink: Sink[ChangefeedNotification[Task], Mat]): Future[Mat] = {
+    val (mat, _) = tasks.table().changes().run(pool).drainTo(sink)
+    mat
   }
 
 }

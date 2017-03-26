@@ -311,7 +311,7 @@ object ReqlDecoder {
     }
   }
 
-  implicit def modelReqlDecoder[M](implicit modelShape: ModelShape[M]): ReqlDecoder[M] = {
+  implicit def modelReqlDecoder[M, PK](implicit modelShape: ModelShape[M, PK]): ReqlDecoder[M] = {
     new ReqlDecoder[M] {
       override def decode(json: Json): Result[M] = {
         modelShape.fromJson(json) match {
@@ -367,23 +367,26 @@ object ReqlDecoder {
     )
   }
 
-  private implicit def insertionResultDecoder[T : ReqlDecoder]: Decoder[ModificationResult[T]] = Decoder.instance(c =>
-    for {
-      inserted <- c.downField("inserted").as[Long]
-      replaced <- c.downField("replaced").as[Long]
-      unchanged <- c.downField("unchanged").as[Long]
-      errors <- c.downField("errors").as[Long]
-      firstError <- c.downField("first_error").as[Option[String]]
-      deleted <- c.downField("deleted").as[Long]
-      skipped <- c.downField("skipped").as[Long]
-      generatedKeys <- c.downField("generated_keys").as[Option[List[String]]]
-      warnings <- c.downField("warnings").as[Option[String]]
-      changes <- c.downField("changes").as[Option[List[ChangefeedNotification[T]]]]
-    } yield ModificationResult[T](inserted, replaced, unchanged, errors, firstError, deleted, skipped, generatedKeys, warnings, changes)
-  )
+  private implicit def insertionResultDecoder[T : ReqlDecoder, PK : ReqlDecoder]: Decoder[ModificationResult[T, PK]] = {
+    implicit val pkDecoder: Decoder[PK] = circeFromReql(ReqlDecoder[PK])
+    Decoder.instance(c =>
+      for {
+        inserted <- c.downField("inserted").as[Long]
+        replaced <- c.downField("replaced").as[Long]
+        unchanged <- c.downField("unchanged").as[Long]
+        errors <- c.downField("errors").as[Long]
+        firstError <- c.downField("first_error").as[Option[String]]
+        deleted <- c.downField("deleted").as[Long]
+        skipped <- c.downField("skipped").as[Long]
+        generatedKeys <- c.downField("generated_keys").as[Option[List[PK]]]
+        warnings <- c.downField("warnings").as[Option[String]]
+        changes <- c.downField("changes").as[Option[List[ChangefeedNotification[T]]]]
+      } yield ModificationResult[T, PK](inserted, replaced, unchanged, errors, firstError, deleted, skipped, generatedKeys, warnings, changes)
+    )
+  }
 
-  implicit def insertionResultReqlDecoder[T : ReqlDecoder]: ReqlDecoder[ModificationResult[T]] = {
-    reqlFromCirce[ModificationResult[T]](insertionResultDecoder)
+  implicit def insertionResultReqlDecoder[T : ReqlDecoder, PK : ReqlDecoder]: ReqlDecoder[ModificationResult[T, PK]] = {
+    reqlFromCirce[ModificationResult[T, PK]](insertionResultDecoder)
   }
 
   private implicit val databaseConfigDecoder: Decoder[DatabaseConfig] = Decoder.instance(c =>

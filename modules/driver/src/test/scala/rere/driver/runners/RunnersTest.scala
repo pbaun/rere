@@ -1,6 +1,7 @@
 package rere.driver.runners
 
 import java.time.ZonedDateTime
+import java.util.UUID
 
 import akka.Done
 import akka.stream.scaladsl.Sink
@@ -23,12 +24,12 @@ class RunnersTest extends FlatSpec with Matchers with MockFactory with Inside {
   case class Abc(id: String, name: Option[String])
 
   import io.circe.generic.auto._
-  object AuthorsShape extends CirceShape[Author]
-  object AbcShape extends CirceShape[Abc]
+  object AuthorsShape extends CirceShape[Author, String]
+  object AbcShape extends CirceShape[Abc, String]
 
   object TestDatabase extends DatabaseShape("test") {
-    val authors = table[Author]("authors", AuthorsShape)
-    val abc = table[Abc]("abc", AbcShape)
+    val authors = table("authors", AuthorsShape)
+    val abc = table("abc", AbcShape)
   }
 
 
@@ -64,8 +65,8 @@ class RunnersTest extends FlatSpec with Matchers with MockFactory with Inside {
 
     val pool = mock[ConnectionPool]
 
-    r.table[ReqlJsonObject]("abc").get("uuid").run(pool)
-    val q: SingleValueReadyToGo[JsonObject] = r.table[ReqlJsonObject]("abc").get("uuid").run(pool)
+    r.table[ReqlJsonObject, UUID]("abc").get("uuid").run(pool)
+    val q: SingleValueReadyToGo[JsonObject] = r.table[ReqlJsonObject, UUID]("abc").get("uuid").run(pool)
   }
 
   it should "allow to run single json object selection query" in {
@@ -73,7 +74,7 @@ class RunnersTest extends FlatSpec with Matchers with MockFactory with Inside {
     import rere.ql.queries.all._
 
     val pool = stub[ConnectionPool]
-    val f: Future[JsonObject] = r.table[ReqlJsonObject]("abc").get("uuid").run(pool).future()
+    val f: Future[JsonObject] = r.table[ReqlJsonObject, UUID]("abc").get("uuid").run(pool).future()
 
     pool.send _ verify where { msg: ConnectionPoolIncomingMessages =>
       inside(msg) {
@@ -210,7 +211,7 @@ class RunnersTest extends FlatSpec with Matchers with MockFactory with Inside {
 
     TestDatabase.abc.table().insert(model).run(pool)
 
-    val q: SingleValueReadyToGo[ModificationResult[Abc]] =
+    val q: SingleValueReadyToGo[ModificationResult[Abc, String]] =
       TestDatabase.abc.table().insert(model).run(pool)
   }
 
@@ -222,7 +223,7 @@ class RunnersTest extends FlatSpec with Matchers with MockFactory with Inside {
     implicit val abcShape = AbcShape
     val model: Abc = Abc("123", Some("abc name"))
 
-    val f: Future[ModificationResult[Abc]] = TestDatabase.abc.table().insert(model).run(pool).future()
+    val f: Future[ModificationResult[Abc, String]] = TestDatabase.abc.table().insert(model).run(pool).future()
 
     pool.send _ verify where { msg: ConnectionPoolIncomingMessages =>
       inside(msg) {
@@ -241,10 +242,10 @@ class RunnersTest extends FlatSpec with Matchers with MockFactory with Inside {
 
     val obj = JsonObject.fromMap(Map("field" -> Json.fromString("data")))
 
-    r.db("test").table[ReqlJsonObject]("abc").insert(obj).run(pool)
+    r.db("test").table[ReqlJsonObject, UUID]("abc").insert(obj).run(pool)
 
-    val q: SingleValueReadyToGo[ModificationResult[JsonObject]] =
-      r.db("test").table[ReqlJsonObject]("abc").insert(obj).run(pool)
+    val q: SingleValueReadyToGo[ModificationResult[JsonObject, UUID]] =
+      r.db("test").table[ReqlJsonObject, UUID]("abc").insert(obj).run(pool)
   }
 
   it should "allow to run single json object insertion query" in {
@@ -255,8 +256,8 @@ class RunnersTest extends FlatSpec with Matchers with MockFactory with Inside {
 
     val obj = JsonObject.fromMap(Map("field" -> Json.fromString("data")))
 
-    val f: Future[ModificationResult[JsonObject]] =
-      r.db("test").table[ReqlJsonObject]("abc").insert(obj).run(pool).future()
+    val f: Future[ModificationResult[JsonObject, UUID]] =
+      r.db("test").table[ReqlJsonObject, UUID]("abc").insert(obj).run(pool).future()
 
     pool.send _ verify where { msg: ConnectionPoolIncomingMessages =>
       inside(msg) {

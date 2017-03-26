@@ -14,7 +14,7 @@ class ReqlJoinResultImpl[LeftType <: ReqlDatum, RightType <: ReqlDatum](left: Le
   extends ReqlMakeObjFromMapQuery(Map("left" -> left, "right" -> right))
   with ReqlJoinResult[LeftType, RightType]
 
-trait ReqlModificationResult[T <: ReqlObject] extends ReqlObject
+trait ReqlModificationResult[T <: ReqlObject, PK] extends ReqlObject
 
 /*class ReqlModificationResultImpl[T <: ReqlObject](
     inserted: Long,

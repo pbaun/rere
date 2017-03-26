@@ -1,5 +1,7 @@
 package rere.ql.typeclasses
 
+import java.util.UUID
+
 import org.scalatest.FlatSpec
 import rere.ql.types._
 
@@ -17,31 +19,31 @@ class SequenceUnionTest extends FlatSpec {
     ): Out[UnionOut] = new Out[UnionOut] {}
   }
 
-  implicit class UnionOnSelectionOfArrayOp[T <: ReqlObject](val first: ReqlSelectionOfArray[T]) {
+  implicit class UnionOnSelectionOfArrayOp[T <: ReqlObject, PK](val first: ReqlSelectionOfArray[T, PK]) {
     def union[Other <: ReqlSequence[T], UnionOut <: ReqlSequence[T]](
       otherSeqs: Other*)(
-      implicit u: SequenceUnion.Aux[T, ReqlSelectionOfArray[T], Other, UnionOut]
+      implicit u: SequenceUnion.Aux[T, ReqlSelectionOfArray[T, PK], Other, UnionOut]
     ): Out[UnionOut] = new Out[UnionOut] {}
   }
 
-  implicit class UnionOnTableOp[T <: ReqlObject](val first: ReqlTable[T]) {
+  implicit class UnionOnTableOp[T <: ReqlObject, PK](val first: ReqlTable[T, PK]) {
     def union[Other <: ReqlSequence[T], UnionOut <: ReqlSequence[T]](
       otherSeqs: Other*)(
-      implicit u: SequenceUnion.Aux[T, ReqlTable[T], Other, UnionOut]
+      implicit u: SequenceUnion.Aux[T, ReqlTable[T, PK], Other, UnionOut]
     ): Out[UnionOut] = new Out[UnionOut] {}
   }
 
-  implicit class UnionOnTableSliceOp[T <: ReqlObject](val first: ReqlTableSlice[T]) {
+  implicit class UnionOnTableSliceOp[T <: ReqlObject, PK](val first: ReqlTableSlice[T, PK]) {
     def union[Other <: ReqlSequence[T], UnionOut <: ReqlSequence[T]](
       otherSeqs: Other*)(
-      implicit u: SequenceUnion.Aux[T, ReqlTableSlice[T], Other, UnionOut]
+      implicit u: SequenceUnion.Aux[T, ReqlTableSlice[T, PK], Other, UnionOut]
     ): Out[UnionOut] = new Out[UnionOut] {}
   }
 
-  implicit class UnionOnSelectionOfStreamOp[T <: ReqlObject](val first: ReqlSelectionOfStream[T]) {
+  implicit class UnionOnSelectionOfStreamOp[T <: ReqlObject, PK](val first: ReqlSelectionOfStream[T, PK]) {
     def union[Other <: ReqlSequence[T], UnionOut <: ReqlSequence[T]](
       otherSeqs: Other*)(
-      implicit u: SequenceUnion.Aux[T, ReqlSelectionOfStream[T], Other, UnionOut]
+      implicit u: SequenceUnion.Aux[T, ReqlSelectionOfStream[T, PK], Other, UnionOut]
     ): Out[UnionOut] = new Out[UnionOut] {}
   }
 
@@ -60,10 +62,10 @@ class SequenceUnionTest extends FlatSpec {
   }
 
   val array: ReqlArray[ReqlObject] = null
-  val table: ReqlTable[ReqlObject] = null
-  val tableSlice: ReqlTableSlice[ReqlObject] = null
-  val selectionOfArray: ReqlSelectionOfArray[ReqlObject] = null
-  val selectionOfStream: ReqlSelectionOfStream[ReqlObject] = null
+  val table: ReqlTable[ReqlObject, UUID] = null
+  val tableSlice: ReqlTableSlice[ReqlObject, UUID] = null
+  val selectionOfArray: ReqlSelectionOfArray[ReqlObject, UUID] = null
+  val selectionOfStream: ReqlSelectionOfStream[ReqlObject, UUID] = null
   val finiteStream: ReqlFiniteStream[ReqlObject] = null
   val infiniteStream: ReqlInfiniteStream[ReqlObject] = null
 

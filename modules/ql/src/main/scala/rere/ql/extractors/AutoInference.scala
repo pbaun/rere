@@ -39,10 +39,8 @@ object AutoInference extends LowPriorityAutoInference {
   implicit val reqlJsonObjectAutoInference: Aux[ReqlJsonObject, JsonObject] =
     fromDecoder(ReqlDecoder.jsonObjectReqlDecoder)
 
-  implicit def reqlModelAutoInference[
-    M : ModelShape
-  ]: Aux[ReqlModel[M], M] =
-    fromDecoder(ReqlDecoder.modelReqlDecoder[M])
+  implicit def reqlModelAutoInference[M, PK](implicit shape: ModelShape[M, PK]): Aux[ReqlModel[M], M] =
+    fromDecoder(ReqlDecoder.modelReqlDecoder[M, PK])
 
   implicit def reqlArrayAutoInference[T <: ReqlDatum, Scala](
     implicit inner: Aux[T, Scala]
@@ -57,12 +55,13 @@ object AutoInference extends LowPriorityAutoInference {
     fromDecoder(ReqlDecoder.changefeedNotificationReqlDecoder(optionTReqlDecoder))
 
   implicit def reqlModificationResultOnModelAutoInference[
-    ModelType : ReqlDecoder
-  ]: Aux[ReqlModificationResult[ReqlModel[ModelType]], ModificationResult[ModelType]] =
-    fromDecoder(ReqlDecoder.insertionResultReqlDecoder[ModelType])
+    ModelType : ReqlDecoder,
+    PK : ReqlDecoder
+  ]: Aux[ReqlModificationResult[ReqlModel[ModelType], PK], ModificationResult[ModelType, PK]] =
+    fromDecoder(ReqlDecoder.insertionResultReqlDecoder[ModelType, PK])
 
-  implicit def reqlModificationResultOnJsonObjectAutoInference: Aux[ReqlModificationResult[ReqlJsonObject], ModificationResult[JsonObject]] =
-    fromDecoder(ReqlDecoder.insertionResultReqlDecoder[JsonObject])
+  implicit def reqlModificationResultOnJsonObjectAutoInference[PK : ReqlDecoder]: Aux[ReqlModificationResult[ReqlJsonObject, PK], ModificationResult[JsonObject, PK]] =
+    fromDecoder(ReqlDecoder.insertionResultReqlDecoder[JsonObject, PK])
 
   implicit val reqlDatabaseCreationResultAutoInference: Aux[ReqlDatabaseCreationResult, DatabaseCreationResult] =
     fromDecoder(ReqlDecoder.databaseCreationResultReqlDecoder)
@@ -142,9 +141,10 @@ trait LowPriorityAutoInference extends LowerPriorityAutoInference {
     fromDecoder(ReqlDecoder.changefeedNotificationReqlDecoder(optionTReqlDecoder))
 
   implicit def reqlModificationResultAutoInference[
-    T <: ReqlObject : ReqlDecoder
-  ]: Aux[ReqlModificationResult[T], ModificationResult[T]] =
-    fromDecoder(ReqlDecoder.insertionResultReqlDecoder[T])
+    T <: ReqlObject : ReqlDecoder,
+    PK : ReqlDecoder
+  ]: Aux[ReqlModificationResult[T, PK], ModificationResult[T, PK]] =
+    fromDecoder(ReqlDecoder.insertionResultReqlDecoder[T, PK])
 }
 
 trait LowerPriorityAutoInference {

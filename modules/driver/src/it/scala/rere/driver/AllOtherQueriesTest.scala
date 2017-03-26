@@ -29,12 +29,12 @@ class AllOtherQueriesTest extends WordSpec with ScalaFutures with Matchers with 
   case class Abc(id: String, name: Option[String])
 
   import io.circe.generic.auto._
-  object AuthorsShape extends CirceShape[Author]
-  object AbcShape extends CirceShape[Abc]
+  object AuthorsShape extends CirceShape[Author, String]
+  object AbcShape extends CirceShape[Abc, String]
 
   object TestDatabase extends DatabaseShape("test") {
-    implicit val authors = table[Author]("authors", AuthorsShape)
-    implicit val abc = table[Abc]("abc", AbcShape)
+    implicit val authors = table("authors", AuthorsShape)
+    implicit val abc = table("abc", AbcShape)
   }
 
   implicit val ec = ExecutionContext.Implicits.global
@@ -62,7 +62,7 @@ class AllOtherQueriesTest extends WordSpec with ScalaFutures with Matchers with 
 
   "driver" should {
     "update models" ignore {
-      implicit val abcShape: ModelShape[Abc] = AbcShape
+      implicit val abcShape: ModelShape[Abc, String] = AbcShape
       val model: Abc = Abc("123-a", Some("abc name " + Random.nextInt()))
 
       val updateF = TestDatabase.abc.table().get("123-a").update(model).run(pool).future()
@@ -76,7 +76,7 @@ class AllOtherQueriesTest extends WordSpec with ScalaFutures with Matchers with 
     }
 
     "update many models" ignore {
-      implicit val abcShape: ModelShape[Abc] = AbcShape
+      implicit val abcShape: ModelShape[Abc, String] = AbcShape
       val model: Abc = Abc("123-a", Some("abc name " + Random.nextInt()))
 
       val updateF = TestDatabase.abc.table().filter(model).update(model).run(pool).future()
@@ -90,7 +90,7 @@ class AllOtherQueriesTest extends WordSpec with ScalaFutures with Matchers with 
     }
 
     "replace model" ignore {
-      implicit val abcShape: ModelShape[Abc] = AbcShape
+      implicit val abcShape: ModelShape[Abc, String] = AbcShape
       val model: Abc = Abc("123-a", Some("abc name " + Random.nextInt()))
 
       val replaceF = TestDatabase.abc.table().get("123-a").replace(model).run(pool).future()
@@ -104,7 +104,7 @@ class AllOtherQueriesTest extends WordSpec with ScalaFutures with Matchers with 
     }
 
     "delete model" ignore {
-      implicit val abcShape: ModelShape[Abc] = AbcShape
+      implicit val abcShape: ModelShape[Abc, String] = AbcShape
 
       val deleteF = TestDatabase.abc.table().get("123-a").delete().run(pool).future()
       deleteF.onComplete {
@@ -119,18 +119,19 @@ class AllOtherQueriesTest extends WordSpec with ScalaFutures with Matchers with 
     "insert and fetch models with complex types" ignore {
       case class Bcd(date: ZonedDateTime, uuid: UUID, json: Json, binary: ByteString, seq: Seq[String])
 
-      implicit object BcdShape extends Shape(Bcd.apply _) with IdeaTypeHint[Bcd] {
+      implicit object BcdShape extends Shape(Bcd.apply _, PrimaryKey[UUID]) with IdeaTypeHint[Bcd] {
         implicit val date = field("date", _.date)
         implicit val uuid = field("uuid", _.uuid)
         implicit val json = field("json", _.json)
         implicit val binary = field("binary", _.binary)
         implicit val seq = field("seq", _.seq)
 
-        def projection: Projection = date :-: uuid :-: json :-: binary :-: seq :-: SNil
+        def primaryKey = pk(uuid)
+        def projection = date :-: uuid :-: json :-: binary :-: seq :-: SNil
       }
 
       object TestDatabase extends DatabaseShape("test") {
-        val bcd = table[Bcd]("abc", BcdShape)
+        val bcd = table("abc", BcdShape)
       }
 
       val date = ZonedDateTime.now()
@@ -146,11 +147,11 @@ class AllOtherQueriesTest extends WordSpec with ScalaFutures with Matchers with 
       val seq = Seq("abc", "bcd", "cde")
       val model: Bcd = Bcd(date, uuid, json, binary, seq)
 
-      val insF: Future[ModificationResult[Bcd]] = TestDatabase.bcd.table().insert(model).run(pool).future()
+      val insF: Future[ModificationResult[Bcd, UUID]] = TestDatabase.bcd.table().insert(model).run(pool).future()
       insF.onComplete {
         case Success(res) =>
           println(s"Insert of model done: $res")
-          TestDatabase.bcd.table().get(res.generatedKeys.get.head).run(pool).future().onComplete {
+          TestDatabase.bcd.table().get(res.generatedKeys.get.head.toString).run(pool).future().onComplete {
             case Success(m) =>
               println(s"Get of model done: $m")
 

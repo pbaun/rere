@@ -6,7 +6,7 @@ import rere.ql.values.ReqlObjectModel
 trait ReqlModel[T] extends ReqlObject
 
 object ReqlModel {
-  implicit def shapableToModel[T : ModelShape](model: T): ReqlModel[T] = {
-    new ReqlObjectModel[T](ModelShape[T].toReqlObject(model))
+  implicit def shapableToModel[T, PK](model: T)(implicit shape: ModelShape[T, PK]): ReqlModel[T] = {
+    new ReqlObjectModel[T](ModelShape[T, PK].toReqlObject(model))
   }
 }

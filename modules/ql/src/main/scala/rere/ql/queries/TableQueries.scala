@@ -9,14 +9,14 @@ import rere.ql.types._
 trait TableQueries {
 
   // table
-  trait TableQuery[T <: ReqlObject] extends ReqlTable[T]
+  trait TableQuery[T <: ReqlObject, PK] extends ReqlTable[T, PK]
 
   implicit class TableOnDbOp(val database: ReqlDatabase) {
-    def table[T <: ReqlObject](
+    def table[T <: ReqlObject, PK](
       name: ReqlString,
       readMode: ReadModeOptions = DefaultReadMode,
       identifierFormat: IdentifierFormatOptions = DefaultIdentifierFormat
-    ): TableQuery[T] = new TableQuery[T] {
+    ): TableQuery[T, PK] = new TableQuery[T, PK] {
       val command = TermType.TABLE
       val string = "table"
       val arguments = database :: name :: Nil
@@ -25,11 +25,11 @@ trait TableQueries {
   }
 
   implicit class TableOnROp(val r: ReqlR) {
-    def table[T <: ReqlObject](
+    def table[T <: ReqlObject, PK](
       name: ReqlString,
       readMode: ReadModeOptions = DefaultReadMode,
       identifierFormat: IdentifierFormatOptions = DefaultIdentifierFormat
-    ): TableQuery[T] = new TableQuery[T] {
+    ): TableQuery[T, PK] = new TableQuery[T, PK] {
       val command = TermType.TABLE
       val string = "table"
       val arguments = name :: Nil
@@ -99,7 +99,7 @@ trait TableQueries {
   trait IndexCreateTableQuery extends ReqlIndexCreationResult
 
   //TODO: function may be binary field from .indexStatus or .indexWait response
-  implicit class IndexCreateOnTableOp[T <: ReqlObject : Transmuter](val table: ReqlTable[T]) {
+  implicit class IndexCreateOnTableOp[T <: ReqlObject : Transmuter, PK](val table: ReqlTable[T, PK]) {
     def indexCreate(indexName: ReqlString): IndexCreateTableQuery = new IndexCreateTableQuery {
       val command = TermType.INDEX_CREATE
       val string = "index_create"
@@ -138,7 +138,7 @@ trait TableQueries {
   // index_drop
   trait IndexDropTableQuery extends ReqlIndexDroppingResult
 
-  implicit class IndexDropOnTableOp[T <: ReqlObject](val table: ReqlTable[T]) {
+  implicit class IndexDropOnTableOp[T <: ReqlObject, PK](val table: ReqlTable[T, PK]) {
     def indexDrop(indexName: ReqlString): IndexDropTableQuery = new IndexDropTableQuery {
       val command = TermType.INDEX_DROP
       val string = "index_drop"
@@ -150,7 +150,7 @@ trait TableQueries {
   // index_list
   trait IndexListTableQuery extends ReqlArray[ReqlString]
 
-  implicit class IndexListOnTableOp[T <: ReqlObject](val table: ReqlTable[T]) {
+  implicit class IndexListOnTableOp[T <: ReqlObject, PK](val table: ReqlTable[T, PK]) {
     def indexList(): IndexListTableQuery = new IndexListTableQuery {
       val command = TermType.INDEX_LIST
       val string = "index_list"
@@ -163,7 +163,7 @@ trait TableQueries {
   trait IndexStatusTableQuery extends ReqlArray[ReqlIndexStatusResult]
   //TODO: 'function' field of object can be used in .indexCreate (see TODO comment on .indexCreate implementation)
 
-  implicit class IndexStatusOnTableOp[T <: ReqlObject](val table: ReqlTable[T]) {
+  implicit class IndexStatusOnTableOp[T <: ReqlObject, PK](val table: ReqlTable[T, PK]) {
     def indexStatus(): IndexStatusTableQuery = new IndexStatusTableQuery {
       val command = TermType.INDEX_STATUS
       val string = "index_status"
@@ -183,7 +183,7 @@ trait TableQueries {
   trait IndexWaitTableQuery extends ReqlArray[ReqlIndexStatusResult]
   //TODO: 'function' field of object can be used in .indexCreate
 
-  implicit class IndexWaitOnTableOp[T <: ReqlObject](val table: ReqlTable[T]) {
+  implicit class IndexWaitOnTableOp[T <: ReqlObject, PK](val table: ReqlTable[T, PK]) {
     def indexWait(): IndexWaitTableQuery = new IndexWaitTableQuery {
       val command = TermType.INDEX_WAIT
       val string = "index_wait"
@@ -203,7 +203,7 @@ trait TableQueries {
   trait IndexRenameTableQuery extends ReqlIndexRenamingResult
   //TODO: maybe reuse Index type for old and new names?
 
-  implicit class IndexRenameOnTableOp[T <: ReqlObject](val table: ReqlTable[T]) {
+  implicit class IndexRenameOnTableOp[T <: ReqlObject, PK](val table: ReqlTable[T, PK]) {
     def indexRename(
       oldIndexName: ReqlString,
       newIndexName: ReqlString,

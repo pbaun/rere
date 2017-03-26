@@ -1,5 +1,7 @@
 package rere.driver
 
+import java.util.UUID
+
 import akka.actor.{ActorSystem, Terminated}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
@@ -30,7 +32,7 @@ class JsonInsertionTest extends WordSpec with ScalaFutures with Matchers {
 
       val model = JsonObject.fromMap(Map("field" -> Json.fromString("data")))
 
-      whenReady(r.db("test").table[ReqlJsonObject]("abc").insert(model).run(pool).future()) { result =>
+      whenReady(r.db("test").table[ReqlJsonObject, UUID]("abc").insert(model).run(pool).future()) { result =>
         result.inserted shouldBe 1
         result.generatedKeys shouldBe an[Some[Seq[String]]]
         result.generatedKeys.get should have size 1

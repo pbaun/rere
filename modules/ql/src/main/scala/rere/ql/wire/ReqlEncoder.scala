@@ -161,8 +161,8 @@ object ReqlEncoder {
     }
   }
 
-  implicit def modelEncoder[Model](
-    implicit modelShape: ModelShape[Model]
+  implicit def modelEncoder[Model, PK](
+    implicit modelShape: ModelShape[Model, PK]
   ): Aux[Model, ReqlObject] = {
     new ReqlEncoder[Model] {
       override type ReqlType = ReqlObject

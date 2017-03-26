@@ -30,10 +30,10 @@ class ModelInsertionTest extends WordSpec with ScalaFutures with Matchers {
       import io.circe.generic.auto._
 
       case class Abc(id: String, name: Option[String])
-      object AbcShape extends CirceShape[Abc]
+      object AbcShape extends CirceShape[Abc, String]
 
       object TestDatabase extends DatabaseShape("test") {
-        implicit val abc = table[Abc]("abc", AbcShape)
+        implicit val abc = table("abc", AbcShape)
       }
 
       import TestDatabase.abc

@@ -5,31 +5,32 @@ import cats.free.Trampoline._
 import cats.instances.function._
 import io.circe.{Decoder, Json, ObjectEncoder}
 import rere.ql.types._
-import rere.ql.values.{ReqlJsonObjectQuery, ReqlMakeObjFromMapQuery}
+import rere.ql.values.{ReqlJsonObjectQuery, ReqlMakeObjFromPairsListQuery}
 import shapeless.ops.function.{FnFromProduct, FnToProduct}
 import shapeless.{::, HList, HNil}
 
-trait ModelShape[Model] {
+trait ModelShape[Model, PK] {
   def toReqlObject(model: Model): ReqlObject
+  def toReqlUnidentifiableObject(model: Model): ReqlObject
   def fromJson(json: Json): ModelShape.DecodingResult[Model]
 }
 
 object ModelShape {
   type DecodingResult[Model] = Either[ShapeDecodingError, Model]
 
-  def apply[Model](implicit shape: ModelShape[Model]): ModelShape[Model] = shape
+  def apply[Model, PK](implicit shape: ModelShape[Model, PK]): ModelShape[Model, PK] = shape
 
-  implicit def shapeAccessor[Model](implicit tableDescriptor: TableDescriptor[Model]): ModelShape[Model] = {
+  implicit def shapeAccessor[Model, PK](implicit tableDescriptor: TableDescriptor[Model, PK]): ModelShape[Model, PK] = {
     tableDescriptor.shape
   }
 }
 
 case class ShapeDecodingError(message: String, json: Json)
 
-abstract class Shape[Constructor <: AnyRef, Args <: HList, ModelType](
-    constructor: Constructor)(
+abstract class Shape[Constructor <: AnyRef, Args <: HList, ModelType, PrimaryKeyType](
+    constructor: Constructor, shapePrimaryKey: ShapePrimaryKey[PrimaryKeyType])(
     implicit deconstruction: FnToProduct.Aux[Constructor, Args => ModelType]
-  ) extends ModelShape[ModelType] {
+  ) extends ModelShape[ModelType, PrimaryKeyType] {
 
   type RootRef = this.type
   type Model = ModelType
@@ -82,10 +83,10 @@ abstract class Shape[Constructor <: AnyRef, Args <: HList, ModelType](
     }
   }
 
-  def sub[FieldType](
+  def sub[FieldType, PK](
     name: String,
     valueAccessor: Model => FieldType,
-    subShape: ModelShape[FieldType]
+    subShape: ModelShape[FieldType, PK]
   ): FieldAux[name.type, FieldType] = {
     new Field[name.type] {
       override type Root = RootRef
@@ -95,6 +96,22 @@ abstract class Shape[Constructor <: AnyRef, Args <: HList, ModelType](
       override def key: String = name
       override def accessor: Model => Value = valueAccessor
       override def lift: FieldLift.Aux[Value, Datum] = FieldLift.liftFromShape(subShape)
+    }
+  }
+
+  trait PrimaryKeyShape[T] {
+    def keyFields: Set[String]
+  }
+
+  def pk[Name, FieldType](field: FieldAux[Name, FieldType]): PrimaryKeyShape[FieldType] = {
+    new PrimaryKeyShape[FieldType] {
+      def keyFields = Set(field.key)
+    }
+  }
+
+  def noPk: PrimaryKeyShape[Nothing] = {
+    new PrimaryKeyShape[Nothing] {
+      def keyFields = Set.empty
     }
   }
 
@@ -183,12 +200,20 @@ abstract class Shape[Constructor <: AnyRef, Args <: HList, ModelType](
     }
   }
 
-  final def toMap(model: Model): Map[String, Any] = {
+  /*final def toMap(model: Model): Map[String, Any] = {
     projection.blueprint.simpleList.map(_.toPair(model)).toMap
-  }
+  }*/
 
   final override def toReqlObject(model: Model): ReqlObject = {
-    new ReqlMakeObjFromMapQuery(projection.blueprint.simpleList.map(_.toReqlPair(model)).toMap)
+    new ReqlMakeObjFromPairsListQuery(projection.blueprint.simpleList.map(_.toReqlPair(model)))
+  }
+
+  final override def toReqlUnidentifiableObject(model: Model): ReqlObject = {
+    new ReqlMakeObjFromPairsListQuery(
+      projection.blueprint.simpleList.filter { field =>
+        !primaryKey.keyFields.contains(field.key)
+      }.map(_.toReqlPair(model))
+    )
   }
 
   final override def fromJson(json: Json): ModelShape.DecodingResult[ModelType] = {
@@ -200,15 +225,23 @@ abstract class Shape[Constructor <: AnyRef, Args <: HList, ModelType](
     }
   }
 
+  def primaryKey: PrimaryKeyShape[PrimaryKeyType]
+
   def projection: Projection
 
 }
 
-abstract class CirceShape[M](implicit objEncoder: ObjectEncoder[M], decoder: Decoder[M])
-  extends ModelShape[M] {
+abstract class CirceShape[M, PK](implicit objEncoder: ObjectEncoder[M], decoder: Decoder[M])
+  extends ModelShape[M, PK] {
+
+  def primaryKey: Set[String] = Set("id")
 
   override def toReqlObject(model: M): ReqlObject = {
     new ReqlJsonObjectQuery(objEncoder.encodeObject(model))
+  }
+
+  override def toReqlUnidentifiableObject(model: M): ReqlObject = {
+    new ReqlJsonObjectQuery(objEncoder.encodeObject(model).filterKeys(!primaryKey.contains(_)))
   }
 
   override def fromJson(json: Json): ModelShape.DecodingResult[M] = {

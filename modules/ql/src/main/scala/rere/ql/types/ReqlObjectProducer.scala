@@ -34,11 +34,13 @@ object ReqlObjectProducer {
   implicit def reqlObjectToObjectProducer[SourceType <: ReqlDatum, TargetType <: ReqlObject](value: TargetType): ReqlObjectProducer[SourceType, TargetType] =
     new ProxyQuery(value) with ReqlObjectProducer[SourceType, TargetType]
 
-  implicit def reqlModelToObjectProducer[SourceType <: ReqlDatum, T : ModelShape](value: T): ReqlObjectProducer[SourceType, ReqlModel[T]] =
-    new ProxyQuery(ModelShape[T].toReqlObject(value)) with ReqlObjectProducer[SourceType, ReqlModel[T]]
+  implicit def reqlModelToObjectProducer[SourceType <: ReqlDatum, T, PK](
+    value: T)(
+    implicit shape: ModelShape[T, PK]
+  ): ReqlObjectProducer[SourceType, ReqlModel[T]] =
+    new ProxyQuery(ModelShape[T, PK].toReqlObject(value)) with ReqlObjectProducer[SourceType, ReqlModel[T]]
 
   implicit def functionToObjectProducer[SourceType <: ReqlDatum : Transmuter, TargetType <: ReqlObject](f: SourceType => TargetType): ReqlObjectProducer[SourceType, TargetType] =
     new FunctionProxyQuery[SourceType, TargetType](f) with ReqlObjectProducer[SourceType, TargetType]
 
 }
-

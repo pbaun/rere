@@ -179,7 +179,7 @@ object FieldLift {
     }
   }
 
-  def liftFromShape[M](shape: ModelShape[M]): FieldLift.Aux[M, ReqlObject] = {
+  def liftFromShape[M, PK](shape: ModelShape[M, PK]): FieldLift.Aux[M, ReqlObject] = {
     new FieldLift[M] {
       final type ReqlType = ReqlObject
 

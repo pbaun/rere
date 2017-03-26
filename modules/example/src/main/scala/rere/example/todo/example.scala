@@ -4,11 +4,12 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 import akka.actor.ActorSystem
+import akka.stream.scaladsl.Sink
 import rere.driver.pool.ConnectionPool
 import rere.driver.{ConnectionSettings, Credentials}
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 object Example {
 
@@ -22,6 +23,11 @@ object Example {
 
     val service = new TaskService(pool)
 
+
+    val changefeedDone = service.subscribeToChanges(Sink.foreach { notification =>
+      println(s"-- Task is changed: old value = ${notification.oldVal}; new value = ${notification.newVal}")
+    })
+
     val queryDone = service.list().flatMap { tasks =>
       println(s"Current tasks: $tasks")
 
@@ -29,22 +35,27 @@ object Example {
         reminder = Reminder(Some(ZonedDateTime.now().plusHours(2)), repeat = false, None)
       )
 
-      service.create(newTask).flatMap { created =>
-        println(s"Created $created tasks")
+      service.create(newTask).flatMap {
+        case Some(generatedId) =>
+          println(s"Task $generatedId was created")
 
-        service.list().flatMap { tasks =>
-          println(s"Current tasks: $tasks")
+          service.list().flatMap { tasks =>
+            println(s"Current tasks: $tasks")
 
-          service.delete(newTask.uuid).map { deleted =>
-            println(s"Deleted $deleted tasks")
+            service.delete(generatedId).map { deleted =>
+              println(s"Deleted $deleted tasks")
+            }
           }
-        }
+
+        case _ =>
+          Future.failed(new Exception("Task was not created"))
       }
     }
 
     val shutdownFuture = for {
       _ <- queryDone
       _ <- pool.shutdown()
+      _ <- changefeedDone
       _ <- system.terminate()
     } yield ()
 

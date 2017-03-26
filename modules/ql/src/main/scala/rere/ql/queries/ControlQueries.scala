@@ -187,16 +187,16 @@ trait ControlQueries {
   }
 
   // for_each
-  trait ForEachTableQuery[T <: ReqlObject] extends ReqlModificationResult[T]
-  trait ForEachTableSliceQuery[T <: ReqlObject] extends ReqlModificationResult[T]
-  trait ForEachSelectionOfArrayQuery[T <: ReqlObject] extends ReqlModificationResult[T]
-  trait ForEachSelectionOfStreamQuery[T <: ReqlObject] extends ReqlModificationResult[T]
-  trait ForEachFiniteStreamQuery[T <: ReqlObject] extends ReqlModificationResult[T]
-  trait ForEachArrayQuery[T <: ReqlObject] extends ReqlModificationResult[T]
+  trait ForEachTableQuery[T <: ReqlObject, PK] extends ReqlModificationResult[T, PK]
+  trait ForEachTableSliceQuery[T <: ReqlObject, PK] extends ReqlModificationResult[T, PK]
+  trait ForEachSelectionOfArrayQuery[T <: ReqlObject, PK] extends ReqlModificationResult[T, PK]
+  trait ForEachSelectionOfStreamQuery[T <: ReqlObject, PK] extends ReqlModificationResult[T, PK]
+  trait ForEachFiniteStreamQuery[T <: ReqlObject, PK] extends ReqlModificationResult[T, PK]
+  trait ForEachArrayQuery[T <: ReqlObject, PK] extends ReqlModificationResult[T, PK]
   //TODO: server implementation allows write_function: ReqlValue => Seq[Write_Op]
 
-  implicit class ForEachOnTableOp[T <: ReqlObject: Transmuter](val table: ReqlTable[T]) {
-    def forEach[U <: ReqlObject](writeFunction: T => ReqlModificationResult[U]): ForEachTableQuery[U] = new ForEachTableQuery[U] {
+  implicit class ForEachOnTableOp[T <: ReqlObject: Transmuter, PK](val table: ReqlTable[T, PK]) {
+    def forEach[U <: ReqlObject](writeFunction: T => ReqlModificationResult[U, PK]): ForEachTableQuery[U, PK] = new ForEachTableQuery[U, PK] {
       val command = TermType.FOR_EACH
       val string = "for_each"
       val arguments = table :: Func.wrap1(writeFunction) :: Nil
@@ -204,8 +204,8 @@ trait ControlQueries {
     }
   }
 
-  implicit class ForEachOnTableSliceOp[T <: ReqlObject: Transmuter](val tableSlice: ReqlTableSlice[T]) {
-    def forEach[U <: ReqlObject](writeFunction: T => ReqlModificationResult[U]): ForEachTableSliceQuery[U] = new ForEachTableSliceQuery[U] {
+  implicit class ForEachOnTableSliceOp[T <: ReqlObject: Transmuter, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+    def forEach[U <: ReqlObject](writeFunction: T => ReqlModificationResult[U, PK]): ForEachTableSliceQuery[U, PK] = new ForEachTableSliceQuery[U, PK] {
       val command = TermType.FOR_EACH
       val string = "for_each"
       val arguments = tableSlice :: Func.wrap1(writeFunction) :: Nil
@@ -213,8 +213,8 @@ trait ControlQueries {
     }
   }
 
-  implicit class ForEachOnSelectionOfArrayOp[T <: ReqlObject: Transmuter](val sel: ReqlSelectionOfArray[T]) {
-    def forEach[U <: ReqlObject](writeFunction: T => ReqlModificationResult[U]): ForEachSelectionOfArrayQuery[U] = new ForEachSelectionOfArrayQuery[U] {
+  implicit class ForEachOnSelectionOfArrayOp[T <: ReqlObject: Transmuter, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+    def forEach[U <: ReqlObject](writeFunction: T => ReqlModificationResult[U, PK]): ForEachSelectionOfArrayQuery[U, PK] = new ForEachSelectionOfArrayQuery[U, PK] {
       val command = TermType.FOR_EACH
       val string = "for_each"
       val arguments = sel :: Func.wrap1(writeFunction) :: Nil
@@ -222,8 +222,8 @@ trait ControlQueries {
     }
   }
 
-  implicit class ForEachOnSelectionOfStreamOp[T <: ReqlObject: Transmuter](val sel: ReqlSelectionOfStream[T]) {
-    def forEach[U <: ReqlObject](writeFunction: T => ReqlModificationResult[U]): ForEachSelectionOfStreamQuery[U] = new ForEachSelectionOfStreamQuery[U] {
+  implicit class ForEachOnSelectionOfStreamOp[T <: ReqlObject: Transmuter, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+    def forEach[U <: ReqlObject](writeFunction: T => ReqlModificationResult[U, PK]): ForEachSelectionOfStreamQuery[U, PK] = new ForEachSelectionOfStreamQuery[U, PK] {
       val command = TermType.FOR_EACH
       val string = "for_each"
       val arguments = sel :: Func.wrap1(writeFunction) :: Nil
@@ -231,8 +231,8 @@ trait ControlQueries {
     }
   }
 
-  implicit class ForEachOnFiniteStreamOp[T <: ReqlDatum: Transmuter](val finiteStream: ReqlFiniteStream[T]) {
-    def forEach[U <: ReqlObject](writeFunction: T => ReqlModificationResult[U]): ForEachFiniteStreamQuery[U] = new ForEachFiniteStreamQuery[U] {
+  implicit class ForEachOnFiniteStreamOp[T <: ReqlDatum: Transmuter, PK](val finiteStream: ReqlFiniteStream[T]) {
+    def forEach[U <: ReqlObject](writeFunction: T => ReqlModificationResult[U, PK]): ForEachFiniteStreamQuery[U, PK] = new ForEachFiniteStreamQuery[U, PK] {
       val command = TermType.FOR_EACH
       val string = "for_each"
       val arguments = finiteStream :: Func.wrap1(writeFunction) :: Nil
@@ -240,8 +240,8 @@ trait ControlQueries {
     }
   }
 
-  implicit class ForEachOnArrayOp[T <: ReqlDatum: Transmuter](val array: ReqlArray[T]) {
-    def forEach[U <: ReqlObject](writeFunction: T => ReqlModificationResult[U]): ForEachArrayQuery[U] = new ForEachArrayQuery[U] {
+  implicit class ForEachOnArrayOp[T <: ReqlDatum: Transmuter, PK](val array: ReqlArray[T]) {
+    def forEach[U <: ReqlObject](writeFunction: T => ReqlModificationResult[U, PK]): ForEachArrayQuery[U, PK] = new ForEachArrayQuery[U, PK] {
       val command = TermType.FOR_EACH
       val string = "for_each"
       val arguments = array :: Func.wrap1(writeFunction) :: Nil
@@ -448,7 +448,7 @@ trait ControlQueries {
     }
   }
 
-  implicit class CoerceToOnSingleSelectionOp[T <: ReqlObject](val sel: ReqlSelectionOfObject[T]) {
+  implicit class CoerceToOnSingleSelectionOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfObject[T, PK]) {
     def coerceTo(to: `string`.type): ReqlString = {
       Transmuter.transmute[ReqlString](
         new CoerceToQuery(sel :: to.typeName :: Nil)

@@ -12,7 +12,7 @@ import scala.concurrent.{Future, Promise}
 
 trait SelectionOfObjectRunners {
 
-  implicit class RunOnReqlSelectionOfObject[InnerExpr <: ReqlObject](val expr: ReqlSelectionOfObject[InnerExpr]) {
+  implicit class RunOnReqlSelectionOfObject[InnerExpr <: ReqlObject, InnerPK](val expr: ReqlSelectionOfObject[InnerExpr, InnerPK]) {
     def run[ScalaType](
       pool: ConnectionPool)(
       implicit inference: AutoInference.Aux[InnerExpr, ScalaType]
@@ -22,9 +22,9 @@ trait SelectionOfObjectRunners {
     }
   }
 
-  class ReadyToGoSelectionOfObjectInferred[InnerExpr <: ReqlObject, Out](
+  class ReadyToGoSelectionOfObjectInferred[InnerExpr <: ReqlObject, InnerPK, Out](
     pool: ConnectionPool,
-    expr: ReqlSelectionOfObject[InnerExpr],
+    expr: ReqlSelectionOfObject[InnerExpr, InnerPK],
     runOptions: Options,
     inference: AutoInference.Aux[InnerExpr, Out]
   ) extends SingleValueReadyToGo[Out] {

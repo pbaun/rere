@@ -5,7 +5,6 @@ import rere.ql.ql2.Term.TermType
 import rere.ql.rasterization.{recursive, trampolined}
 import rere.ql.types.{ReqlDatum, ReqlObject}
 
-
 class ReqlMakeObjFromMapQuery(reqlObj: Map[String, ReqlDatum]) extends ReqlObject {
   def command = TermType.MAKE_OBJ
   def string = "make_obj"

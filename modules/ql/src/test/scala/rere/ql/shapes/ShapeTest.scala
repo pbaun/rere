@@ -29,7 +29,7 @@ class ShapeTest extends FlatSpec with Matchers with Inside {
     tags: Seq[String]
   )
 
-  object SampleShape extends Shape(Sample.apply _) with IdeaTypeHint[Sample] {
+  object SampleShape extends Shape(Sample.apply _, PrimaryKey[UUID]) with IdeaTypeHint[Sample] {
     implicit val flag = field("flag", _.flag)
     implicit val i = field("i", _.i)
     implicit val l = field("l", _.l)
@@ -45,7 +45,8 @@ class ShapeTest extends FlatSpec with Matchers with Inside {
     implicit val maybeDate = field("maybeDate", _.maybeDate)
     implicit val tags = field("tags", _.tags)
 
-    def projection: Projection = flag :-: i :-: l :-: bi :-: d :-: bd :-: name :-:
+    def primaryKey = pk(uuid)
+    def projection = flag :-: i :-: l :-: bi :-: d :-: bd :-: name :-:
       zonedDateTime :-: uuid :-: json :-: binary :-: tag :-: maybeDate :-: tags :-: SNil
   }
 
@@ -197,20 +198,22 @@ class ShapeTest extends FlatSpec with Matchers with Inside {
   case class Nickname(name: String)
 
   object NicknameShape
-    extends Shape(Nickname.apply _)
-      with IdeaTypeHint[Nickname] {
+    extends Shape(Nickname.apply _, PrimaryKey[String])
+    with IdeaTypeHint[Nickname] {
 
     implicit val name = field("name", _.name)
 
-    def projection: Projection = name :-: SNil
+    def primaryKey = pk(name)
+    def projection = name :-: SNil
   }
 
-  case class User(a: Int, b: String, c: Boolean, d: Option[String], e: Option[String], nick: Nickname)
+  case class User(id: Long, a: Int, b: String, c: Boolean, d: Option[String], e: Option[String], nick: Nickname)
 
   object UserShape
-    extends Shape(User.apply _)
-      with IdeaTypeHint[User] {
+    extends Shape(User.apply _, PrimaryKey[Long])
+    with IdeaTypeHint[User] {
 
+    implicit val id = field("id", _.id)
     implicit val a = field("a", _.a)
     implicit val b = field("b", _.b)
     implicit val c = field("c2", _.c)
@@ -218,14 +221,15 @@ class ShapeTest extends FlatSpec with Matchers with Inside {
     implicit val e = field("e", _.e)
     implicit val n = sub("n", _.nick, NicknameShape)
 
-    def projection: Projection = a :-: b :-: c :-: d :-: e :-: n :-: SNil
+    def primaryKey = pk(id)
+    def projection = id :-: a :-: b :-: c :-: d :-: e :-: n :-: SNil
   }
 
   import io.circe.generic.auto._
-  object UserCirceShape extends CirceShape[User]
+  object UserCirceShape extends CirceShape[User, Long]
 
   case class Rights(user: User, userRights: Seq[String])
-  object RightsShape extends CirceShape[Rights]
+  object RightsShape extends CirceShape[Rights, UUID]
 
   object TestDatabase extends DatabaseShape("test") {
 
@@ -245,7 +249,7 @@ class ShapeTest extends FlatSpec with Matchers with Inside {
 
     import UserShape.ByNameGetter
 
-    val user = User(123, "bcd", false, Some("def"), None, Nickname("user"))
+    val user = User(42L, 123, "bcd", false, Some("def"), None, Nickname("user"))
 
     val i4: Int = user.get("a")
     i4 shouldBe 123
@@ -256,45 +260,54 @@ class ShapeTest extends FlatSpec with Matchers with Inside {
     val n1: Nickname = UserShape.getField(user, "n")
     n1 shouldBe Nickname("user")
 
-    val m = UserShape.toMap(user)
+    /*val m = UserShape.toMap(user)
     m shouldBe Map(
+      "id" -> 42L,
       "a" -> 123,
       "b" -> "bcd",
       "c2" -> false,
       "d" -> Some("def"),
       "e" -> None,
       "n" -> Nickname("user")
-    )
+    )*/
 
     val reqlObj = UserShape.toReqlObject(user)
-    toJsonString(reqlObj) shouldBe """{"e":null,"n":{"name":"user"},"a":123,"c2":false,"b":"bcd","d":"def"}"""
+    toJsonString(reqlObj) shouldBe """{"id":42,"a":123,"b":"bcd","c2":false,"d":"def","e":null,"n":{"name":"user"}}"""
 
-    val json = io.circe.parser.parse("""{"e":null,"n":{"name":"user"},"a":123,"c2":false,"b":"bcd","d":"def"}""").right.get
-    val maybeUser = UserShape.fromJson(json)
-    maybeUser shouldBe Right(user)
+    val reqlShortObj = UserShape.toReqlUnidentifiableObject(user)
+    toJsonString(reqlShortObj) shouldBe """{"a":123,"b":"bcd","c2":false,"d":"def","e":null,"n":{"name":"user"}}"""
+
+    val orderedJson = io.circe.parser.parse("""{"id":42,"a":123,"b":"bcd","c2":false,"d":"def","e":null,"n":{"name":"user"}}""").right.get
+    UserShape.fromJson(orderedJson) shouldBe Right(user)
+
+    val unorderedJson = io.circe.parser.parse("""{"e":null,"n":{"name":"user"},"a":123,"c2":false,"id":42,"b":"bcd","d":"def"}""").right.get
+    UserShape.fromJson(unorderedJson) shouldBe Right(user)
 
     val badJson = Json.fromJsonObject(JsonObject.fromMap(Map("l" -> Json.False)))
     val maybeUser2 = UserShape.fromJson(badJson)
-    maybeUser2 shouldBe Left(ShapeDecodingError("Field 'a' is missing", badJson))
+    maybeUser2 shouldBe Left(ShapeDecodingError("Field 'id' is missing", badJson))
 
-    val badJson2 = Json.fromJsonObject(JsonObject.fromMap(Map("a" -> Json.False)))
+    val badJson2 = Json.fromJsonObject(JsonObject.fromMap(Map("id" -> Json.fromLong(42), "a" -> Json.False)))
     val maybeUser3 = UserShape.fromJson(badJson2)
     maybeUser3 shouldBe Left(ShapeDecodingError("Field 'a': Not a number", Json.False))
 
     // Circe shape
     val reqlObj2 = UserCirceShape.toReqlObject(user)
-    toJsonString(reqlObj2) shouldBe """{"a":123,"b":"bcd","c":false,"d":"def","e":null,"nick":{"name":"user"}}"""
+    toJsonString(reqlObj2) shouldBe """{"id":42,"a":123,"b":"bcd","c":false,"d":"def","e":null,"nick":{"name":"user"}}"""
 
-    val circeJsonStr = """{"a":123,"b":"bcd","c":false,"d":"def","e":null,"nick":{"name":"user"}}"""
+    val reqlShortObj2 = UserCirceShape.toReqlUnidentifiableObject(user)
+    toJsonString(reqlShortObj2) shouldBe """{"a":123,"b":"bcd","c":false,"d":"def","e":null,"nick":{"name":"user"}}"""
+
+    val circeJsonStr = """{"id":42,"a":123,"b":"bcd","c":false,"d":"def","e":null,"nick":{"name":"user"}}"""
     val circeJson = io.circe.parser.parse(circeJsonStr).right.get
     val maybeUser4 = UserCirceShape.fromJson(circeJson)
     maybeUser4 shouldBe Right(user)
 
     val rightsSample = Rights(user, Seq("moderator", "manager", "viewer"))
     val rightsReqlObj = RightsShape.toReqlObject(rightsSample)
-    toJsonString(rightsReqlObj) shouldBe """{"user":{"a":123,"b":"bcd","c":false,"d":"def","e":null,"nick":{"name":"user"}},"userRights":[2,["moderator","manager","viewer"]]}"""
+    toJsonString(rightsReqlObj) shouldBe """{"user":{"id":42,"a":123,"b":"bcd","c":false,"d":"def","e":null,"nick":{"name":"user"}},"userRights":[2,["moderator","manager","viewer"]]}"""
 
-    val t: ReqlTable[ReqlModel[User]] = TestDatabase.users.table()
+    val t: ReqlTable[ReqlModel[User], Long] = TestDatabase.users.table()
   }
 
 }

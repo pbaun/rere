@@ -1,6 +1,6 @@
 package rere.ql.data
 
-case class ModificationResult[T](
+case class ModificationResult[T, PK](
   inserted: Long,
   replaced: Long,
   unchanged: Long,
@@ -8,7 +8,7 @@ case class ModificationResult[T](
   firstError: Option[String], //String?
   deleted: Long,
   skipped: Long,
-  generatedKeys: Option[Seq[String]], //String? maybe Id[T]
+  generatedKeys: Option[Seq[PK]],
   warnings: Option[String], //String?
   changes: Option[Seq[ChangefeedNotification[T]]]
 )
