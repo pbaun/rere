@@ -22,6 +22,8 @@ object ReqlEncoder {
     type ReqlType = Reql
   }
 
+  def apply[ScalaType](implicit encoder: ReqlEncoder[ScalaType]): ReqlEncoder[ScalaType] = encoder
+
   implicit val booleanEncoder: Aux[Boolean, ReqlBoolean] = {
     new ReqlEncoder[Boolean] {
       override type ReqlType = ReqlBoolean

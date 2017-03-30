@@ -1,20 +1,10 @@
 package rere.ql.types
 
-import rere.ql.values.ReqlMakeObjFromMapQuery
+trait ReqlChangefeedNotification[T] extends ReqlObject
 
-trait ReqlChangefeedNotification[T <: ReqlDatum] extends ReqlObject
+trait ReqlJoinResult[LeftType, RightType] extends ReqlObject
 
-class ReqlChangefeedNotificationImpl[T <: ReqlDatum](oldValue: T, newValue: T)
-  extends ReqlMakeObjFromMapQuery(Map("old_val" -> oldValue, "new_val" -> newValue))
-  with ReqlChangefeedNotification[T]
-
-trait ReqlJoinResult[LeftType <: ReqlDatum, RightType <: ReqlDatum] extends ReqlObject
-
-class ReqlJoinResultImpl[LeftType <: ReqlDatum, RightType <: ReqlDatum](left: LeftType, right: RightType)
-  extends ReqlMakeObjFromMapQuery(Map("left" -> left, "right" -> right))
-  with ReqlJoinResult[LeftType, RightType]
-
-trait ReqlModificationResult[T <: ReqlObject, PK] extends ReqlObject
+trait ReqlModificationResult[T, PK] extends ReqlObject
 
 /*class ReqlModificationResultImpl[T <: ReqlObject](
     inserted: Long,
@@ -45,15 +35,9 @@ trait ReqlDatabaseCreationResult extends ReqlObject
 
 trait ReqlDatabaseDroppingResult extends ReqlObject
 
-trait ReqlDatabaseConfigResult extends ReqlObject
-
 trait ReqlTableCreationResult extends ReqlObject
 
 trait ReqlTableDroppingResult extends ReqlObject
-
-trait ReqlTableStatusResult extends ReqlObject
-
-trait ReqlTableConfigResult extends ReqlObject
 
 trait ReqlIndexCreationResult extends ReqlObject
 
@@ -77,4 +61,4 @@ trait ReqlGrantingResult extends ReqlObject
 
 trait ReqlSyncingResult extends ReqlObject
 
-trait ReqlDistanceResult[T <: ReqlObject] extends ReqlObject
+trait ReqlDistanceResult[T] extends ReqlObject

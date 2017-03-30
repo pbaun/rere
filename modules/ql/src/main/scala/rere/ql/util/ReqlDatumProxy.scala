@@ -1,6 +1,6 @@
 package rere.ql.util
 
-import rere.ql.shapes.ReqlModel
+import rere.ql.shapes.{ModelShape, ReqlModel}
 import rere.ql.types._
 
 class NullHintProxy(query: ReqlExpr) extends ProxyQuery(query) with ReqlNull
@@ -18,4 +18,4 @@ class JsonHintProxy(query: ReqlExpr) extends ProxyQuery(query) with ReqlJson
 class JsonObjectHintProxy(query: ReqlExpr) extends ProxyQuery(query) with ReqlJsonObject
 
 class BinaryHintProxy(query: ReqlExpr) extends ProxyQuery(query) with ReqlBinary
-class ModelHintProxy[T](query: ReqlExpr) extends ProxyQuery(query) with ReqlModel[T]
+class ModelHintProxy[T, PK](query: ReqlExpr, val shape: ModelShape[T, PK]) extends ProxyQuery(query) with ReqlModel[T, PK]

@@ -3,6 +3,7 @@ package rere.ql.queries
 import rere.ql.options.all._
 import rere.ql.options.Options
 import rere.ql.ql2.Term.TermType
+import rere.ql.shapes.{ModelShape, ReqlModel}
 import rere.ql.typeclasses.{SequenceUnion, ToPredicate, Transmuter}
 import rere.ql.types._
 
@@ -19,11 +20,13 @@ trait TransformationQueries {
 
   //TODO: support r.map syntax
   //TODO: support map with different types? stream + array => stream?
-  implicit class MapOnTableOp[T0 <: ReqlObject : Transmuter, PK0](val table0: ReqlTable[T0, PK0]) {
+  implicit class MapOnTableOp[T0, PK0](val table0: ReqlTable[T0, PK0])(
+    implicit shape0: ModelShape[T0, PK0]
+  ) {
     def map[
       TOut <: ReqlDatum
     ](
-      mapFunction: T0 => TOut
+      mapFunction: ReqlModel[T0, PK0] => TOut
     ): MapTableQuery[TOut] = new MapTableQuery[TOut] {
       val command = TermType.MAP
       val string = "map"
@@ -32,12 +35,14 @@ trait TransformationQueries {
     }
 
     def map[
-      T1 <: ReqlObject : Transmuter,
+      T1,
       PK1,
       TOut <: ReqlDatum
     ](
       table1: ReqlTable[T1, PK1],
-      mapFunction: (T0, T1) => TOut
+      mapFunction: (ReqlModel[T0, PK0], ReqlModel[T1, PK1]) => TOut
+    )(
+      implicit shape1: ModelShape[T1, PK1]
     ): MapTableQuery[TOut] = new MapTableQuery[TOut] {
       val command = TermType.MAP
       val string = "map"
@@ -46,15 +51,18 @@ trait TransformationQueries {
     }
 
     def map[
-      T1 <: ReqlObject : Transmuter,
+      T1,
       PK1,
-      T2 <: ReqlObject : Transmuter,
+      T2,
       PK2,
       TOut <: ReqlDatum
     ](
       table1: ReqlTable[T1, PK1],
       table2: ReqlTable[T2, PK2],
-      mapFunction: (T0, T1, T2) => TOut
+      mapFunction: (ReqlModel[T0, PK0], ReqlModel[T1, PK1], ReqlModel[T2, PK2]) => TOut
+    )(
+      implicit shape1: ModelShape[T1, PK1],
+      shape2: ModelShape[T2, PK2]
     ): MapTableQuery[TOut] = new MapTableQuery[TOut] {
       val command = TermType.MAP
       val string = "map"
@@ -65,11 +73,13 @@ trait TransformationQueries {
     //TODO: support bigger arity
   }
 
-  implicit class MapOnTableSliceOp[T0 <: ReqlObject : Transmuter, PK0](val tableSlice0: ReqlTableSlice[T0, PK0]) {
+  implicit class MapOnTableSliceOp[T0, PK0](val tableSlice0: ReqlTableSlice[T0, PK0])(
+    implicit shape0: ModelShape[T0, PK0]
+  ) {
     def map[
       TOut <: ReqlDatum
     ](
-      mapFunction: T0 => TOut
+      mapFunction: ReqlModel[T0, PK0] => TOut
     ): MapTableSliceQuery[TOut] = new MapTableSliceQuery[TOut] {
       val command = TermType.MAP
       val string = "map"
@@ -78,12 +88,14 @@ trait TransformationQueries {
     }
 
     def map[
-      T1 <: ReqlObject : Transmuter,
+      T1,
       PK1,
       TOut <: ReqlDatum
     ](
       tableSlice1: ReqlTableSlice[T1, PK1],
-      mapFunction: (T0, T1) => TOut
+      mapFunction: (ReqlModel[T0, PK0], ReqlModel[T1, PK1]) => TOut
+    )(
+      implicit shape1: ModelShape[T1, PK1]
     ): MapTableSliceQuery[TOut] = new MapTableSliceQuery[TOut] {
       val command = TermType.MAP
       val string = "map"
@@ -92,15 +104,18 @@ trait TransformationQueries {
     }
 
     def map[
-      T1 <: ReqlObject : Transmuter,
+      T1,
       PK1,
-      T2 <: ReqlObject : Transmuter,
+      T2,
       PK2,
       TOut <: ReqlDatum
     ](
       tableSlice1: ReqlTableSlice[T1, PK1],
       tableSlice2: ReqlTableSlice[T2, PK2],
-      mapFunction: (T0, T1, T2) => TOut
+      mapFunction: (ReqlModel[T0, PK0], ReqlModel[T1, PK1], ReqlModel[T2, PK2]) => TOut
+    )(
+      implicit shape1: ModelShape[T1, PK1],
+      shape2: ModelShape[T2, PK2]
     ): MapTableSliceQuery[TOut] = new MapTableSliceQuery[TOut] {
       val command = TermType.MAP
       val string = "map"
@@ -111,11 +126,13 @@ trait TransformationQueries {
     //TODO: support bigger arity
   }
 
-  implicit class MapOnSelectionOfArrayOp[T0 <: ReqlObject : Transmuter, PK0](val sel0: ReqlSelectionOfArray[T0, PK0]) {
+  implicit class MapOnSelectionOfArrayOp[T0, PK0](val sel0: ReqlSelectionOfArray[T0, PK0])(
+    implicit shape0: ModelShape[T0, PK0]
+  ) {
     def map[
       TOut <: ReqlDatum
     ](
-      mapFunction: T0 => TOut
+      mapFunction: ReqlModel[T0, PK0] => TOut
     ): MapSelectionOfArrayQuery[TOut] = new MapSelectionOfArrayQuery[TOut] {
       val command = TermType.MAP
       val string = "map"
@@ -124,12 +141,14 @@ trait TransformationQueries {
     }
 
     def map[
-      T1 <: ReqlObject : Transmuter,
+      T1,
       PK1,
       TOut <: ReqlDatum
     ](
       sel1: ReqlSelectionOfArray[T1, PK1],
-      mapFunction: (T0, T1) => TOut
+      mapFunction: (ReqlModel[T0, PK0], ReqlModel[T1, PK1]) => TOut
+    )(
+      implicit shape1: ModelShape[T1, PK1]
     ): MapSelectionOfArrayQuery[TOut] = new MapSelectionOfArrayQuery[TOut] {
 
       val command = TermType.MAP
@@ -139,15 +158,18 @@ trait TransformationQueries {
     }
 
     def map[
-      T1 <: ReqlObject : Transmuter,
+      T1,
       PK1,
-      T2 <: ReqlObject : Transmuter,
+      T2,
       PK2,
       TOut <: ReqlDatum
     ](
       sel1: ReqlSelectionOfArray[T1, PK1],
       sel2: ReqlSelectionOfArray[T2, PK2],
-      mapFunction: (T0, T1, T2) => TOut
+      mapFunction: (ReqlModel[T0, PK0], ReqlModel[T1, PK1], ReqlModel[T2, PK2]) => TOut
+    )(
+      implicit shape1: ModelShape[T1, PK1],
+      shape2: ModelShape[T2, PK2]
     ): MapSelectionOfArrayQuery[TOut] = new MapSelectionOfArrayQuery[TOut] {
       val command = TermType.MAP
       val string = "map"
@@ -158,11 +180,13 @@ trait TransformationQueries {
     //TODO: support bigger arity
   }
 
-  implicit class MapOnSelectionOfStreamOp[T0 <: ReqlObject : Transmuter, PK0](val sel0: ReqlSelectionOfStream[T0, PK0]) {
+  implicit class MapOnSelectionOfStreamOp[T0, PK0](val sel0: ReqlSelectionOfStream[T0, PK0])(
+    implicit shape0: ModelShape[T0, PK0]
+  ) {
     def map[
       TOut <: ReqlDatum
     ](
-      mapFunction: T0 => TOut
+      mapFunction: ReqlModel[T0, PK0] => TOut
     ): MapSelectionOfStreamQuery[TOut] = new MapSelectionOfStreamQuery[TOut] {
       val command = TermType.MAP
       val string = "map"
@@ -171,12 +195,14 @@ trait TransformationQueries {
     }
 
     def map[
-      T1 <: ReqlObject : Transmuter,
+      T1,
       PK1,
       TOut <: ReqlDatum
     ](
       sel1: ReqlSelectionOfStream[T1, PK1],
-      mapFunction: (T0, T1) => TOut
+      mapFunction: (ReqlModel[T0, PK0], ReqlModel[T1, PK1]) => TOut
+    )(
+      implicit shape1: ModelShape[T1, PK1]
     ): MapSelectionOfStreamQuery[TOut] = new MapSelectionOfStreamQuery[TOut] {
       val command = TermType.MAP
       val string = "map"
@@ -185,15 +211,18 @@ trait TransformationQueries {
     }
 
     def map[
-      T1 <: ReqlObject : Transmuter,
+      T1,
       PK1,
-      T2 <: ReqlObject : Transmuter,
+      T2,
       PK2,
       TOut <: ReqlDatum
     ](
       sel1: ReqlSelectionOfStream[T1, PK1],
       sel2: ReqlSelectionOfStream[T2, PK2],
-      mapFunction: (T0, T1, T2) => TOut
+      mapFunction: (ReqlModel[T0, PK0], ReqlModel[T1, PK1], ReqlModel[T2, PK2]) => TOut
+    )(
+      implicit shape1: ModelShape[T1, PK1],
+      shape2: ModelShape[T2, PK2]
     ): MapSelectionOfStreamQuery[TOut] = new MapSelectionOfStreamQuery[TOut] {
       val command = TermType.MAP
       val string = "map"
@@ -345,8 +374,8 @@ trait TransformationQueries {
   trait WithFieldsFiniteStreamQuery[T <: ReqlDatum] extends ReqlFiniteStream[T]
   trait WithFieldsArrayQuery[T <: ReqlDatum] extends ReqlArray[T]
 
-  implicit class WithFieldsOnTableOp[T <: ReqlObject, PK](val table: ReqlTable[T, PK]) {
-    def withFields(selectors: ReqlValue*): WithFieldsTableQuery[T] = new WithFieldsTableQuery[T] {
+  implicit class WithFieldsOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+    def withFields(selectors: ReqlValue*): WithFieldsTableQuery[ReqlModel[T, PK]] = new WithFieldsTableQuery[ReqlModel[T, PK]] {
       val command = TermType.WITH_FIELDS
       val string = "with_fields"
       val arguments = table :: selectors.toList
@@ -354,8 +383,8 @@ trait TransformationQueries {
     }
   }
 
-  implicit class WithFieldsOnTableSliceOp[T <: ReqlObject, PK](val tableSlice: ReqlTableSlice[T, PK]) {
-    def withFields(selectors: ReqlValue*): WithFieldsTableSliceQuery[T] = new WithFieldsTableSliceQuery[T] {
+  implicit class WithFieldsOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+    def withFields(selectors: ReqlValue*): WithFieldsTableSliceQuery[ReqlModel[T, PK]] = new WithFieldsTableSliceQuery[ReqlModel[T, PK]] {
       val command = TermType.WITH_FIELDS
       val string = "with_fields"
       val arguments = tableSlice :: selectors.toList
@@ -363,8 +392,8 @@ trait TransformationQueries {
     }
   }
 
-  implicit class WithFieldsOnSelectionOfArrayOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfArray[T, PK]) {
-    def withFields(selectors: ReqlValue*): WithFieldsSelectionOfArrayQuery[T] = new WithFieldsSelectionOfArrayQuery[T] {
+  implicit class WithFieldsOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+    def withFields(selectors: ReqlValue*): WithFieldsSelectionOfArrayQuery[ReqlModel[T, PK]] = new WithFieldsSelectionOfArrayQuery[ReqlModel[T, PK]] {
       val command = TermType.WITH_FIELDS
       val string = "with_fields"
       val arguments = sel :: selectors.toList
@@ -372,8 +401,8 @@ trait TransformationQueries {
     }
   }
 
-  implicit class WithFieldsOnSelectionOfStreamOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfStream[T, PK]) {
-    def withFields(selectors: ReqlValue*): WithFieldsSelectionOfStreamQuery[T] = new WithFieldsSelectionOfStreamQuery[T] {
+  implicit class WithFieldsOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+    def withFields(selectors: ReqlValue*): WithFieldsSelectionOfStreamQuery[ReqlModel[T, PK]] = new WithFieldsSelectionOfStreamQuery[ReqlModel[T, PK]] {
       val command = TermType.WITH_FIELDS
       val string = "with_fields"
       val arguments = sel :: selectors.toList
@@ -418,9 +447,11 @@ trait TransformationQueries {
   trait ConcatMapArrayQuery[T <: ReqlDatum] extends ReqlArray[T]
 
   // function return type written not exactly by spec but it's follows the common logic
-  implicit class ConcatMapOnTableOp[T <: ReqlObject : Transmuter, PK](val table: ReqlTable[T, PK]) {
+  implicit class ConcatMapOnTableOp[T, PK](val table: ReqlTable[T, PK])(
+    implicit shape: ModelShape[T, PK]
+  ) {
     def concatMap[TOut <: ReqlDatum](
-      mapFunction: T => ReqlFiniteSequence[TOut]
+      mapFunction: ReqlModel[T, PK] => ReqlFiniteSequence[TOut]
     ): ConcatMapTableQuery[TOut] = new ConcatMapTableQuery[TOut] {
       val command = TermType.CONCAT_MAP
       val string = "concat_map"
@@ -429,9 +460,11 @@ trait TransformationQueries {
     }
   }
 
-  implicit class ConcatMapOnTableSliceOp[T <: ReqlObject : Transmuter, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class ConcatMapOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK])(
+    implicit shape: ModelShape[T, PK]
+  ) {
     def concatMap[TOut <: ReqlDatum](
-      mapFunction: T => ReqlFiniteSequence[TOut]
+      mapFunction: ReqlModel[T, PK] => ReqlFiniteSequence[TOut]
     ): ConcatMapTableSliceQuery[TOut] = new ConcatMapTableSliceQuery[TOut] {
       val command = TermType.CONCAT_MAP
       val string = "concat_map"
@@ -440,9 +473,11 @@ trait TransformationQueries {
     }
   }
 
-  implicit class ConcatMapOnSelectionOfArrayOp[T <: ReqlObject : Transmuter, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+  implicit class ConcatMapOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK])(
+    implicit shape: ModelShape[T, PK]
+  ) {
     def concatMap[TOut <: ReqlDatum](
-      mapFunction: T => ReqlFiniteSequence[TOut]
+      mapFunction: ReqlModel[T, PK] => ReqlFiniteSequence[TOut]
     ): ConcatMapSelectionOfArrayQuery[TOut] = new ConcatMapSelectionOfArrayQuery[TOut] {
       val command = TermType.CONCAT_MAP
       val string = "concat_map"
@@ -451,9 +486,11 @@ trait TransformationQueries {
     }
   }
 
-  implicit class ConcatMapOnSelectionOfStreamOp[T <: ReqlObject : Transmuter, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+  implicit class ConcatMapOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK])(
+    implicit shape: ModelShape[T, PK]
+  ) {
     def concatMap[TOut <: ReqlDatum](
-      mapFunction: T => ReqlFiniteSequence[TOut]
+      mapFunction: ReqlModel[T, PK] => ReqlFiniteSequence[TOut]
     ): ConcatMapSelectionOfStreamQuery[TOut] = new ConcatMapSelectionOfStreamQuery[TOut] {
       val command = TermType.CONCAT_MAP
       val string = "concat_map"
@@ -496,16 +533,16 @@ trait TransformationQueries {
   }
 
   // order_by
-  trait OrderByTableOnlyWithIndexQuery[T <: ReqlObject, PK] extends ReqlTableSlice[T, PK]
-  trait OrderByTableWithOrderingsQuery[T <: ReqlObject, PK] extends ReqlSelectionOfArray[T, PK]
-  trait OrderByTableMixedQuery[T <: ReqlObject, PK] extends ReqlSelectionOfStream[T, PK]
-  trait OrderByTableSliceQuery[T <: ReqlObject, PK] extends ReqlSelectionOfArray[T, PK]
-  trait OrderBySelectionOfArrayQuery[T <: ReqlObject, PK] extends ReqlSelectionOfArray[T, PK]
-  trait OrderBySelectionOfStreamQuery[T <: ReqlObject, PK] extends ReqlSelectionOfArray[T, PK]
+  trait OrderByTableOnlyWithIndexQuery[T, PK] extends ReqlTableSlice[T, PK]
+  trait OrderByTableWithOrderingsQuery[T, PK] extends ReqlSelectionOfArray[T, PK]
+  trait OrderByTableMixedQuery[T, PK] extends ReqlSelectionOfStream[T, PK]
+  trait OrderByTableSliceQuery[T, PK] extends ReqlSelectionOfArray[T, PK]
+  trait OrderBySelectionOfArrayQuery[T, PK] extends ReqlSelectionOfArray[T, PK]
+  trait OrderBySelectionOfStreamQuery[T, PK] extends ReqlSelectionOfArray[T, PK]
   trait OrderByArrayQuery[T <: ReqlDatum] extends ReqlArray[T]
 
   //IMPORTANT: this query return full result, not stream
-  implicit class OrderByOnTableOp[T <: ReqlObject, PK](val table: ReqlTable[T, PK]) {
+  implicit class OrderByOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
     def orderBy(indexOptions: OrderedIndexOptions): OrderByTableOnlyWithIndexQuery[T, PK] = new OrderByTableOnlyWithIndexQuery[T, PK] {
       val command = TermType.ORDER_BY
       val string = "order_by"
@@ -531,7 +568,7 @@ trait TransformationQueries {
   }
 
   //TODO: maybe any index operation should no be allowed on table_slice ???
-  implicit class OrderByOnTableSliceOp[T <: ReqlObject, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class OrderByOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
     // only orderings, no index because it can work with totally new or already used index. if previous step was already
     // used index "code" ( like between(1, 7, {index: "code"}) ) orderBy({index: "name"}) will fail at runtime.
     // if it needed to used between and orderBy - use orderBy(index).between(x, y). in that case between will use same
@@ -544,7 +581,7 @@ trait TransformationQueries {
     }
   }
 
-  implicit class OrderByOnSelectionOfArrayOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+  implicit class OrderByOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
     def orderBy(orderings: ReqlOrdering*): OrderBySelectionOfArrayQuery[T, PK] = new OrderBySelectionOfArrayQuery[T, PK] {
       val command = TermType.ORDER_BY
       val string = "order_by"
@@ -553,7 +590,7 @@ trait TransformationQueries {
     }
   }
 
-  implicit class OrderByOnSelectionOfStreamOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+  implicit class OrderByOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
     def orderBy(orderings: ReqlOrdering*): OrderBySelectionOfStreamQuery[T, PK] = new OrderBySelectionOfStreamQuery[T, PK] {
       val command = TermType.ORDER_BY
       val string = "order_by"
@@ -607,15 +644,15 @@ trait TransformationQueries {
   }
 
   // skip
-  trait SkipTableQuery[T <: ReqlObject, PK] extends ReqlSelectionOfStream[T, PK]
-  trait SkipTableSliceQuery[T <: ReqlObject, PK] extends ReqlSelectionOfStream[T, PK]
-  trait SkipSelectionOfArrayQuery[T <: ReqlObject, PK] extends ReqlSelectionOfArray[T, PK]
-  trait SkipSelectionOfStreamQuery[T <: ReqlObject, PK] extends ReqlSelectionOfStream[T, PK]
+  trait SkipTableQuery[T, PK] extends ReqlSelectionOfStream[T, PK]
+  trait SkipTableSliceQuery[T, PK] extends ReqlSelectionOfStream[T, PK]
+  trait SkipSelectionOfArrayQuery[T, PK] extends ReqlSelectionOfArray[T, PK]
+  trait SkipSelectionOfStreamQuery[T, PK] extends ReqlSelectionOfStream[T, PK]
   trait SkipInfiniteStreamQuery[T <: ReqlDatum] extends ReqlInfiniteStream[T]
   trait SkipFiniteStreamQuery[T <: ReqlDatum] extends ReqlFiniteStream[T]
   trait SkipArrayQuery[T <: ReqlDatum] extends ReqlArray[T]
 
-  implicit class SkipOnTableOp[T <: ReqlObject, PK](val table: ReqlTable[T, PK]) {
+  implicit class SkipOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
     def skip(n: ReqlInteger): SkipTableQuery[T, PK] = new SkipTableQuery[T, PK] {
       val command = TermType.SKIP
       val string = "skip"
@@ -624,7 +661,7 @@ trait TransformationQueries {
     }
   }
 
-  implicit class SkipOnTableSliceOp[T <: ReqlObject, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class SkipOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
     def skip(n: ReqlInteger): SkipTableSliceQuery[T, PK] = new SkipTableSliceQuery[T, PK] {
       val command = TermType.SKIP
       val string = "skip"
@@ -633,7 +670,7 @@ trait TransformationQueries {
     }
   }
 
-  implicit class SkipOnSelectionOfArrayOp[T <: ReqlObject, PK](val selection: ReqlSelectionOfArray[T, PK]) {
+  implicit class SkipOnSelectionOfArrayOp[T, PK](val selection: ReqlSelectionOfArray[T, PK]) {
     def skip(n: ReqlInteger): SkipSelectionOfArrayQuery[T, PK] = new SkipSelectionOfArrayQuery[T, PK] {
       val command = TermType.SKIP
       val string = "skip"
@@ -642,7 +679,7 @@ trait TransformationQueries {
     }
   }
 
-  implicit class SkipOnSelectionOfStreamOp[T <: ReqlObject, PK](val selection: ReqlSelectionOfStream[T, PK]) {
+  implicit class SkipOnSelectionOfStreamOp[T, PK](val selection: ReqlSelectionOfStream[T, PK]) {
     def skip(n: ReqlInteger): SkipSelectionOfStreamQuery[T, PK] = new SkipSelectionOfStreamQuery[T, PK] {
       val command = TermType.SKIP
       val string = "skip"
@@ -679,15 +716,15 @@ trait TransformationQueries {
   }
 
   // limit
-  trait LimitTableQuery[T <: ReqlObject, PK] extends ReqlSelectionOfStream[T, PK]
-  trait LimitTableSliceQuery[T <: ReqlObject, PK] extends ReqlSelectionOfStream[T, PK]
-  trait LimitSelectionOfArrayQuery[T <: ReqlObject, PK] extends ReqlSelectionOfArray[T, PK]
-  trait LimitSelectionOfStreamQuery[T <: ReqlObject, PK] extends ReqlSelectionOfStream[T, PK]
+  trait LimitTableQuery[T, PK] extends ReqlSelectionOfStream[T, PK]
+  trait LimitTableSliceQuery[T, PK] extends ReqlSelectionOfStream[T, PK]
+  trait LimitSelectionOfArrayQuery[T, PK] extends ReqlSelectionOfArray[T, PK]
+  trait LimitSelectionOfStreamQuery[T, PK] extends ReqlSelectionOfStream[T, PK]
   trait LimitInfiniteStreamQuery[T <: ReqlDatum] extends ReqlInfiniteStream[T]
   trait LimitFiniteStreamQuery[T <: ReqlDatum] extends ReqlFiniteStream[T]
   trait LimitArrayQuery[T <: ReqlDatum] extends ReqlArray[T]
 
-  implicit class LimitOnTableOp[T <: ReqlObject, PK](val table: ReqlTable[T, PK]) {
+  implicit class LimitOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
     def limit(n: ReqlInteger): LimitTableQuery[T, PK] = new LimitTableQuery[T, PK] {
       val command = TermType.LIMIT
       val string = "limit"
@@ -696,7 +733,7 @@ trait TransformationQueries {
     }
   }
 
-  implicit class LimitOnTableSliceOp[T <: ReqlObject, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class LimitOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
     def limit(n: ReqlInteger): LimitTableSliceQuery[T, PK] = new LimitTableSliceQuery[T, PK] {
       val command = TermType.LIMIT
       val string = "limit"
@@ -705,7 +742,7 @@ trait TransformationQueries {
     }
   }
 
-  implicit class LimitOnSelectionOfArrayOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+  implicit class LimitOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
     def limit(n: ReqlInteger): LimitSelectionOfArrayQuery[T, PK] = new LimitSelectionOfArrayQuery[T, PK] {
       val command = TermType.LIMIT
       val string = "limit"
@@ -714,7 +751,7 @@ trait TransformationQueries {
     }
   }
 
-  implicit class LimitOnSelectionOfStreamOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+  implicit class LimitOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
     def limit(n: ReqlInteger): LimitSelectionOfStreamQuery[T, PK] = new LimitSelectionOfStreamQuery[T, PK] {
       val command = TermType.LIMIT
       val string = "limit"
@@ -792,13 +829,13 @@ trait TransformationQueries {
   }
 
   // nth
-  trait NthTableQuery[T <: ReqlObject, PK] extends ReqlSelectionOfObject[T, PK]
-  trait NthTableSliceQuery[T <: ReqlObject, PK] extends ReqlSelectionOfObject[T, PK]
-  trait NthSelectionOfArrayQuery[T <: ReqlObject, PK] extends ReqlSelectionOfObject[T, PK]
-  trait NthSelectionOfStreamQuery[T <: ReqlObject, PK] extends ReqlSelectionOfObject[T, PK]
+  trait NthTableQuery[T, PK] extends ReqlSelectionOfObject[T, PK]
+  trait NthTableSliceQuery[T, PK] extends ReqlSelectionOfObject[T, PK]
+  trait NthSelectionOfArrayQuery[T, PK] extends ReqlSelectionOfObject[T, PK]
+  trait NthSelectionOfStreamQuery[T, PK] extends ReqlSelectionOfObject[T, PK]
   trait NthArrayQuery extends ReqlDatum
 
-  implicit class NthOnTableOp[T <: ReqlObject, PK](val table: ReqlTable[T, PK]) {
+  implicit class NthOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
     def nth(index: ReqlInteger): NthTableQuery[T, PK] = new NthTableQuery[T, PK] {
       val command = TermType.NTH
       val string = "nth"
@@ -807,7 +844,7 @@ trait TransformationQueries {
     }
   }
 
-  implicit class NthOnTableSliceOp[T <: ReqlObject, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class NthOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
     def nth(index: ReqlInteger): NthTableSliceQuery[T, PK] = new NthTableSliceQuery[T, PK] {
       val command = TermType.NTH
       val string = "nth"
@@ -816,7 +853,7 @@ trait TransformationQueries {
     }
   }
 
-  implicit class NthOnSelectionOfArrayOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+  implicit class NthOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
     def nth(index: ReqlInteger): NthSelectionOfArrayQuery[T, PK] = new NthSelectionOfArrayQuery[T, PK] {
       val command = TermType.NTH
       val string = "nth"
@@ -825,7 +862,7 @@ trait TransformationQueries {
     }
   }
 
-  implicit class NthOnSelectionOfStreamOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+  implicit class NthOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
     def nth(index: ReqlInteger): NthSelectionOfStreamQuery[T, PK] = new NthSelectionOfStreamQuery[T, PK] {
       val command = TermType.NTH
       val string = "nth"
@@ -853,15 +890,17 @@ trait TransformationQueries {
   trait OffsetsOfFiniteStreamQuery extends ReqlFiniteStream[ReqlInteger]
   trait OffsetsOfArrayQuery extends ReqlArray[ReqlInteger]
 
-  implicit class OffsetsOfTableOp[T <: ReqlObject : Transmuter, PK](val table: ReqlTable[T, PK]) {
-    def offsetsOf(datum: T): OffsetsOfTableQuery = new OffsetsOfTableQuery {
+  implicit class OffsetsOfTableOp[T, PK](val table: ReqlTable[T, PK])(
+    implicit shape: ModelShape[T, PK]
+  ) {
+    def offsetsOf(datum: ReqlModel[T, PK]): OffsetsOfTableQuery = new OffsetsOfTableQuery {
       val command = TermType.OFFSETS_OF
       val string = "offsets_of"
       val arguments = table :: ToPredicate(datum) :: Nil
       val options = Options.empty
     }
 
-    def offsetsOf(function: T => ReqlBoolean): OffsetsOfTableQuery = new OffsetsOfTableQuery {
+    def offsetsOf(function: ReqlModel[T, PK] => ReqlBoolean): OffsetsOfTableQuery = new OffsetsOfTableQuery {
       val command = TermType.OFFSETS_OF
       val string = "offsets_of"
       val arguments = table :: ToPredicate(function) :: Nil
@@ -869,15 +908,17 @@ trait TransformationQueries {
     }
   }
 
-  implicit class OffsetsOfTableSliceOp[T <: ReqlObject : Transmuter, PK](val tableSlice: ReqlTableSlice[T, PK]) {
-    def offsetsOf(datum: T): OffsetsOfTableSliceQuery = new OffsetsOfTableSliceQuery {
+  implicit class OffsetsOfTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK])(
+    implicit shape: ModelShape[T, PK]
+  ) {
+    def offsetsOf(datum: ReqlModel[T, PK]): OffsetsOfTableSliceQuery = new OffsetsOfTableSliceQuery {
       val command = TermType.OFFSETS_OF
       val string = "offsets_of"
       val arguments = tableSlice :: ToPredicate(datum) :: Nil
       val options = Options.empty
     }
 
-    def offsetsOf(function: T => ReqlBoolean): OffsetsOfTableSliceQuery = new OffsetsOfTableSliceQuery {
+    def offsetsOf(function: ReqlModel[T, PK] => ReqlBoolean): OffsetsOfTableSliceQuery = new OffsetsOfTableSliceQuery {
       val command = TermType.OFFSETS_OF
       val string = "offsets_of"
       val arguments = tableSlice :: ToPredicate(function) :: Nil
@@ -885,15 +926,17 @@ trait TransformationQueries {
     }
   }
 
-  implicit class OffsetsOfSelectionOfArrayOp[T <: ReqlObject : Transmuter, PK](val sel: ReqlSelectionOfArray[T, PK]) {
-    def offsetsOf(datum: T): OffsetsOfSelectionOfArrayQuery = new OffsetsOfSelectionOfArrayQuery {
+  implicit class OffsetsOfSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK])(
+    implicit shape: ModelShape[T, PK]
+  ) {
+    def offsetsOf(datum: ReqlModel[T, PK]): OffsetsOfSelectionOfArrayQuery = new OffsetsOfSelectionOfArrayQuery {
       val command = TermType.OFFSETS_OF
       val string = "offsets_of"
       val arguments = sel :: ToPredicate(datum) :: Nil
       val options = Options.empty
     }
 
-    def offsetsOf(function: T => ReqlBoolean): OffsetsOfSelectionOfArrayQuery = new OffsetsOfSelectionOfArrayQuery {
+    def offsetsOf(function: ReqlModel[T, PK] => ReqlBoolean): OffsetsOfSelectionOfArrayQuery = new OffsetsOfSelectionOfArrayQuery {
       val command = TermType.OFFSETS_OF
       val string = "offsets_of"
       val arguments = sel :: ToPredicate(function) :: Nil
@@ -901,15 +944,17 @@ trait TransformationQueries {
     }
   }
 
-  implicit class OffsetsOfSelectionOfStreamOp[T <: ReqlObject : Transmuter, PK](val sel: ReqlSelectionOfStream[T, PK]) {
-    def offsetsOf(datum: T): OffsetsOfSelectionOfStreamQuery = new OffsetsOfSelectionOfStreamQuery {
+  implicit class OffsetsOfSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK])(
+    implicit shape: ModelShape[T, PK]
+  ) {
+    def offsetsOf(datum: ReqlModel[T, PK]): OffsetsOfSelectionOfStreamQuery = new OffsetsOfSelectionOfStreamQuery {
       val command = TermType.OFFSETS_OF
       val string = "offsets_of"
       val arguments = sel :: ToPredicate(datum) :: Nil
       val options = Options.empty
     }
 
-    def offsetsOf(function: T => ReqlBoolean): OffsetsOfSelectionOfStreamQuery = new OffsetsOfSelectionOfStreamQuery {
+    def offsetsOf(function: ReqlModel[T, PK] => ReqlBoolean): OffsetsOfSelectionOfStreamQuery = new OffsetsOfSelectionOfStreamQuery {
       val command = TermType.OFFSETS_OF
       val string = "offsets_of"
       val arguments = sel :: ToPredicate(function) :: Nil
@@ -974,7 +1019,7 @@ trait TransformationQueries {
   trait IsEmptyFiniteStreamQuery extends ReqlBoolean
   trait IsEmptyArrayQuery extends ReqlBoolean
 
-  implicit class IsEmptyOnTableOp[T <: ReqlObject, PK](val table: ReqlTable[T, PK]) {
+  implicit class IsEmptyOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
     def isEmpty(): IsEmptyTableQuery = new IsEmptyTableQuery {
       val command = TermType.IS_EMPTY
       val string = "is_empty"
@@ -983,7 +1028,7 @@ trait TransformationQueries {
     }
   }
 
-  implicit class IsEmptyOnTableSliceOp[T <: ReqlObject, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class IsEmptyOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
     def isEmpty(): IsEmptyTableSliceQuery = new IsEmptyTableSliceQuery {
       val command = TermType.IS_EMPTY
       val string = "is_empty"
@@ -992,7 +1037,7 @@ trait TransformationQueries {
     }
   }
 
-  implicit class IsEmptyOnSelectionOfArrayOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+  implicit class IsEmptyOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
     def isEmpty(): IsEmptySelectionOfArrayQuery = new IsEmptySelectionOfArrayQuery {
       val command = TermType.IS_EMPTY
       val string = "is_empty"
@@ -1001,7 +1046,7 @@ trait TransformationQueries {
     }
   }
 
-  implicit class IsEmptyOnSelectionOfStreamOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+  implicit class IsEmptyOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
     def isEmpty(): IsEmptySelectionOfStreamQuery = new IsEmptySelectionOfStreamQuery {
       val command = TermType.IS_EMPTY
       val string = "is_empty"
@@ -1045,12 +1090,12 @@ trait TransformationQueries {
     val string = "union"
   }
 
-  implicit class UnionOnTableOp[T <: ReqlObject, PK](val table: ReqlTable[T, PK]) {
-    def union[Other <: ReqlSequence[T], UnionOut <: ReqlSequence[T]](
+  implicit class UnionOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+    def union[Other <: ReqlSequence[ReqlModel[T, PK]], UnionOut <: ReqlSequence[ReqlModel[T, PK]]](
       otherSeqs: Seq[Other],
       interleaveOptions: InterleaveOptions = Mix)(
       implicit
-      u: SequenceUnion.Aux[T, ReqlTable[T, PK], Other, UnionOut],
+      u: SequenceUnion.Aux[ReqlModel[T, PK], ReqlTable[T, PK], Other, UnionOut],
       t: Transmuter[UnionOut]
     ): UnionOut = {
       t.transmute(
@@ -1062,12 +1107,15 @@ trait TransformationQueries {
     }
   }
 
-  implicit class UnionOnTableSliceOp[T <: ReqlObject, PK](val tableSlice: ReqlTableSlice[T, PK]) {
-    def union[Other <: ReqlSequence[T], UnionOut <: ReqlSequence[T]](
+  implicit class UnionOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+    def union[
+      Other <: ReqlSequence[ReqlModel[T, PK]],
+      UnionOut <: ReqlSequence[ReqlModel[T, PK]]
+    ](
       otherSeqs: Seq[Other],
       interleaveOptions: InterleaveOptions = Mix)(
       implicit
-      u: SequenceUnion.Aux[T, ReqlTableSlice[T, PK], Other, UnionOut],
+      u: SequenceUnion.Aux[ReqlModel[T, PK], ReqlTableSlice[T, PK], Other, UnionOut],
       t: Transmuter[UnionOut]
     ): UnionOut = {
       t.transmute(
@@ -1079,12 +1127,15 @@ trait TransformationQueries {
     }
   }
 
-  implicit class UnionOnSelectionOfStreamOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfStream[T, PK]) {
-    def union[Other <: ReqlSequence[T], UnionOut <: ReqlSequence[T]](
+  implicit class UnionOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+    def union[
+      Other <: ReqlSequence[ReqlModel[T, PK]],
+      UnionOut <: ReqlSequence[ReqlModel[T, PK]]
+    ](
       otherSeqs: Seq[Other],
       interleaveOptions: InterleaveOptions = Mix)(
       implicit
-      u: SequenceUnion.Aux[T, ReqlSelectionOfStream[T, PK], Other, UnionOut],
+      u: SequenceUnion.Aux[ReqlModel[T, PK], ReqlSelectionOfStream[T, PK], Other, UnionOut],
       t: Transmuter[UnionOut]
     ): UnionOut = {
       t.transmute(
@@ -1096,12 +1147,15 @@ trait TransformationQueries {
     }
   }
 
-  implicit class UnionOnSelectionOfArrayOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfArray[T, PK]) {
-    def union[Other <: ReqlSequence[T], UnionOut <: ReqlSequence[T]](
+  implicit class UnionOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+    def union[
+      Other <: ReqlSequence[ReqlModel[T, PK]],
+      UnionOut <: ReqlSequence[ReqlModel[T, PK]]
+    ](
       otherSeqs: Seq[Other],
       interleaveOptions: InterleaveOptions = Mix)(
       implicit
-      u: SequenceUnion.Aux[T, ReqlSelectionOfArray[T, PK], Other, UnionOut],
+      u: SequenceUnion.Aux[ReqlModel[T, PK], ReqlSelectionOfArray[T, PK], Other, UnionOut],
       t: Transmuter[UnionOut]
     ): UnionOut = {
       t.transmute(
@@ -1165,14 +1219,14 @@ trait TransformationQueries {
   }
 
   // sample
-  trait SampleTableQuery[T <: ReqlObject, PK] extends ReqlSelectionOfArray[T, PK]
-  trait SampleTableSliceQuery[T <: ReqlObject, PK] extends ReqlSelectionOfArray[T, PK]
-  trait SampleSelectionOfArrayQuery[T <: ReqlObject, PK] extends ReqlSelectionOfArray[T, PK]
-  trait SampleSelectionOfStreamQuery[T <: ReqlObject, PK] extends ReqlSelectionOfArray[T, PK]
+  trait SampleTableQuery[T, PK] extends ReqlSelectionOfArray[T, PK]
+  trait SampleTableSliceQuery[T, PK] extends ReqlSelectionOfArray[T, PK]
+  trait SampleSelectionOfArrayQuery[T, PK] extends ReqlSelectionOfArray[T, PK]
+  trait SampleSelectionOfStreamQuery[T, PK] extends ReqlSelectionOfArray[T, PK]
   trait SampleFiniteStreamQuery[T <: ReqlDatum] extends ReqlArray[T]
   trait SampleArrayQuery[T <: ReqlDatum] extends ReqlArray[T]
 
-  implicit class SampleOnTableOp[T <: ReqlObject, PK](val table: ReqlTable[T, PK]) {
+  implicit class SampleOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
     def sample(size: ReqlInteger): SampleTableQuery[T, PK] = new SampleTableQuery[T, PK] {
       val command = TermType.SAMPLE
       val string = "sample"
@@ -1181,7 +1235,7 @@ trait TransformationQueries {
     }
   }
 
-  implicit class SampleOnTableSliceOp[T <: ReqlObject, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class SampleOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
     def sample(size: ReqlInteger): SampleTableSliceQuery[T, PK] = new SampleTableSliceQuery[T, PK] {
       val command = TermType.SAMPLE
       val string = "sample"
@@ -1190,7 +1244,7 @@ trait TransformationQueries {
     }
   }
 
-  implicit class SampleOnSelectionOfArrayOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+  implicit class SampleOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
     def sample(size: ReqlInteger): SampleSelectionOfArrayQuery[T, PK] = new SampleSelectionOfArrayQuery[T, PK] {
       val command = TermType.SAMPLE
       val string = "sample"
@@ -1199,7 +1253,7 @@ trait TransformationQueries {
     }
   }
 
-  implicit class SampleOnSelectionOfStreamOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+  implicit class SampleOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
     def sample(size: ReqlInteger): SampleSelectionOfStreamQuery[T, PK] = new SampleSelectionOfStreamQuery[T, PK] {
       val command = TermType.SAMPLE
       val string = "sample"

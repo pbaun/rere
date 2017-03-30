@@ -19,13 +19,13 @@ object TaskShape
 }
 
 object ReminderShape
-  extends Shape(Reminder.apply _, PrimaryKey[Nothing])
+  extends Shape(Reminder.apply _, PrimaryKey[UUID])
   with IdeaTypeHint[Reminder] {
 
   implicit val when = field("when", _.when)
   implicit val repeat = field("repeat", _.repeat)
   implicit val note = field("note", _.note)
 
-  def primaryKey = noPk
+  def primaryKey = auto
   def projection = when :-: repeat :-: note :-: SNil
 }

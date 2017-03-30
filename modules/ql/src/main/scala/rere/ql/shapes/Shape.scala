@@ -1,11 +1,14 @@
 package rere.ql.shapes
 
+import java.util.UUID
+
 import cats.free.Trampoline
 import cats.free.Trampoline._
 import cats.instances.function._
-import io.circe.{Decoder, Json, ObjectEncoder}
+import io.circe._
 import rere.ql.types._
-import rere.ql.values.{ReqlJsonObjectQuery, ReqlMakeObjFromPairsListQuery}
+import rere.ql.values.{ReqlJsonObjectQuery, ReqlJsonQuery, ReqlMakeObjFromPairsListQuery}
+import rere.ql.wire.{ReqlDecoder, ReqlEncoder}
 import shapeless.ops.function.{FnFromProduct, FnToProduct}
 import shapeless.{::, HList, HNil}
 
@@ -13,15 +16,40 @@ trait ModelShape[Model, PK] {
   def toReqlObject(model: Model): ReqlObject
   def toReqlUnidentifiableObject(model: Model): ReqlObject
   def fromJson(json: Json): ModelShape.DecodingResult[Model]
+
+  def toReqlPrimaryKey(primaryKey: PK): ReqlDatum
 }
 
-object ModelShape {
+object ModelShape extends LowPriorityModelShape {
   type DecodingResult[Model] = Either[ShapeDecodingError, Model]
 
   def apply[Model, PK](implicit shape: ModelShape[Model, PK]): ModelShape[Model, PK] = shape
 
   implicit def shapeAccessor[Model, PK](implicit tableDescriptor: TableDescriptor[Model, PK]): ModelShape[Model, PK] = {
     tableDescriptor.shape
+  }
+}
+
+trait LowPriorityModelShape {
+  //TODO: make helper for custom shapes
+  implicit def defaultJsonObjectShape: ModelShape[JsonObject, String] = {
+    new ModelShape[JsonObject, String] {
+      override def toReqlObject(model: JsonObject): ReqlObject = {
+        new ReqlJsonObjectQuery(model)
+      }
+      override def toReqlUnidentifiableObject(model: JsonObject): ReqlObject = {
+        new ReqlJsonObjectQuery(model.filter { case (key, _) => key != "id" })
+      }
+      override def fromJson(json: Json): ModelShape.DecodingResult[JsonObject] = {
+        ReqlDecoder.jsonObjectReqlDecoder.decode(json) match {
+          case Right(m) => Right(m)
+          case Left(err) => Left(ShapeDecodingError(err.message, json))
+        }
+      }
+      override def toReqlPrimaryKey(primaryKey: String): ReqlDatum = {
+        ReqlEncoder.stringEncoder.encode(primaryKey)
+      }
+    }
   }
 }
 
@@ -101,17 +129,24 @@ abstract class Shape[Constructor <: AnyRef, Args <: HList, ModelType, PrimaryKey
 
   trait PrimaryKeyShape[T] {
     def keyFields: Set[String]
+    def toReql(value: T): ReqlDatum
   }
 
   def pk[Name, FieldType](field: FieldAux[Name, FieldType]): PrimaryKeyShape[FieldType] = {
     new PrimaryKeyShape[FieldType] {
-      def keyFields = Set(field.key)
+      override def keyFields = Set(field.key)
+      override def toReql(value: FieldType): ReqlDatum = {
+        field.lift.getEncoder.encode(value)
+      }
     }
   }
 
-  def noPk: PrimaryKeyShape[Nothing] = {
-    new PrimaryKeyShape[Nothing] {
-      def keyFields = Set.empty
+  def auto: PrimaryKeyShape[UUID] = {
+    new PrimaryKeyShape[UUID] {
+      override def keyFields = Set("id")
+      override def toReql(value: UUID): ReqlDatum = {
+        ReqlEncoder.uuidEncoder.encode(value)
+      }
     }
   }
 
@@ -200,10 +235,6 @@ abstract class Shape[Constructor <: AnyRef, Args <: HList, ModelType, PrimaryKey
     }
   }
 
-  /*final def toMap(model: Model): Map[String, Any] = {
-    projection.blueprint.simpleList.map(_.toPair(model)).toMap
-  }*/
-
   final override def toReqlObject(model: Model): ReqlObject = {
     new ReqlMakeObjFromPairsListQuery(projection.blueprint.simpleList.map(_.toReqlPair(model)))
   }
@@ -225,29 +256,40 @@ abstract class Shape[Constructor <: AnyRef, Args <: HList, ModelType, PrimaryKey
     }
   }
 
+  final override def toReqlPrimaryKey(pk: PrimaryKeyType): ReqlDatum = {
+    primaryKey.toReql(pk)
+  }
+
   def primaryKey: PrimaryKeyShape[PrimaryKeyType]
 
   def projection: Projection
 
 }
 
-abstract class CirceShape[M, PK](implicit objEncoder: ObjectEncoder[M], decoder: Decoder[M])
-  extends ModelShape[M, PK] {
+abstract class CirceShape[M, PK](
+    implicit modelEncoder: ObjectEncoder[M],
+    modelDecoder: Decoder[M],
+    pkEncoder: Encoder[PK]
+  ) extends ModelShape[M, PK] {
 
   def primaryKey: Set[String] = Set("id")
 
   override def toReqlObject(model: M): ReqlObject = {
-    new ReqlJsonObjectQuery(objEncoder.encodeObject(model))
+    new ReqlJsonObjectQuery(modelEncoder.encodeObject(model))
   }
 
   override def toReqlUnidentifiableObject(model: M): ReqlObject = {
-    new ReqlJsonObjectQuery(objEncoder.encodeObject(model).filterKeys(!primaryKey.contains(_)))
+    new ReqlJsonObjectQuery(modelEncoder.encodeObject(model).filterKeys(!primaryKey.contains(_)))
   }
 
   override def fromJson(json: Json): ModelShape.DecodingResult[M] = {
-    decoder.decodeJson(json) match {
+    modelDecoder.decodeJson(json) match {
       case Right(m) => Right(m)
       case Left(err) => Left(ShapeDecodingError(err.message, json))
     }
+  }
+
+  override def toReqlPrimaryKey(pk: PK): ReqlDatum = {
+    new ReqlJsonQuery(pkEncoder.apply(pk))
   }
 }

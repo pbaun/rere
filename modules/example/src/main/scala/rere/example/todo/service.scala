@@ -16,7 +16,7 @@ class TaskService(pool: ConnectionPool)(implicit executor: ExecutionContext) {
 
   def list(): Future[Seq[Task]] = {
     val (seq, _) = tasks.table().run(pool).drainTo(Sink.seq[Task])
-    seq.flatten
+    seq.flatMap(identity)
   }
 
   def create(task: Task): Future[Option[UUID]] = {
@@ -26,7 +26,7 @@ class TaskService(pool: ConnectionPool)(implicit executor: ExecutionContext) {
   }
 
   def delete(uuid: UUID): Future[Long] = {
-    tasks.table().get(uuid.toString).delete().run(pool).future().map { result =>
+    tasks.table().get(uuid).delete().run(pool).future().map { result =>
       result.deleted
     }
   }

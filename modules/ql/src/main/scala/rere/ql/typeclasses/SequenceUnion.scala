@@ -1,5 +1,6 @@
 package rere.ql.typeclasses
 
+import rere.ql.shapes.ReqlModel
 import rere.ql.types._
 
 trait SequenceUnion[+T <: ReqlDatum, FirstSeq <: ReqlSequence[T]] {
@@ -25,49 +26,53 @@ object SequenceUnion extends LowPrioritySequenceUnion {
 
   /** ReqlSelectionOfArray */
   // FiniteArrayLike + FiniteArrayLike = Array
-  implicit def selectionOfArrayAndFiniteArrayLike[T <: ReqlObject, PK, Other <: ReqlFiniteArrayLike[T]]: Aux[T, ReqlSelectionOfArray[T, PK], Other, ReqlArray[T]] = {
-    new SequenceUnion[T, ReqlSelectionOfArray[T, PK]] {
+  implicit def selectionOfArrayAndFiniteArrayLike[
+    T,
+    PK,
+    Other <: ReqlFiniteArrayLike[ReqlModel[T, PK]]
+  ]: Aux[ReqlModel[T, PK], ReqlSelectionOfArray[T, PK], Other, ReqlArray[ReqlModel[T, PK]]] = {
+    new SequenceUnion[ReqlModel[T, PK], ReqlSelectionOfArray[T, PK]] {
       override type OtherSeq = Other
-      override type Result = ReqlArray[T]
+      override type Result = ReqlArray[ReqlModel[T, PK]]
     }
   }
 
   /** Table */
   // FiniteSequence + FiniteSequence = ReqlFiniteStream
   implicit def tableAndFiniteSequence[
-    T <: ReqlObject,
+    T,
     PK,
-    Other <: ReqlFiniteSequence[T]
-  ]: Aux[T, ReqlTable[T, PK], Other, ReqlFiniteStream[T]] = {
-    new SequenceUnion[T, ReqlTable[T, PK]] {
+    Other <: ReqlFiniteSequence[ReqlModel[T, PK]]
+  ]: Aux[ReqlModel[T, PK], ReqlTable[T, PK], Other, ReqlFiniteStream[ReqlModel[T, PK]]] = {
+    new SequenceUnion[ReqlModel[T, PK], ReqlTable[T, PK]] {
       override type OtherSeq = Other
-      override type Result = ReqlFiniteStream[T]
+      override type Result = ReqlFiniteStream[ReqlModel[T, PK]]
     }
   }
 
   /** TableSlice */
   // FiniteSequence + FiniteSequence = ReqlFiniteStream
   implicit def tableSliceAndFiniteSequence[
-    T <: ReqlObject,
+    T,
     PK,
-    Other <: ReqlFiniteSequence[T]
-  ]: Aux[T, ReqlTableSlice[T, PK], Other, ReqlFiniteStream[T]] = {
-    new SequenceUnion[T, ReqlTableSlice[T, PK]] {
+    Other <: ReqlFiniteSequence[ReqlModel[T, PK]]
+  ]: Aux[ReqlModel[T, PK], ReqlTableSlice[T, PK], Other, ReqlFiniteStream[ReqlModel[T, PK]]] = {
+    new SequenceUnion[ReqlModel[T, PK], ReqlTableSlice[T, PK]] {
       override type OtherSeq = Other
-      override type Result = ReqlFiniteStream[T]
+      override type Result = ReqlFiniteStream[ReqlModel[T, PK]]
     }
   }
 
   /** SelectionOfStream */
   // FiniteSequence + FiniteSequence = ReqlFiniteStream
   implicit def selectionOfStreamAndFiniteSequence[
-    T <: ReqlObject,
+    T,
     PK,
-    Other <: ReqlFiniteSequence[T]
-  ]: Aux[T, ReqlSelectionOfStream[T, PK], Other, ReqlFiniteStream[T]] = {
-    new SequenceUnion[T, ReqlSelectionOfStream[T, PK]] {
+    Other <: ReqlFiniteSequence[ReqlModel[T, PK]]
+  ]: Aux[ReqlModel[T, PK], ReqlSelectionOfStream[T, PK], Other, ReqlFiniteStream[ReqlModel[T, PK]]] = {
+    new SequenceUnion[ReqlModel[T, PK], ReqlSelectionOfStream[T, PK]] {
       override type OtherSeq = Other
-      override type Result = ReqlFiniteStream[T]
+      override type Result = ReqlFiniteStream[ReqlModel[T, PK]]
     }
   }
 
@@ -113,52 +118,52 @@ trait LowPrioritySequenceUnion extends EvenMoreLowPrioritySequenceUnion {
   /** ReqlSelectionOfArray */
   // FiniteArrayLike + FiniteSequence = ReqlFiniteStream
   implicit def selectionOfArrayAndFiniteSequence[
-    T <: ReqlObject,
+    T,
     PK,
-    Other <: ReqlFiniteSequence[T]
-  ]: SequenceUnion.Aux[T, ReqlSelectionOfArray[T, PK], Other, ReqlFiniteStream[T]] = {
-    new SequenceUnion[T, ReqlSelectionOfArray[T, PK]] {
+    Other <: ReqlFiniteSequence[ReqlModel[T, PK]]
+  ]: SequenceUnion.Aux[ReqlModel[T, PK], ReqlSelectionOfArray[T, PK], Other, ReqlFiniteStream[ReqlModel[T, PK]]] = {
+    new SequenceUnion[ReqlModel[T, PK], ReqlSelectionOfArray[T, PK]] {
       override type OtherSeq = Other
-      override type Result = ReqlFiniteStream[T]
+      override type Result = ReqlFiniteStream[ReqlModel[T, PK]]
     }
   }
 
   /** Table */
   // FiniteSequence + Sequence = ReqlInfiniteStream
   implicit def tableAndSequence[
-    T <: ReqlObject,
+    T,
     PK,
-    Other <: ReqlSequence[T]
-  ]: SequenceUnion.Aux[T, ReqlTable[T, PK], Other, ReqlInfiniteStream[T]] = {
-    new SequenceUnion[T, ReqlTable[T, PK]] {
+    Other <: ReqlSequence[ReqlModel[T, PK]]
+  ]: SequenceUnion.Aux[ReqlModel[T, PK], ReqlTable[T, PK], Other, ReqlInfiniteStream[ReqlModel[T, PK]]] = {
+    new SequenceUnion[ReqlModel[T, PK], ReqlTable[T, PK]] {
       override type OtherSeq = Other
-      override type Result = ReqlInfiniteStream[T]
+      override type Result = ReqlInfiniteStream[ReqlModel[T, PK]]
     }
   }
 
   /** TableSlice */
   // FiniteSequence + Sequence = ReqlInfiniteStream
   implicit def tableSliceAndSequence[
-    T <: ReqlObject,
+    T,
     PK,
-    Other <: ReqlSequence[T]
-  ]: SequenceUnion.Aux[T, ReqlTableSlice[T, PK], Other, ReqlInfiniteStream[T]] = {
-    new SequenceUnion[T, ReqlTableSlice[T, PK]] {
+    Other <: ReqlSequence[ReqlModel[T, PK]]
+  ]: SequenceUnion.Aux[ReqlModel[T, PK], ReqlTableSlice[T, PK], Other, ReqlInfiniteStream[ReqlModel[T, PK]]] = {
+    new SequenceUnion[ReqlModel[T, PK], ReqlTableSlice[T, PK]] {
       override type OtherSeq = Other
-      override type Result = ReqlInfiniteStream[T]
+      override type Result = ReqlInfiniteStream[ReqlModel[T, PK]]
     }
   }
 
   /** SelectionOfStream */
   // FiniteSequence + Sequence = ReqlInfiniteStream
   implicit def selectionOfStreamAndSequence[
-    T <: ReqlObject,
+    T,
     PK,
-    Other <: ReqlSequence[T]
-  ]: SequenceUnion.Aux[T, ReqlSelectionOfStream[T, PK], Other, ReqlInfiniteStream[T]] = {
-    new SequenceUnion[T, ReqlSelectionOfStream[T, PK]] {
+    Other <: ReqlSequence[ReqlModel[T, PK]]
+  ]: SequenceUnion.Aux[ReqlModel[T, PK], ReqlSelectionOfStream[T, PK], Other, ReqlInfiniteStream[ReqlModel[T, PK]]] = {
+    new SequenceUnion[ReqlModel[T, PK], ReqlSelectionOfStream[T, PK]] {
       override type OtherSeq = Other
-      override type Result = ReqlInfiniteStream[T]
+      override type Result = ReqlInfiniteStream[ReqlModel[T, PK]]
     }
   }
 
@@ -192,13 +197,13 @@ trait EvenMoreLowPrioritySequenceUnion {
   /** ReqlSelectionOfArray */
   // FiniteArrayLike + Sequence = ReqlInfiniteStream
   implicit def selectionOfArrayAndSequence[
-    T <: ReqlObject,
+    T,
     PK,
-    Other <: ReqlSequence[T]
-  ]: SequenceUnion.Aux[T, ReqlSelectionOfArray[T, PK], Other, ReqlInfiniteStream[T]] = {
-    new SequenceUnion[T, ReqlSelectionOfArray[T, PK]] {
+    Other <: ReqlSequence[ReqlModel[T, PK]]
+  ]: SequenceUnion.Aux[ReqlModel[T, PK], ReqlSelectionOfArray[T, PK], Other, ReqlInfiniteStream[ReqlModel[T, PK]]] = {
+    new SequenceUnion[ReqlModel[T, PK], ReqlSelectionOfArray[T, PK]] {
       override type OtherSeq = Other
-      override type Result = ReqlInfiniteStream[T]
+      override type Result = ReqlInfiniteStream[ReqlModel[T, PK]]
     }
   }
 

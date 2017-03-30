@@ -151,7 +151,7 @@ class AllOtherQueriesTest extends WordSpec with ScalaFutures with Matchers with 
       insF.onComplete {
         case Success(res) =>
           println(s"Insert of model done: $res")
-          TestDatabase.bcd.table().get(res.generatedKeys.get.head.toString).run(pool).future().onComplete {
+          TestDatabase.bcd.table().get(res.generatedKeys.get.head).run(pool).future().onComplete {
             case Success(m) =>
               println(s"Get of model done: $m")
 
@@ -299,7 +299,9 @@ class AllOtherQueriesTest extends WordSpec with ScalaFutures with Matchers with 
     }
 
     "create index" ignore {
-      TestDatabase.abc.table().indexCreate("name").run(pool).future().onComplete {
+      import TestDatabase.abc
+
+      abc.table().indexCreate("name").run(pool).future().onComplete {
         case Success(res) =>
           println(s"Index create done: $res")
           //Index create done: IndexCreationResult(1)

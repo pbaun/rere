@@ -2,6 +2,8 @@ package rere.ql.queries
 
 import rere.ql.options.Options
 import rere.ql.ql2.Term.TermType
+import rere.ql.shapes.ReqlModel
+import rere.ql.typeclasses.Transmuter
 import rere.ql.types._
 
 trait DocumentQueries {
@@ -53,8 +55,8 @@ trait DocumentQueries {
   trait PluckSelectionOfObjectQuery extends ReqlObject
   trait PluckObjectQuery extends ReqlObject
 
-  implicit class PluckOnTableOp[T <: ReqlObject, PK](val table: ReqlTable[T, PK]) {
-    def pluck(selectors: ReqlValue*): PluckTableQuery[T] = new PluckTableQuery[T] {
+  implicit class PluckOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+    def pluck(selectors: ReqlValue*): PluckTableQuery[ReqlModel[T, PK]] = new PluckTableQuery[ReqlModel[T, PK]] {
       val command = TermType.PLUCK
       val string = "pluck"
       val arguments = table :: selectors.toList
@@ -62,8 +64,8 @@ trait DocumentQueries {
     }
   }
 
-  implicit class PluckOnTableSliceOp[T <: ReqlObject, PK](val tableSlice: ReqlTableSlice[T, PK]) {
-    def pluck(selectors: ReqlValue*): PluckTableSliceQuery[T] = new PluckTableSliceQuery[T] {
+  implicit class PluckOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+    def pluck(selectors: ReqlValue*): PluckTableSliceQuery[ReqlModel[T, PK]] = new PluckTableSliceQuery[ReqlModel[T, PK]] {
       val command = TermType.PLUCK
       val string = "pluck"
       val arguments = tableSlice :: selectors.toList
@@ -71,8 +73,8 @@ trait DocumentQueries {
     }
   }
 
-  implicit class PluckOnSelectionOfArrayOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfArray[T, PK]) {
-    def pluck(selectors: ReqlValue*): PluckSelectionOfArrayQuery[T] = new PluckSelectionOfArrayQuery[T] {
+  implicit class PluckOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+    def pluck(selectors: ReqlValue*): PluckSelectionOfArrayQuery[ReqlModel[T, PK]] = new PluckSelectionOfArrayQuery[ReqlModel[T, PK]] {
       val command = TermType.PLUCK
       val string = "pluck"
       val arguments = sel :: selectors.toList
@@ -80,8 +82,8 @@ trait DocumentQueries {
     }
   }
 
-  implicit class PluckOnSelectionOfStreamOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfStream[T, PK]) {
-    def pluck(selectors: ReqlValue*): PluckSelectionOfStreamQuery[T] = new PluckSelectionOfStreamQuery[T] {
+  implicit class PluckOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+    def pluck(selectors: ReqlValue*): PluckSelectionOfStreamQuery[ReqlModel[T, PK]] = new PluckSelectionOfStreamQuery[ReqlModel[T, PK]] {
       val command = TermType.PLUCK
       val string = "pluck"
       val arguments = sel :: selectors.toList
@@ -116,7 +118,7 @@ trait DocumentQueries {
     }
   }
 
-  implicit class PluckOnSelectionOfObjectOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfObject[T, PK]) {
+  implicit class PluckOnSelectionOfObjectOp[T, PK](val sel: ReqlSelectionOfObject[T, PK]) {
     def pluck(selectors: ReqlValue*): PluckSelectionOfObjectQuery = new PluckSelectionOfObjectQuery {
       val command = TermType.PLUCK
       val string = "pluck"
@@ -145,8 +147,8 @@ trait DocumentQueries {
   trait WithoutSelectionOfObjectQuery extends ReqlObject
   trait WithoutObjectQuery extends ReqlObject
 
-  implicit class WithoutOnTableOp[T <: ReqlObject, PK](val table: ReqlTable[T, PK]) {
-    def without(selectors: ReqlValue*): WithoutTableQuery[T] = new WithoutTableQuery[T] {
+  implicit class WithoutOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+    def without(selectors: ReqlValue*): WithoutTableQuery[ReqlModel[T, PK]] = new WithoutTableQuery[ReqlModel[T, PK]] {
       val command = TermType.WITHOUT
       val string = "without"
       val arguments = table :: selectors.toList
@@ -154,8 +156,8 @@ trait DocumentQueries {
     }
   }
 
-  implicit class WithoutOnTableSliceOp[T <: ReqlObject, PK](val tableSlice: ReqlTableSlice[T, PK]) {
-    def without(selectors: ReqlValue*): WithoutTableSliceQuery[T] = new WithoutTableSliceQuery[T] {
+  implicit class WithoutOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+    def without(selectors: ReqlValue*): WithoutTableSliceQuery[ReqlModel[T, PK]] = new WithoutTableSliceQuery[ReqlModel[T, PK]] {
       val command = TermType.WITHOUT
       val string = "without"
       val arguments = tableSlice :: selectors.toList
@@ -163,8 +165,8 @@ trait DocumentQueries {
     }
   }
 
-  implicit class WithoutOnSelectionOfArrayOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfArray[T, PK]) {
-    def without(selectors: ReqlValue*): WithoutSelectionOfArrayQuery[T] = new WithoutSelectionOfArrayQuery[T] {
+  implicit class WithoutOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+    def without(selectors: ReqlValue*): WithoutSelectionOfArrayQuery[ReqlModel[T, PK]] = new WithoutSelectionOfArrayQuery[ReqlModel[T, PK]] {
       val command = TermType.WITHOUT
       val string = "without"
       val arguments = sel :: selectors.toList
@@ -172,8 +174,8 @@ trait DocumentQueries {
     }
   }
 
-  implicit class WithoutOnSelectionOfStreamOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfStream[T, PK]) {
-    def without(selectors: ReqlValue*): WithoutSelectionOfStreamQuery[T] = new WithoutSelectionOfStreamQuery[T] {
+  implicit class WithoutOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+    def without(selectors: ReqlValue*): WithoutSelectionOfStreamQuery[ReqlModel[T, PK]] = new WithoutSelectionOfStreamQuery[ReqlModel[T, PK]] {
       val command = TermType.WITHOUT
       val string = "without"
       val arguments = sel :: selectors.toList
@@ -208,7 +210,7 @@ trait DocumentQueries {
     }
   }
 
-  implicit class WithoutOnSelectionOfObjectOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfObject[T, PK]) {
+  implicit class WithoutOnSelectionOfObjectOp[T, PK](val sel: ReqlSelectionOfObject[T, PK]) {
     def without(selectors: ReqlValue*): WithoutSelectionOfObjectQuery = new WithoutSelectionOfObjectQuery {
       val command = TermType.WITHOUT
       val string = "without"
@@ -238,8 +240,9 @@ trait DocumentQueries {
   trait MergeObjectQuery extends ReqlObject
   //TODO: JsonObject + JsonObject = JsonObject?
 
-  implicit class MergeOnTableOp[T <: ReqlObject, PK](val table: ReqlTable[T, PK]) {
-    def merge[U <: ReqlObject](objectProducers: ReqlObjectProducer[T, U]*): MergeTableQuery[T] = new MergeTableQuery[T] {
+  //TODO: maybe result should be MergeTableQuery[U]
+  implicit class MergeOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+    def merge[U <: ReqlObject](objectProducers: ReqlObjectProducer[ReqlModel[T, PK], U]*): MergeTableQuery[U] = new MergeTableQuery[U] {
       val command = TermType.MERGE
       val string = "merge"
       val arguments = table :: objectProducers.toList
@@ -247,8 +250,8 @@ trait DocumentQueries {
     }
   }
 
-  implicit class MergeOnTableSliceOp[T <: ReqlObject, PK](val tableSlice: ReqlTableSlice[T, PK]) {
-    def merge[U <: ReqlObject](objectProducers: ReqlObjectProducer[T, U]*): MergeTableSliceQuery[T] = new MergeTableSliceQuery[T] {
+  implicit class MergeOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+    def merge[U <: ReqlObject](objectProducers: ReqlObjectProducer[ReqlModel[T, PK], U]*): MergeTableSliceQuery[U] = new MergeTableSliceQuery[U] {
       val command = TermType.MERGE
       val string = "merge"
       val arguments = tableSlice :: objectProducers.toList
@@ -256,8 +259,8 @@ trait DocumentQueries {
     }
   }
 
-  implicit class MergeOnSelectionOfArrayOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfArray[T, PK]) {
-    def merge[U <: ReqlObject](objectProducers: ReqlObjectProducer[T, U]*): MergeSelectionOfArrayQuery[T] = new MergeSelectionOfArrayQuery[T] {
+  implicit class MergeOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+    def merge[U <: ReqlObject](objectProducers: ReqlObjectProducer[ReqlModel[T, PK], U]*): MergeSelectionOfArrayQuery[U] = new MergeSelectionOfArrayQuery[U] {
       val command = TermType.MERGE
       val string = "merge"
       val arguments = sel :: objectProducers.toList
@@ -265,8 +268,8 @@ trait DocumentQueries {
     }
   }
 
-  implicit class MergeOnSelectionOfStreamOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfStream[T, PK]) {
-    def merge[U <: ReqlObject](objectProducers: ReqlObjectProducer[T, U]*): MergeSelectionOfStreamQuery[T] = new MergeSelectionOfStreamQuery[T] {
+  implicit class MergeOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+    def merge[U <: ReqlObject](objectProducers: ReqlObjectProducer[ReqlModel[T, PK], U]*): MergeSelectionOfStreamQuery[U] = new MergeSelectionOfStreamQuery[U] {
       val command = TermType.MERGE
       val string = "merge"
       val arguments = sel :: objectProducers.toList
@@ -301,21 +304,29 @@ trait DocumentQueries {
     }
   }
 
-  implicit class MergeOnSelectionOfObjectOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfObject[T, PK]) {
-    def merge[U <: ReqlObject](objectProducers: ReqlObjectProducer[T, U]*): MergeSelectionOfObjectQuery = new MergeSelectionOfObjectQuery {
-      val command = TermType.MERGE
-      val string = "merge"
-      val arguments = sel :: objectProducers.toList
-      val options = Options.empty
+  implicit class MergeOnSelectionOfObjectOp[T, PK](val sel: ReqlSelectionOfObject[T, PK]) {
+    def merge[U <: ReqlObject : Transmuter](objectProducers: ReqlObjectProducer[ReqlModel[T, PK], U]*): U = {
+      Transmuter.transmute[U] {
+        new MergeSelectionOfObjectQuery {
+          val command = TermType.MERGE
+          val string = "merge"
+          val arguments = sel :: objectProducers.toList
+          val options = Options.empty
+        }
+      }
     }
   }
 
   implicit class MergeOnObjectOp[T <: ReqlObject](val obj: T) {
-    def merge[U <: ReqlObject](objectProducers: ReqlObjectProducer[T, U]*): MergeObjectQuery = new MergeObjectQuery {
-      val command = TermType.MERGE
-      val string = "merge"
-      val arguments = obj :: objectProducers.toList
-      val options = Options.empty
+    def merge[U <: ReqlObject : Transmuter](objectProducers: ReqlObjectProducer[T, U]*): U = {
+      Transmuter.transmute[U] {
+        new MergeObjectQuery {
+          val command = TermType.MERGE
+          val string = "merge"
+          val arguments = obj :: objectProducers.toList
+          val options = Options.empty
+        }
+      }
     }
   }
 
@@ -323,9 +334,9 @@ trait DocumentQueries {
   trait BracketTableQuery[T <: ReqlDatum] extends ReqlFiniteStream[T]
   trait BracketTableSliceQuery[T <: ReqlDatum] extends ReqlFiniteStream[T]
   trait BracketSelectionOfArrayWithAttrQuery[T <: ReqlDatum] extends ReqlArray[T]
-  trait BracketSelectionOfArrayWithIndexQuery[T <: ReqlObject, PK] extends ReqlSelectionOfObject[T, PK]
+  trait BracketSelectionOfArrayWithIndexQuery[T, PK] extends ReqlSelectionOfObject[T, PK]
   trait BracketSelectionOfStreamWithAttrQuery[T <: ReqlDatum] extends ReqlFiniteStream[T]
-  trait BracketSelectionOfStreamWithIndexQuery[T <: ReqlObject, PK] extends ReqlSelectionOfObject[T, PK]
+  trait BracketSelectionOfStreamWithIndexQuery[T, PK] extends ReqlSelectionOfObject[T, PK]
   trait BracketInfiniteStreamWithAttrQuery[T <: ReqlDatum] extends ReqlInfiniteStream[T]
   trait BracketFiniteStreamWithAttrQuery[T <: ReqlDatum] extends ReqlFiniteStream[T]
   trait BracketFiniteStreamWithIndexQuery extends ReqlDatum
@@ -337,7 +348,7 @@ trait DocumentQueries {
    * TODO: maybe move bracket query to separate package (not all._) because not work fine on queries with
    *       implicit parameters (eg .union)
    */
-  implicit class BracketOnTableOp[DocType <: ReqlObject, PK](val table: ReqlTable[DocType, PK]) {
+  implicit class BracketOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
     def apply[FieldType <: ReqlDatum](attr: ReqlString): BracketTableQuery[FieldType] = new BracketTableQuery[FieldType] {
       val command = TermType.BRACKET
       val string = "bracket"
@@ -346,7 +357,7 @@ trait DocumentQueries {
     }
   }
 
-  implicit class BracketOnTableSliceOp[DocType <: ReqlObject, PK](val tableSlice: ReqlTableSlice[DocType, PK]) {
+  implicit class BracketOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
     def apply[FieldType <: ReqlDatum](attr: ReqlString): BracketTableSliceQuery[FieldType] = new BracketTableSliceQuery[FieldType] {
       val command = TermType.BRACKET
       val string = "bracket"
@@ -355,7 +366,7 @@ trait DocumentQueries {
     }
   }
 
-  implicit class BracketOnSelectionOfArrayOp[DocType <: ReqlObject, PK](val sel: ReqlSelectionOfArray[DocType, PK]) {
+  implicit class BracketOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
     def apply[FieldType <: ReqlDatum](attr: ReqlString): BracketSelectionOfArrayWithAttrQuery[FieldType] = new BracketSelectionOfArrayWithAttrQuery[FieldType] {
       val command = TermType.BRACKET
       val string = "bracket"
@@ -363,7 +374,7 @@ trait DocumentQueries {
       val options = Options.empty
     }
 
-    def apply[FieldType <: ReqlObject](index: ReqlInteger): BracketSelectionOfArrayWithIndexQuery[FieldType, PK] = new BracketSelectionOfArrayWithIndexQuery[FieldType, PK] {
+    def apply(index: ReqlInteger): BracketSelectionOfArrayWithIndexQuery[T, PK] = new BracketSelectionOfArrayWithIndexQuery[T, PK] {
       val command = TermType.BRACKET
       val string = "bracket"
       val arguments = sel :: index :: Nil
@@ -371,7 +382,7 @@ trait DocumentQueries {
     }
   }
 
-  implicit class BracketOnSelectionOfStreamOp[DocType <: ReqlObject, PK](val sel: ReqlSelectionOfStream[DocType, PK]) {
+  implicit class BracketOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
     def apply[FieldType <: ReqlDatum](attr: ReqlString): BracketSelectionOfStreamWithAttrQuery[FieldType] = new BracketSelectionOfStreamWithAttrQuery[FieldType] {
       val command = TermType.BRACKET
       val string = "bracket"
@@ -379,7 +390,7 @@ trait DocumentQueries {
       val options = Options.empty
     }
 
-    def apply[FieldType <: ReqlObject](index: ReqlInteger): BracketSelectionOfStreamWithIndexQuery[FieldType, PK] = new BracketSelectionOfStreamWithIndexQuery[FieldType, PK] {
+    def apply(index: ReqlInteger): BracketSelectionOfStreamWithIndexQuery[T, PK] = new BracketSelectionOfStreamWithIndexQuery[T, PK] {
       val command = TermType.BRACKET
       val string = "bracket"
       val arguments = sel :: index :: Nil
@@ -421,7 +432,7 @@ trait DocumentQueries {
     }
   }
 
-  implicit class BracketOnSelectionOfObjectOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfObject[T, PK]) {
+  implicit class BracketOnSelectionOfObjectOp[T, PK](val sel: ReqlSelectionOfObject[T, PK]) {
     def apply(attr: ReqlString): BracketSelectionOfObjectQuery = new BracketSelectionOfObjectQuery {
       val command = TermType.BRACKET
       val string = "bracket"
@@ -449,7 +460,7 @@ trait DocumentQueries {
   trait GetFieldSelectionOfObjectQuery[T] extends ReqlDatum
   trait GetFieldObjectQuery extends ReqlDatum
 
-  implicit class GetFieldOnTableOp[T <: ReqlObject, PK](val table: ReqlTable[T, PK]) {
+  implicit class GetFieldOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
     def getField[FieldType <: ReqlDatum](attr: ReqlString): GetFieldTableQuery[FieldType] = new GetFieldTableQuery[FieldType] {
       val command = TermType.GET_FIELD
       val string = "get_field"
@@ -458,7 +469,7 @@ trait DocumentQueries {
     }
   }
 
-  implicit class GetFieldOnTableSliceOp[T <: ReqlObject, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class GetFieldOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
     def getField[FieldType <: ReqlDatum](attr: ReqlString): GetFieldTableSliceQuery[FieldType] = new GetFieldTableSliceQuery[FieldType] {
       val command = TermType.GET_FIELD
       val string = "get_field"
@@ -467,7 +478,7 @@ trait DocumentQueries {
     }
   }
 
-  implicit class GetFieldOnSelectionOfArrayOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+  implicit class GetFieldOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
     def getField[FieldType <: ReqlDatum](attr: ReqlString): GetFieldSelectionOfArrayQuery[FieldType] = new GetFieldSelectionOfArrayQuery[FieldType] {
       val command = TermType.GET_FIELD
       val string = "get_field"
@@ -476,7 +487,7 @@ trait DocumentQueries {
     }
   }
 
-  implicit class GetFieldOnSelectionOfStreamOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+  implicit class GetFieldOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
     def getField[FieldType <: ReqlDatum](attr: ReqlString): GetFieldSelectionOfStreamQuery[FieldType] = new GetFieldSelectionOfStreamQuery[FieldType] {
       val command = TermType.GET_FIELD
       val string = "get_field"
@@ -503,7 +514,7 @@ trait DocumentQueries {
     }
   }
 
-  implicit class GetFieldOnSelectionOfObjectOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfObject[T, PK]) {
+  implicit class GetFieldOnSelectionOfObjectOp[T, PK](val sel: ReqlSelectionOfObject[T, PK]) {
     def getField[FieldType](attr: ReqlString): GetFieldSelectionOfObjectQuery[FieldType] = new GetFieldSelectionOfObjectQuery[FieldType] {
       val command = TermType.GET_FIELD
       val string = "get_field"
@@ -522,10 +533,10 @@ trait DocumentQueries {
   }
 
   // has_fields
-  trait HasFieldsTableQuery[T <: ReqlObject, PK] extends ReqlSelectionOfStream[T, PK]
-  trait HasFieldsTableSliceQuery[T <: ReqlObject, PK] extends ReqlSelectionOfStream[T, PK]
-  trait HasFieldsSelectionOfArrayQuery[T <: ReqlObject, PK] extends ReqlSelectionOfArray[T, PK]
-  trait HasFieldsSelectionOfStreamQuery[T <: ReqlObject, PK] extends ReqlSelectionOfStream[T, PK]
+  trait HasFieldsTableQuery[T, PK] extends ReqlSelectionOfStream[T, PK]
+  trait HasFieldsTableSliceQuery[T, PK] extends ReqlSelectionOfStream[T, PK]
+  trait HasFieldsSelectionOfArrayQuery[T, PK] extends ReqlSelectionOfArray[T, PK]
+  trait HasFieldsSelectionOfStreamQuery[T, PK] extends ReqlSelectionOfStream[T, PK]
   trait HasFieldsInfiniteStreamQuery[T <: ReqlDatum] extends ReqlInfiniteStream[T]
   trait HasFieldsFiniteStreamQuery[T <: ReqlDatum] extends ReqlFiniteStream[T]
   trait HasFieldsArrayQuery[T <: ReqlDatum] extends ReqlArray[T]
@@ -533,7 +544,7 @@ trait DocumentQueries {
   trait HasFieldsObjectQuery extends ReqlBoolean
 
   //TODO: more safety for selector - string, array[string], jsonObject
-  implicit class HasFieldsOnTableOp[T <: ReqlObject, PK](val table: ReqlTable[T, PK]) {
+  implicit class HasFieldsOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
     def hasFields(selectors: ReqlValue*): HasFieldsTableQuery[T, PK] = new HasFieldsTableQuery[T, PK] {
       val command = TermType.HAS_FIELDS
       val string = "has_fields"
@@ -549,7 +560,7 @@ trait DocumentQueries {
     }
   }
 
-  implicit class HasFieldsOnTableSliceOp[T <: ReqlObject, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class HasFieldsOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
     def hasFields(selectors: ReqlValue*): HasFieldsTableSliceQuery[T, PK] = new HasFieldsTableSliceQuery[T, PK] {
       val command = TermType.HAS_FIELDS
       val string = "has_fields"
@@ -565,7 +576,7 @@ trait DocumentQueries {
     }
   }
 
-  implicit class HasFieldsOnSelectionOfArrayOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+  implicit class HasFieldsOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
     def hasFields(selectors: ReqlValue*): HasFieldsSelectionOfArrayQuery[T, PK] = new HasFieldsSelectionOfArrayQuery[T, PK] {
       val command = TermType.HAS_FIELDS
       val string = "has_fields"
@@ -581,7 +592,7 @@ trait DocumentQueries {
     }
   }
 
-  implicit class HasFieldsOnSelectionOfStreamOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+  implicit class HasFieldsOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
     def hasFields(selectors: ReqlValue*): HasFieldsSelectionOfStreamQuery[T, PK] = new HasFieldsSelectionOfStreamQuery[T, PK] {
       val command = TermType.HAS_FIELDS
       val string = "has_fields"
@@ -645,7 +656,7 @@ trait DocumentQueries {
     }
   }
 
-  implicit class HasFieldsOnSingleSelectionOp[T <: ReqlObject, PK](val singleSelection: ReqlSelectionOfObject[T, PK]) {
+  implicit class HasFieldsOnSingleSelectionOp[T, PK](val singleSelection: ReqlSelectionOfObject[T, PK]) {
     def hasFields(selectors: ReqlValue*): HasFieldsSingleSelectionQuery = new HasFieldsSingleSelectionQuery {
       val command = TermType.HAS_FIELDS
       val string = "has_fields"
@@ -681,7 +692,7 @@ trait DocumentQueries {
   trait KeysSelectionOfObjectQuery extends ReqlArray[ReqlString]
   trait KeysObjectQuery extends ReqlArray[ReqlString]
 
-  implicit class KeysOnSelectionOfObjectOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfObject[T, PK]) {
+  implicit class KeysOnSelectionOfObjectOp[T, PK](val sel: ReqlSelectionOfObject[T, PK]) {
     def keys(): KeysSelectionOfObjectQuery = new KeysSelectionOfObjectQuery {
       val command = TermType.KEYS
       val string = "keys"
@@ -704,7 +715,7 @@ trait DocumentQueries {
   abstract class ValuesObjectQuery[T <: ReqlDatum] extends ReqlArray[T]
   //TODO: check inferred types
 
-  implicit class ValuesOnSelectionOfObjectOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfObject[T, PK]) {
+  implicit class ValuesOnSelectionOfObjectOp[T, PK](val sel: ReqlSelectionOfObject[T, PK]) {
     def values[FieldTypeLub <: ReqlDatum](): ValuesSelectionOfObjectQuery[FieldTypeLub] = new ValuesSelectionOfObjectQuery[FieldTypeLub] {
       val command = TermType.VALUES
       val string = "values"

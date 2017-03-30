@@ -307,7 +307,7 @@ class ShapeTest extends FlatSpec with Matchers with Inside {
     val rightsReqlObj = RightsShape.toReqlObject(rightsSample)
     toJsonString(rightsReqlObj) shouldBe """{"user":{"id":42,"a":123,"b":"bcd","c":false,"d":"def","e":null,"nick":{"name":"user"}},"userRights":[2,["moderator","manager","viewer"]]}"""
 
-    val t: ReqlTable[ReqlModel[User], Long] = TestDatabase.users.table()
+    val t: ReqlTable[User, Long] = TestDatabase.users.table()
   }
 
 }

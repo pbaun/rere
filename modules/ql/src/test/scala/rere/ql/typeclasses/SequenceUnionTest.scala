@@ -3,6 +3,7 @@ package rere.ql.typeclasses
 import java.util.UUID
 
 import org.scalatest.FlatSpec
+import rere.ql.shapes.ReqlModel
 import rere.ql.types._
 
 class SequenceUnionTest extends FlatSpec {
@@ -19,31 +20,31 @@ class SequenceUnionTest extends FlatSpec {
     ): Out[UnionOut] = new Out[UnionOut] {}
   }
 
-  implicit class UnionOnSelectionOfArrayOp[T <: ReqlObject, PK](val first: ReqlSelectionOfArray[T, PK]) {
-    def union[Other <: ReqlSequence[T], UnionOut <: ReqlSequence[T]](
+  implicit class UnionOnSelectionOfArrayOp[T, PK](val first: ReqlSelectionOfArray[T, PK]) {
+    def union[Other <: ReqlSequence[ReqlModel[T, PK]], UnionOut <: ReqlSequence[ReqlModel[T, PK]]](
       otherSeqs: Other*)(
-      implicit u: SequenceUnion.Aux[T, ReqlSelectionOfArray[T, PK], Other, UnionOut]
+      implicit u: SequenceUnion.Aux[ReqlModel[T, PK], ReqlSelectionOfArray[T, PK], Other, UnionOut]
     ): Out[UnionOut] = new Out[UnionOut] {}
   }
 
-  implicit class UnionOnTableOp[T <: ReqlObject, PK](val first: ReqlTable[T, PK]) {
-    def union[Other <: ReqlSequence[T], UnionOut <: ReqlSequence[T]](
+  implicit class UnionOnTableOp[T, PK](val first: ReqlTable[T, PK]) {
+    def union[Other <: ReqlSequence[ReqlModel[T, PK]], UnionOut <: ReqlSequence[ReqlModel[T, PK]]](
       otherSeqs: Other*)(
-      implicit u: SequenceUnion.Aux[T, ReqlTable[T, PK], Other, UnionOut]
+      implicit u: SequenceUnion.Aux[ReqlModel[T, PK], ReqlTable[T, PK], Other, UnionOut]
     ): Out[UnionOut] = new Out[UnionOut] {}
   }
 
-  implicit class UnionOnTableSliceOp[T <: ReqlObject, PK](val first: ReqlTableSlice[T, PK]) {
-    def union[Other <: ReqlSequence[T], UnionOut <: ReqlSequence[T]](
+  implicit class UnionOnTableSliceOp[T, PK](val first: ReqlTableSlice[T, PK]) {
+    def union[Other <: ReqlSequence[ReqlModel[T, PK]], UnionOut <: ReqlSequence[ReqlModel[T, PK]]](
       otherSeqs: Other*)(
-      implicit u: SequenceUnion.Aux[T, ReqlTableSlice[T, PK], Other, UnionOut]
+      implicit u: SequenceUnion.Aux[ReqlModel[T, PK], ReqlTableSlice[T, PK], Other, UnionOut]
     ): Out[UnionOut] = new Out[UnionOut] {}
   }
 
-  implicit class UnionOnSelectionOfStreamOp[T <: ReqlObject, PK](val first: ReqlSelectionOfStream[T, PK]) {
-    def union[Other <: ReqlSequence[T], UnionOut <: ReqlSequence[T]](
+  implicit class UnionOnSelectionOfStreamOp[T, PK](val first: ReqlSelectionOfStream[T, PK]) {
+    def union[Other <: ReqlSequence[ReqlModel[T, PK]], UnionOut <: ReqlSequence[ReqlModel[T, PK]]](
       otherSeqs: Other*)(
-      implicit u: SequenceUnion.Aux[T, ReqlSelectionOfStream[T, PK], Other, UnionOut]
+      implicit u: SequenceUnion.Aux[ReqlModel[T, PK], ReqlSelectionOfStream[T, PK], Other, UnionOut]
     ): Out[UnionOut] = new Out[UnionOut] {}
   }
 
@@ -62,12 +63,15 @@ class SequenceUnionTest extends FlatSpec {
   }
 
   val array: ReqlArray[ReqlObject] = null
+  val arrayOfModels: ReqlArray[ReqlModel[ReqlObject, UUID]] = null
   val table: ReqlTable[ReqlObject, UUID] = null
   val tableSlice: ReqlTableSlice[ReqlObject, UUID] = null
   val selectionOfArray: ReqlSelectionOfArray[ReqlObject, UUID] = null
   val selectionOfStream: ReqlSelectionOfStream[ReqlObject, UUID] = null
   val finiteStream: ReqlFiniteStream[ReqlObject] = null
+  val finiteStreamOfModels: ReqlFiniteStream[ReqlModel[ReqlObject, UUID]] = null
   val infiniteStream: ReqlInfiniteStream[ReqlObject] = null
+  val infiniteStreamOfModels: ReqlInfiniteStream[ReqlModel[ReqlObject, UUID]] = null
 
   behavior of "SequenceUnion type class"
 
@@ -109,73 +113,73 @@ class SequenceUnionTest extends FlatSpec {
   }
 
   it should "help to unite ReqlSelectionOfArray with other sequences" in {
-    val res13: Out[ReqlArray[ReqlObject]] = selectionOfArray.union()
-    val res14: Out[ReqlArray[ReqlObject]] = selectionOfArray.union(selectionOfArray)
-    val res15: Out[ReqlArray[ReqlObject]] = selectionOfArray.union(selectionOfArray, selectionOfArray)
-    val res16: Out[ReqlArray[ReqlObject]] = selectionOfArray.union(selectionOfArray, array)
+    val res13: Out[ReqlArray[ReqlModel[ReqlObject, UUID]]] = selectionOfArray.union()
+    val res14: Out[ReqlArray[ReqlModel[ReqlObject, UUID]]] = selectionOfArray.union(selectionOfArray)
+    val res15: Out[ReqlArray[ReqlModel[ReqlObject, UUID]]] = selectionOfArray.union(selectionOfArray, selectionOfArray)
+    val res16: Out[ReqlArray[ReqlModel[ReqlObject, UUID]]] = selectionOfArray.union(selectionOfArray, arrayOfModels)
 
-    val res17: Out[ReqlFiniteStream[ReqlObject]] = selectionOfArray.union(array, selectionOfStream)
-    val res18: Out[ReqlFiniteStream[ReqlObject]] = selectionOfArray.union(selectionOfArray, selectionOfStream)
-    val res19: Out[ReqlFiniteStream[ReqlObject]] = selectionOfArray.union(array, finiteStream)
-    val res20: Out[ReqlFiniteStream[ReqlObject]] = selectionOfArray.union(selectionOfStream)
-    val res21: Out[ReqlFiniteStream[ReqlObject]] = selectionOfArray.union(finiteStream)
+    val res17: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = selectionOfArray.union(arrayOfModels, selectionOfStream)
+    val res18: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = selectionOfArray.union(selectionOfArray, selectionOfStream)
+    val res19: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = selectionOfArray.union(arrayOfModels, finiteStreamOfModels)
+    val res20: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = selectionOfArray.union(selectionOfStream)
+    val res21: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = selectionOfArray.union(finiteStreamOfModels)
 
-    val res22: Out[ReqlInfiniteStream[ReqlObject]] = selectionOfArray.union(infiniteStream)
-    val res23: Out[ReqlInfiniteStream[ReqlObject]] = selectionOfArray.union(array, infiniteStream)
-    val res24: Out[ReqlInfiniteStream[ReqlObject]] = selectionOfArray.union(finiteStream, infiniteStream)
+    val res22: Out[ReqlInfiniteStream[ReqlModel[ReqlObject, UUID]]] = selectionOfArray.union(infiniteStreamOfModels)
+    val res23: Out[ReqlInfiniteStream[ReqlModel[ReqlObject, UUID]]] = selectionOfArray.union(arrayOfModels, infiniteStreamOfModels)
+    val res24: Out[ReqlInfiniteStream[ReqlModel[ReqlObject, UUID]]] = selectionOfArray.union(finiteStreamOfModels, infiniteStreamOfModels)
   }
 
   it should "help to unite ReqlTable with other sequences" in {
-    val res25: Out[ReqlFiniteStream[ReqlObject]] = table.union()
-    val res26: Out[ReqlFiniteStream[ReqlObject]] = table.union(array)
-    val res27: Out[ReqlFiniteStream[ReqlObject]] = table.union(table)
-    val res28: Out[ReqlFiniteStream[ReqlObject]] = table.union(table, tableSlice)
-    val res29: Out[ReqlFiniteStream[ReqlObject]] = table.union(finiteStream)
-    val res30: Out[ReqlFiniteStream[ReqlObject]] = table.union(finiteStream, selectionOfStream)
-    val res31: Out[ReqlFiniteStream[ReqlObject]] = table.union(array, table, tableSlice, selectionOfArray, selectionOfStream, finiteStream)
+    val res25: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = table.union()
+    val res26: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = table.union(arrayOfModels)
+    val res27: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = table.union(table)
+    val res28: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = table.union(table, tableSlice)
+    val res29: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = table.union(finiteStreamOfModels)
+    val res30: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = table.union(finiteStreamOfModels, selectionOfStream)
+    val res31: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = table.union(arrayOfModels, table, tableSlice, selectionOfArray, selectionOfStream, finiteStreamOfModels)
 
-    val res32: Out[ReqlInfiniteStream[ReqlObject]] = table.union(infiniteStream)
-    val res33: Out[ReqlInfiniteStream[ReqlObject]] = table.union(infiniteStream, table)
-    val res34: Out[ReqlInfiniteStream[ReqlObject]] = table.union(infiniteStream, finiteStream)
+    val res32: Out[ReqlInfiniteStream[ReqlModel[ReqlObject, UUID]]] = table.union(infiniteStreamOfModels)
+    val res33: Out[ReqlInfiniteStream[ReqlModel[ReqlObject, UUID]]] = table.union(infiniteStreamOfModels, table)
+    val res34: Out[ReqlInfiniteStream[ReqlModel[ReqlObject, UUID]]] = table.union(infiniteStreamOfModels, finiteStreamOfModels)
   }
 
   it should "help to unite ReqlTableSlice with other sequences" in {
     tableSlice.union()
-    val res35: Out[ReqlFiniteStream[ReqlObject]] = tableSlice.union()
+    val res35: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = tableSlice.union()
 
-    tableSlice.union(array)
-    val res37: Out[ReqlFiniteStream[ReqlObject]] = tableSlice.union(array)
+    tableSlice.union(arrayOfModels)
+    val res37: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = tableSlice.union(arrayOfModels)
 
     tableSlice.union(table)
-    val res38: Out[ReqlFiniteStream[ReqlObject]] = tableSlice.union(table)
+    val res38: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = tableSlice.union(table)
 
     tableSlice.union(tableSlice)
-    val res39: Out[ReqlFiniteStream[ReqlObject]] = tableSlice.union(tableSlice)
-    val res40: Out[ReqlFiniteStream[ReqlObject]] = tableSlice.union(table, tableSlice)
-    val res41: Out[ReqlFiniteStream[ReqlObject]] = tableSlice.union(finiteStream)
-    val res42: Out[ReqlFiniteStream[ReqlObject]] = tableSlice.union(finiteStream, selectionOfStream)
-    val res43: Out[ReqlFiniteStream[ReqlObject]] = tableSlice.union(array, table, tableSlice, selectionOfArray, selectionOfStream, finiteStream)
+    val res39: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = tableSlice.union(tableSlice)
+    val res40: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = tableSlice.union(table, tableSlice)
+    val res41: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = tableSlice.union(finiteStreamOfModels)
+    val res42: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = tableSlice.union(finiteStreamOfModels, selectionOfStream)
+    val res43: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = tableSlice.union(arrayOfModels, table, tableSlice, selectionOfArray, selectionOfStream, finiteStreamOfModels)
 
-    val res44: Out[ReqlInfiniteStream[ReqlObject]] = tableSlice.union(infiniteStream)
-    val res45: Out[ReqlInfiniteStream[ReqlObject]] = tableSlice.union(infiniteStream, table)
-    val res46: Out[ReqlInfiniteStream[ReqlObject]] = tableSlice.union(infiniteStream, finiteStream)
+    val res44: Out[ReqlInfiniteStream[ReqlModel[ReqlObject, UUID]]] = tableSlice.union(infiniteStreamOfModels)
+    val res45: Out[ReqlInfiniteStream[ReqlModel[ReqlObject, UUID]]] = tableSlice.union(infiniteStreamOfModels, table)
+    val res46: Out[ReqlInfiniteStream[ReqlModel[ReqlObject, UUID]]] = tableSlice.union(infiniteStreamOfModels, finiteStreamOfModels)
   }
 
   it should "help to unite ReqlSelectionOfStream with other sequences" in {
-    val res47: Out[ReqlFiniteStream[ReqlObject]] = selectionOfStream.union()
-    selectionOfStream.union(array)  // Universal instances not working in that case
-    val res48: Out[ReqlFiniteStream[ReqlObject]] = selectionOfStream.union(array)
-    val res49: Out[ReqlFiniteStream[ReqlObject]] = selectionOfStream.union(table)
-    val res50: Out[ReqlFiniteStream[ReqlObject]] = selectionOfStream.union(tableSlice)
-    val res51: Out[ReqlFiniteStream[ReqlObject]] = selectionOfStream.union(finiteStream)
-    val res52: Out[ReqlFiniteStream[ReqlObject]] = selectionOfStream.union(array, table, tableSlice, selectionOfArray, selectionOfStream, finiteStream)
+    val res47: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = selectionOfStream.union()
+    selectionOfStream.union(arrayOfModels)  // Universal instances not working in that case
+    val res48: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = selectionOfStream.union(arrayOfModels)
+    val res49: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = selectionOfStream.union(table)
+    val res50: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = selectionOfStream.union(tableSlice)
+    val res51: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = selectionOfStream.union(finiteStreamOfModels)
+    val res52: Out[ReqlFiniteStream[ReqlModel[ReqlObject, UUID]]] = selectionOfStream.union(arrayOfModels, table, tableSlice, selectionOfArray, selectionOfStream, finiteStreamOfModels)
 
-    selectionOfStream.union(infiniteStream)
-    val res53: Out[ReqlInfiniteStream[ReqlObject]] = selectionOfStream.union(infiniteStream)
-    selectionOfStream.union(infiniteStream, table)
-    val res54: Out[ReqlInfiniteStream[ReqlObject]] = selectionOfStream.union(infiniteStream, table)
-    selectionOfStream.union(infiniteStream, finiteStream)
-    val res55: Out[ReqlInfiniteStream[ReqlObject]] = selectionOfStream.union(infiniteStream, finiteStream)
+    selectionOfStream.union(infiniteStreamOfModels)
+    val res53: Out[ReqlInfiniteStream[ReqlModel[ReqlObject, UUID]]] = selectionOfStream.union(infiniteStreamOfModels)
+    selectionOfStream.union(infiniteStreamOfModels, table)
+    val res54: Out[ReqlInfiniteStream[ReqlModel[ReqlObject, UUID]]] = selectionOfStream.union(infiniteStreamOfModels, table)
+    selectionOfStream.union(infiniteStreamOfModels, finiteStreamOfModels)
+    val res55: Out[ReqlInfiniteStream[ReqlModel[ReqlObject, UUID]]] = selectionOfStream.union(infiniteStreamOfModels, finiteStreamOfModels)
   }
 
   it should "help to unite ReqlFiniteStream with other sequences" in {

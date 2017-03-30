@@ -2,7 +2,7 @@ package rere.ql.data
 
 import rere.ql.queries.values
 import rere.ql.types.{ReqlDatum, ReqlUserPermissions}
-import rere.ql.values.ReqlMakeObjFromMapQuery
+import rere.ql.values.ReqlMakeObjFromPairsListQuery
 
 case class UserPermissions(
   read: Option[Boolean],
@@ -12,14 +12,13 @@ case class UserPermissions(
 )
 
 object UserPermissions {
-  implicit def toReqlUserPermissions(permissions: UserPermissions): ReqlUserPermissions = {
-    val permissionsMap: Map[String, ReqlDatum] = (
-      permissions.read.map(v => "read" -> values.expr(v)).toList ++
-      permissions.write.map(v => "write" -> values.expr(v)).toList ++
-      permissions.connect.map(v => "connect" -> values.expr(v)).toList ++
-      permissions.config.map(v => "config" -> values.expr(v)).toList
-    ).toMap
+  implicit def toReqlUserPermissions(userPermissions: UserPermissions): ReqlUserPermissions = {
+    val permissions: List[(String, ReqlDatum)] =
+      userPermissions.read.map(v => "read" -> values.expr(v)).toList ++
+      userPermissions.write.map(v => "write" -> values.expr(v)).toList ++
+      userPermissions.connect.map(v => "connect" -> values.expr(v)).toList ++
+      userPermissions.config.map(v => "config" -> values.expr(v)).toList
 
-    new ReqlMakeObjFromMapQuery(permissionsMap) with ReqlUserPermissions
+    new ReqlMakeObjFromPairsListQuery(permissions) with ReqlUserPermissions
   }
 }

@@ -2,6 +2,7 @@ package rere.ql.types
 
 import rere.ql.options.Options
 import rere.ql.rasterization.{recursive, trampolined}
+import rere.ql.shapes.ReqlModel
 
 /**
   *
@@ -86,9 +87,9 @@ trait ReqlExpr {
       /**
         * Implementations
         */
-      trait ReqlTable[+T <: ReqlObject, PK] extends ReqlFiniteStreamLike[T]
+      trait ReqlTable[T, PK] extends ReqlFiniteStreamLike[ReqlModel[T, PK]]
 
-      trait ReqlTableSlice[+T <: ReqlObject, PK] extends ReqlFiniteStreamLike[T]
+      trait ReqlTableSlice[T, PK] extends ReqlFiniteStreamLike[ReqlModel[T, PK]]
       //TODO: table_slice not always behave same way - if it was created in operation with index it can behave differently (.between + .distinct)
       //TODO: maybe between without index should work like selection of array???
       //r.table("tv_shows").between(1,7,{index: "code"}).typeOf() -> "TABLE_SLICE"
@@ -100,11 +101,11 @@ trait ReqlExpr {
       //TODO: selection of array can be used in .union as array (in concatMap it also work like array)
       //TODO: after orderBy will be returned array that can be used for modification of state
       // SELECTION<ARRAY>
-      trait ReqlSelectionOfArray[+T <: ReqlObject, PK] extends ReqlFiniteArrayLike[T]
+      trait ReqlSelectionOfArray[T, PK] extends ReqlFiniteArrayLike[ReqlModel[T, PK]]
 
       //TODO: selection of stream can be used in .union as stream
       // SELECTION<STREAM>
-      trait ReqlSelectionOfStream[+T <: ReqlObject, PK] extends ReqlFiniteStreamLike[T]
+      trait ReqlSelectionOfStream[T, PK] extends ReqlFiniteStreamLike[ReqlModel[T, PK]]
 
       //infinite - .changes() - can't call .count() on it
       trait ReqlInfiniteStream[+T <: ReqlDatum] extends ReqlInfiniteStreamLike[T]
@@ -117,7 +118,7 @@ trait ReqlExpr {
       trait ReqlGroupedData extends ReqlSpecific
 
     // SELECTION<OBJECT>
-    trait ReqlSelectionOfObject[+T <: ReqlObject, PK] extends ReqlSpecific with ReqlDatum
+    trait ReqlSelectionOfObject[T, PK] extends ReqlSpecific with ReqlDatum
 
     trait ReqlFunction extends ReqlSpecific
 

@@ -6,8 +6,9 @@ import akka.util.ByteString
 import io.circe.{Json, JsonObject}
 import org.scalatest.Matchers._
 import org.scalatest.{Assertion, WordSpec}
-import rere.ql.data.UserPermissions
+import rere.ql.data._
 import rere.ql.queries.{Func, Var}
+import rere.ql.shapes.ReqlModel
 import rere.ql.types._
 
 object ProtoTestKit {
@@ -87,6 +88,10 @@ class RasterizationTest extends WordSpec {
   "Rasterization" should {
     import options.all._
     import queries.all._
+
+    def jsonTable(tableName: String) = r.table[JsonObject, String](tableName)
+    val abcJsonTable = jsonTable("abc")
+    val bcdJsonTable = jsonTable("bcd")
 
     "rasterize datum" in {
 
@@ -380,57 +385,70 @@ class RasterizationTest extends WordSpec {
 
     "table" in {
       //on db
-      r.db("heroes").table("marvel") =%=[ReqlTable[ReqlObject, Nothing]] """[15,[[14,["heroes"]],"marvel"]]"""
+      r.db("heroes").table("marvel") =%=[ReqlTable[Nothing, Nothing]] """[15,[[14,["heroes"]],"marvel"]]"""
 
-      r.db("heroes").table("marvel", DefaultReadMode) =%=[ReqlTable[ReqlObject, Nothing]] """[15,[[14,["heroes"]],"marvel"]]"""
-      r.db("heroes").table("marvel", Single) =%=[ReqlTable[ReqlObject, Nothing]] """[15,[[14,["heroes"]],"marvel"],{"read_mode":"single"}]"""
-      r.db("heroes").table("marvel", Majority) =%=[ReqlTable[ReqlObject, Nothing]] """[15,[[14,["heroes"]],"marvel"],{"read_mode":"majority"}]"""
-      r.db("heroes").table("marvel", Outdated) =%=[ReqlTable[ReqlObject, Nothing]] """[15,[[14,["heroes"]],"marvel"],{"read_mode":"outdated"}]"""
+      r.db("heroes").table("marvel", DefaultReadMode) =%=[ReqlTable[Nothing, Nothing]] """[15,[[14,["heroes"]],"marvel"]]"""
+      r.db("heroes").table("marvel", Single) =%=[ReqlTable[Nothing, Nothing]] """[15,[[14,["heroes"]],"marvel"],{"read_mode":"single"}]"""
+      r.db("heroes").table("marvel", Majority) =%=[ReqlTable[Nothing, Nothing]] """[15,[[14,["heroes"]],"marvel"],{"read_mode":"majority"}]"""
+      r.db("heroes").table("marvel", Outdated) =%=[ReqlTable[Nothing, Nothing]] """[15,[[14,["heroes"]],"marvel"],{"read_mode":"outdated"}]"""
 
-      r.db("heroes").table("marvel", identifierFormat = DefaultIdentifierFormat) =%=[ReqlTable[ReqlObject, Nothing]] """[15,[[14,["heroes"]],"marvel"]]"""
-      r.db("heroes").table("marvel", identifierFormat = NameIdentifier) =%=[ReqlTable[ReqlObject, Nothing]] """[15,[[14,["heroes"]],"marvel"],{"identifier_format":"name"}]"""
-      r.db("heroes").table("marvel", identifierFormat = UuidIdentifier) =%=[ReqlTable[ReqlObject, Nothing]] """[15,[[14,["heroes"]],"marvel"],{"identifier_format":"uuid"}]"""
+      r.db("heroes").table("marvel", identifierFormat = DefaultIdentifierFormat) =%=[ReqlTable[Nothing, Nothing]] """[15,[[14,["heroes"]],"marvel"]]"""
+      r.db("heroes").table("marvel", identifierFormat = NameIdentifier) =%=[ReqlTable[Nothing, Nothing]] """[15,[[14,["heroes"]],"marvel"],{"identifier_format":"name"}]"""
+      r.db("heroes").table("marvel", identifierFormat = UuidIdentifier) =%=[ReqlTable[Nothing, Nothing]] """[15,[[14,["heroes"]],"marvel"],{"identifier_format":"uuid"}]"""
 
-      r.db("heroes").table("marvel", Majority, UuidIdentifier) =%=[ReqlTable[ReqlObject, Nothing]] """[15,[[14,["heroes"]],"marvel"],{"read_mode":"majority","identifier_format":"uuid"}]"""
+      r.db("heroes").table("marvel", Majority, UuidIdentifier) =%=[ReqlTable[Nothing, Nothing]] """[15,[[14,["heroes"]],"marvel"],{"read_mode":"majority","identifier_format":"uuid"}]"""
 
       //on r
-      r.table("marvel") =%=[ReqlTable[ReqlObject, Nothing]] """[15,["marvel"]]"""
+      r.table("marvel") =%=[ReqlTable[Nothing, Nothing]] """[15,["marvel"]]"""
 
-      r.table("marvel", DefaultReadMode) =%=[ReqlTable[ReqlObject, Nothing]] """[15,["marvel"]]"""
-      r.table("marvel", Single) =%=[ReqlTable[ReqlObject, Nothing]] """[15,["marvel"],{"read_mode":"single"}]"""
-      r.table("marvel", Majority) =%=[ReqlTable[ReqlObject, Nothing]] """[15,["marvel"],{"read_mode":"majority"}]"""
-      r.table("marvel", Outdated) =%=[ReqlTable[ReqlObject, Nothing]] """[15,["marvel"],{"read_mode":"outdated"}]"""
+      r.table("marvel", DefaultReadMode) =%=[ReqlTable[Nothing, Nothing]] """[15,["marvel"]]"""
+      r.table("marvel", Single) =%=[ReqlTable[Nothing, Nothing]] """[15,["marvel"],{"read_mode":"single"}]"""
+      r.table("marvel", Majority) =%=[ReqlTable[Nothing, Nothing]] """[15,["marvel"],{"read_mode":"majority"}]"""
+      r.table("marvel", Outdated) =%=[ReqlTable[Nothing, Nothing]] """[15,["marvel"],{"read_mode":"outdated"}]"""
 
-      r.table("marvel", identifierFormat = DefaultIdentifierFormat) =%=[ReqlTable[ReqlObject, Nothing]] """[15,["marvel"]]"""
-      r.table("marvel", identifierFormat = NameIdentifier) =%=[ReqlTable[ReqlObject, Nothing]] """[15,["marvel"],{"identifier_format":"name"}]"""
-      r.table("marvel", identifierFormat = UuidIdentifier) =%=[ReqlTable[ReqlObject, Nothing]] """[15,["marvel"],{"identifier_format":"uuid"}]"""
+      r.table("marvel", identifierFormat = DefaultIdentifierFormat) =%=[ReqlTable[Nothing, Nothing]] """[15,["marvel"]]"""
+      r.table("marvel", identifierFormat = NameIdentifier) =%=[ReqlTable[Nothing, Nothing]] """[15,["marvel"],{"identifier_format":"name"}]"""
+      r.table("marvel", identifierFormat = UuidIdentifier) =%=[ReqlTable[Nothing, Nothing]] """[15,["marvel"],{"identifier_format":"uuid"}]"""
 
-      r.table("marvel", Majority, UuidIdentifier) =%=[ReqlTable[ReqlObject, Nothing]] """[15,["marvel"],{"read_mode":"majority","identifier_format":"uuid"}]"""
+      r.table("marvel", Majority, UuidIdentifier) =%=[ReqlTable[Nothing, Nothing]] """[15,["marvel"],{"read_mode":"majority","identifier_format":"uuid"}]"""
     }
 
-    "get" in {
-      r.table("posts").get("a9849eef-7176-4411-935b-79a6e3c56a74") =%=[ReqlSelectionOfObject[ReqlObject, Nothing]] """[16,[[15,["posts"]],"a9849eef-7176-4411-935b-79a6e3c56a74"]]"""
+    "get" in new ShapesData {
+      jsonTable("posts").get("a9849eef-7176-4411-935b-79a6e3c56a74") =%=[ReqlSelectionOfObject[JsonObject, String]] """[16,[[15,["posts"]],"a9849eef-7176-4411-935b-79a6e3c56a74"]]"""
 
-      r.table("heroes").get(3) =%=[ReqlSelectionOfObject[ReqlObject, Nothing]] """[16,[[15,["heroes"]],3]]"""
+      jsonTable("heroes").get("uuid man") =%=[ReqlSelectionOfObject[JsonObject, String]] """[16,[[15,["heroes"]],"uuid man"]]"""
+
+      // should compile
+      r.table[JsonObject, String]("json").get("uuid")
+
+      {
+        import TestDatabase.abc
+
+        val q = abc.table().get("uuid")
+        val _: ReqlSelectionOfObject[Abc, String] = q
+        q =*= """[16,[[15,[[14,["test"]],"abc"]],"uuid"]]"""
+
+        """abc.table().get(123)""".shouldNot(compile)
+      }
     }
 
     "getAll" in {
-      r.table("marvel").getAll(Index("code_name"), "man_of_steel") =%=[ReqlSelectionOfStream[ReqlObject, Nothing]] """[78,[[15,["marvel"]],"man_of_steel"],{"index":"code_name"}]"""
+      r.table[JsonObject, String]("marvel").getAll(Index("code_name"), "man_of_steel") =%=[ReqlSelectionOfStream[JsonObject, String]] """[78,[[15,["marvel"]],"man_of_steel"],{"index":"code_name"}]"""
 
-      r.table("dc").getAll("superman") =%=[ReqlSelectionOfStream[ReqlObject, Nothing]] """[78,[[15,["dc"]],"superman"]]"""
+      r.table[JsonObject, String]("dc").getAll("superman") =%=[ReqlSelectionOfStream[JsonObject, String]] """[78,[[15,["dc"]],"superman"]]"""
 
-      r.table("dc").getAll("superman", "ant man") =%=[ReqlSelectionOfStream[ReqlObject, Nothing]] """[78,[[15,["dc"]],"superman","ant man"]]"""
+      r.table[JsonObject, String]("dc").getAll("superman", "ant man") =%=[ReqlSelectionOfStream[JsonObject, String]] """[78,[[15,["dc"]],"superman","ant man"]]"""
 
       """r.table("dc").getAll("superman").getAll("ant man")""".shouldNot(compile)
 
       //with .args
-      r.table("abc").getAll(r.args(Seq(
+      r.table[JsonObject, String]("abc").getAll(r.args(Seq(
         r.expr("Alice"), r.expr("Bob")
-      ))) =%=[ReqlSelectionOfStream[ReqlObject, Nothing]] """[78,[[15,["abc"]],[154,[[2,["Alice","Bob"]]]]]]"""
+      ))) =%=[ReqlSelectionOfStream[JsonObject, String]] """[78,[[15,["abc"]],[154,[[2,["Alice","Bob"]]]]]]"""
 
-      r.table("abc").getAll(Index("code"), r.args(Seq(
+      r.table[JsonObject, String]("abc").getAll(Index("code"), r.args(Seq(
         r.expr("Alice"), r.expr("Bob")
-      ))) =%=[ReqlSelectionOfStream[ReqlObject, Nothing]] """[78,[[15,["abc"]],[154,[[2,["Alice","Bob"]]]]],{"index":"code"}]"""
+      ))) =%=[ReqlSelectionOfStream[JsonObject, String]] """[78,[[15,["abc"]],[154,[[2,["Alice","Bob"]]]]],{"index":"code"}]"""
     }
 
     "eq" in {
@@ -876,8 +894,8 @@ class RasterizationTest extends WordSpec {
       r.range(10).skip(5) =%=[ReqlFiniteStream[ReqlInteger]] """[70,[[173,[10]],5]]"""
 
       //changefeed
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes() shouldBe an[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlObject]]]
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes().skip(10) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlObject]]] """[70,[[152,[[16,[[15,["abc"]],"uuid"]]]],10]]"""
+      abcJsonTable.get("uuid").changes() shouldBe an[ReqlInfiniteStream[ReqlChangefeedNotification[JsonObject]]]
+      abcJsonTable.get("uuid").changes().skip(10) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[JsonObject]]] """[70,[[152,[[16,[[15,["abc"]],"uuid"]]]],10]]"""
 
       //array
       r.expr(Seq(r.expr(123), r.expr(234))).skip(10) =%=[ReqlArray[ReqlInteger]] "[70,[[2,[123,234]],10]]"
@@ -903,8 +921,8 @@ class RasterizationTest extends WordSpec {
       r.range(20).limit(10) =%=[ReqlFiniteStream[ReqlInteger]] """[71,[[173,[20]],10]]"""
 
       //changefeed
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes()
-        .limit(10) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlObject]]] """[71,[[152,[[16,[[15,["abc"]],"uuid"]]]],10]]"""
+      abcJsonTable.get("uuid").changes()
+        .limit(10) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[JsonObject]]] """[71,[[152,[[16,[[15,["abc"]],"uuid"]]]],10]]"""
 
       //array
       r.expr(Seq(r.expr(123), r.expr(234))).limit(10) =%=[ReqlArray[ReqlInteger]] "[71,[[2,[123,234]],10]]"
@@ -912,20 +930,20 @@ class RasterizationTest extends WordSpec {
 
     "offsets_of" in {
       //table
-      r.table[ReqlObject, UUID]("abc").offsetsOf(JsonObject.empty) =%=[ReqlFiniteStream[ReqlInteger]] """[87,[[15,["abc"]],{}]]"""
-      r.table[ReqlObject, UUID]("abc").offsetsOf(_ => true) =%=[ReqlFiniteStream[ReqlInteger]] """[87,[[15,["abc"]],[69,[[2,[0]],true]]]]"""
+      r.table[JsonObject, String]("abc").offsetsOf(JsonObject.empty) =%=[ReqlFiniteStream[ReqlInteger]] """[87,[[15,["abc"]],{}]]"""
+      r.table[JsonObject, String]("abc").offsetsOf(_ => true) =%=[ReqlFiniteStream[ReqlInteger]] """[87,[[15,["abc"]],[69,[[2,[0]],true]]]]"""
 
       //tableSlice
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).offsetsOf(JsonObject.empty) =%=[ReqlFiniteStream[ReqlInteger]] """[87,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],{}]]"""
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).offsetsOf(_ => true) =%=[ReqlFiniteStream[ReqlInteger]] """[87,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],true]]]]"""
+      r.table[JsonObject, String]("abc").orderBy(OrderedIndex(r.asc("code"))).offsetsOf(JsonObject.empty) =%=[ReqlFiniteStream[ReqlInteger]] """[87,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],{}]]"""
+      r.table[JsonObject, String]("abc").orderBy(OrderedIndex(r.asc("code"))).offsetsOf(_ => true) =%=[ReqlFiniteStream[ReqlInteger]] """[87,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],true]]]]"""
 
       //selectionOfArray
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).offsetsOf(JsonObject.empty) =%=[ReqlArray[ReqlInteger]] """[87,[[41,[[15,["abc"]],[73,["code"]]]],{}]]"""
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).offsetsOf(_ => true) =%=[ReqlArray[ReqlInteger]] """[87,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],true]]]]"""
+      r.table[JsonObject, String]("abc").orderBy(r.asc("code")).offsetsOf(JsonObject.empty) =%=[ReqlArray[ReqlInteger]] """[87,[[41,[[15,["abc"]],[73,["code"]]]],{}]]"""
+      r.table[JsonObject, String]("abc").orderBy(r.asc("code")).offsetsOf(_ => true) =%=[ReqlArray[ReqlInteger]] """[87,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],true]]]]"""
 
       //selectionOfStream
-      r.table[ReqlObject, UUID]("abc").skip(10).offsetsOf(JsonObject.empty) =%=[ReqlFiniteStream[ReqlInteger]] """[87,[[70,[[15,["abc"]],10]],{}]]"""
-      r.table[ReqlObject, UUID]("abc").skip(10).offsetsOf(_ => true) =%=[ReqlFiniteStream[ReqlInteger]] """[87,[[70,[[15,["abc"]],10]],[69,[[2,[0]],true]]]]"""
+      r.table[JsonObject, String]("abc").skip(10).offsetsOf(JsonObject.empty) =%=[ReqlFiniteStream[ReqlInteger]] """[87,[[70,[[15,["abc"]],10]],{}]]"""
+      r.table[JsonObject, String]("abc").skip(10).offsetsOf(_ => true) =%=[ReqlFiniteStream[ReqlInteger]] """[87,[[70,[[15,["abc"]],10]],[69,[[2,[0]],true]]]]"""
 
       //infiniteStream
       r.range().offsetsOf(20) =%=[ReqlInfiniteStream[ReqlInteger]] """[87,[[173,[]],20]]"""
@@ -938,36 +956,53 @@ class RasterizationTest extends WordSpec {
       //changefeed
       //r.table[ReqlObject]("abc").get("uuid").changes().offsetsOf(JsonObject.empty) =%=[ReqlInfiniteStream[ReqlInteger]] """[87,[[152,[[16,[[15,["abc"]],"uuid"]]]],{}]]"""
       //TODO: maybe it should be easier
-      val notification: ReqlChangefeedNotification[ReqlObject] = new ReqlChangefeedNotificationImpl("code" := 1, "code" := 2)
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes().offsetsOf(notification) =%=[ReqlInfiniteStream[ReqlInteger]] """[87,[[152,[[16,[[15,["abc"]],"uuid"]]]],{"old_val":{"code":1},"new_val":{"code":2}}]]"""
+      val notification: ReqlChangefeedNotification[JsonObject] = ChangefeedNotification(
+        Some(JsonObject.fromMap(Map("code" -> Json.fromInt(1)))),
+        Some(JsonObject.fromMap(Map("code" -> Json.fromInt(2))))
+      )
+      abcJsonTable.get("uuid").changes().offsetsOf(notification) =%=[ReqlInfiniteStream[ReqlInteger]] """[87,[[152,[[16,[[15,["abc"]],"uuid"]]]],{"old_val":{"code":1},"new_val":{"code":2}}]]"""
 
       //array
       r.expr(Seq(r.expr(123), r.expr(234))).offsetsOf(10) =%=[ReqlArray[ReqlInteger]] """[87,[[2,[123,234]],10]]"""
       r.expr(Seq(r.expr(123), r.expr(234))).offsetsOf(_ => true) =%=[ReqlArray[ReqlInteger]] """[87,[[2,[123,234]],[69,[[2,[0]],true]]]]"""
 
       //complex predicate
-      r.table[ReqlObject, UUID]("abc").offsetsOf(_("name").eq_("value")) =%=[ReqlFiniteStream[ReqlInteger]] """[87,[[15,["abc"]],[69,[[2,[0]],[17,[[170,[[10,[0]],"name"]],"value"]]]]]]"""
+      r.table[JsonObject, String]("abc").offsetsOf(_("name").eq_("value")) =%=[ReqlFiniteStream[ReqlInteger]] """[87,[[15,["abc"]],[69,[[2,[0]],[17,[[170,[[10,[0]],"name"]],"value"]]]]]]"""
     }
 
     "contains" in {
       //table
-      r.table[ReqlObject, UUID]("abc").contains(r.pred("code" := 123), r.pred("code" := 234)) =%=[ReqlBoolean] """[93,[[15,["abc"]],{"code":123},{"code":234}]]"""
+      abcJsonTable.contains(
+        r.pred(JsonObject.fromMap(Map("code" -> Json.fromInt(123))): ReqlModel[JsonObject, String]),
+        r.pred(JsonObject.fromMap(Map("code" -> Json.fromInt(234))): ReqlModel[JsonObject, String])
+      ) =%=[ReqlBoolean] """[93,[[15,["abc"]],{"code":123},{"code":234}]]"""
 
-      r.table[ReqlObject, UUID]("abc").contains(r.pred(_.asObject("name").eq_("value"))) =%=[ReqlBoolean] """[93,[[15,["abc"]],[69,[[2,[0]],[17,[[170,[[10,[0]],"name"]],"value"]]]]]]"""
+      abcJsonTable.contains(r.pred(_.asObject("name").eq_("value"))) =%=[ReqlBoolean] """[93,[[15,["abc"]],[69,[[2,[0]],[17,[[170,[[10,[0]],"name"]],"value"]]]]]]"""
 
-      r.table[ReqlObject, UUID]("abc").contains(r.pred("code" := 123), r.pred(_.asObject("name").eq_("value")), r.pred("code" := 234)) =%=[ReqlBoolean] """[93,[[15,["abc"]],{"code":123},[69,[[2,[0]],[17,[[170,[[10,[0]],"name"]],"value"]]]],{"code":234}]]"""
+      abcJsonTable.contains(
+        r.pred(JsonObject.fromMap(Map("code" -> Json.fromInt(123))): ReqlModel[JsonObject, String]),
+        r.pred(_.asObject("name").eq_("value")),
+        r.pred(JsonObject.fromMap(Map("code" -> Json.fromInt(234))): ReqlModel[JsonObject, String])
+      ) =%=[ReqlBoolean] """[93,[[15,["abc"]],{"code":123},[69,[[2,[0]],[17,[[170,[[10,[0]],"name"]],"value"]]]],{"code":234}]]"""
 
       //tableSlice
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).contains(r.pred("code" := 123), r.pred("code" := 234)) =%=[ReqlBoolean] """[93,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],{"code":123},{"code":234}]]"""
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).contains(
+        r.pred(JsonObject.fromMap(Map("code" -> Json.fromInt(123))): ReqlModel[JsonObject, String]),
+        r.pred(JsonObject.fromMap(Map("code" -> Json.fromInt(234))): ReqlModel[JsonObject, String])
+      ) =%=[ReqlBoolean] """[93,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],{"code":123},{"code":234}]]"""
 
       //selectionOfArray
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).contains(r.pred("code" := 123)) =%=[ReqlBoolean] """[93,[[41,[[15,["abc"]],[73,["code"]]]],{"code":123}]]"""
+      abcJsonTable.orderBy(r.asc("code")).contains(
+        r.pred(JsonObject.fromMap(Map("code" -> Json.fromInt(123))): ReqlModel[JsonObject, String])
+      ) =%=[ReqlBoolean] """[93,[[41,[[15,["abc"]],[73,["code"]]]],{"code":123}]]"""
 
       //selectionOfStream
-      r.table[ReqlObject, UUID]("abc").skip(10).contains(r.pred("code" := 123)) =%=[ReqlBoolean] """[93,[[70,[[15,["abc"]],10]],{"code":123}]]"""
+      abcJsonTable.skip(10).contains(
+        r.pred(JsonObject.fromMap(Map("code" -> Json.fromInt(123))): ReqlModel[JsonObject, String])
+      ) =%=[ReqlBoolean] """[93,[[70,[[15,["abc"]],10]],{"code":123}]]"""
 
       //stream (Cannot call a terminal (`reduce`, `count`, etc.) on an infinite stream (such as a changefeed))
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes() shouldBe an[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlObject]]]
+      abcJsonTable.get("uuid").changes() shouldBe an[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlModel[JsonObject, String]]]]
       """r.table[ReqlObject]("abc").get("uuid").changes().contains(pred("code" := 123))""".shouldNot(compile)
 
       //array
@@ -995,14 +1030,14 @@ class RasterizationTest extends WordSpec {
       r.range(5).getField("name") =%=[ReqlFiniteStream[ReqlDatum]] """[31,[[173,[5]],"name"]]"""
 
       //changefeed
-      r.table("abc").get("uuid").changes().getField("name") =%=[ReqlInfiniteStream[ReqlDatum]] """[31,[[152,[[16,[[15,["abc"]],"uuid"]]]],"name"]]"""
+      abcJsonTable.get("uuid").changes().getField("name") =%=[ReqlInfiniteStream[ReqlDatum]] """[31,[[152,[[16,[[15,["abc"]],"uuid"]]]],"name"]]"""
 
       //stream chain
       r.table("abc").getField("name").getField("first") =%=[ReqlFiniteStream[ReqlDatum]] """[31,[[31,[[15,["abc"]],"name"]],"first"]]"""
 
       //singleSelection
-      r.table("abc").get("uuid").getField("name") =%=[ReqlDatum] """[31,[[16,[[15,["abc"]],"uuid"]],"name"]]"""
-      """r.table("table").get("uuid").getField("name").getField("first")""".shouldNot(compile)
+      abcJsonTable.get("uuid").getField("name") =%=[ReqlDatum] """[31,[[16,[[15,["abc"]],"uuid"]],"name"]]"""
+      """abcJsonTable.get("uuid").getField("name").getField("first")""".shouldNot(compile)
 
       //object
       r.expr(Map("name" -> r.expr(123))).getField("name") =%=[ReqlDatum] """[31,[{"name":123},"name"]]"""
@@ -1011,7 +1046,7 @@ class RasterizationTest extends WordSpec {
 
     "keys" in {
       //singleSelection
-      r.table("abc").get("uuid").keys() =%=[ReqlArray[ReqlString]] """[94,[[16,[[15,["abc"]],"uuid"]]]]"""
+      abcJsonTable.get("uuid").keys() =%=[ReqlArray[ReqlString]] """[94,[[16,[[15,["abc"]],"uuid"]]]]"""
 
       //object
       r.expr(Map("name" -> r.expr(123))).keys() =%=[ReqlArray[ReqlString]] """[94,[{"name":123}]]"""
@@ -1019,7 +1054,7 @@ class RasterizationTest extends WordSpec {
 
     "values" in {
       //singleSelection
-      r.table("abc").get("uuid").values() =%=[ReqlArray[ReqlDatum]] """[186,[[16,[[15,["abc"]],"uuid"]]]]"""
+      abcJsonTable.get("uuid").values() =%=[ReqlArray[ReqlDatum]] """[186,[[16,[[15,["abc"]],"uuid"]]]]"""
 
       //object
       r.expr(Map("name" -> r.expr(123))).values() =%=[ReqlArray[ReqlDatum]] """[186,[{"name":123}]]"""
@@ -1083,10 +1118,10 @@ class RasterizationTest extends WordSpec {
       r.range(10).hasFields("code") =%=[ReqlFiniteStream[ReqlInteger]] """[32,[[173,[10]],"code"]]"""
 
       //changefeed
-      r.table("abc").get("uuid").changes().hasFields("name") =%=[ReqlInfiniteStream[ReqlObject]] """[32,[[152,[[16,[[15,["abc"]],"uuid"]]]],"name"]]"""
+      abcJsonTable.get("uuid").changes().hasFields("name") =%=[ReqlInfiniteStream[ReqlObject]] """[32,[[152,[[16,[[15,["abc"]],"uuid"]]]],"name"]]"""
 
       //stream with .args
-      r.table("abc").get("uuid").changes().hasFields(r.args(Seq(
+      abcJsonTable.get("uuid").changes().hasFields(r.args(Seq(
         r.expr("name")
       ))) =%=[ReqlInfiniteStream[ReqlObject]] """[32,[[152,[[16,[[15,["abc"]],"uuid"]]]],[154,[[2,["name"]]]]]]"""
 
@@ -1103,10 +1138,10 @@ class RasterizationTest extends WordSpec {
       ))) =%=[ReqlArray[ReqlDatum]] """[32,[[2,[{},{}]],[154,[[2,["name"]]]]]]"""
 
       //singleSelection
-      r.table("abc").get("uuid").hasFields("code") =%=[ReqlBoolean] """[32,[[16,[[15,["abc"]],"uuid"]],"code"]]"""
+      abcJsonTable.get("uuid").hasFields("code") =%=[ReqlBoolean] """[32,[[16,[[15,["abc"]],"uuid"]],"code"]]"""
 
       //singleSelection with .args
-      r.table("abc").get("uuid").hasFields(r.args(Seq(
+      abcJsonTable.get("uuid").hasFields(r.args(Seq(
         r.expr("name")
       ))) =%=[ReqlBoolean] """[32,[[16,[[15,["abc"]],"uuid"]],[154,[[2,["name"]]]]]]"""
 
@@ -1141,7 +1176,7 @@ class RasterizationTest extends WordSpec {
       r.range(10).withFields("name") =%=[ReqlFiniteStream[ReqlInteger]] """[96,[[173,[10]],"name"]]"""
 
       //changefeed
-      r.table("abc").get("uuid").changes().withFields("name") =%=[ReqlInfiniteStream[ReqlObject]] """[96,[[152,[[16,[[15,["abc"]],"uuid"]]]],"name"]]"""
+      abcJsonTable.get("uuid").changes().withFields("name") =%=[ReqlInfiniteStream[ReqlObject]] """[96,[[152,[[16,[[15,["abc"]],"uuid"]]]],"name"]]"""
 
       //array
       r.expr(Seq(
@@ -1171,7 +1206,7 @@ class RasterizationTest extends WordSpec {
       r.range(10).pluck("name", "code") =%=[ReqlFiniteStream[ReqlInteger]] """[33,[[173,[10]],"name","code"]]"""
 
       //changefeed
-      r.table("abc").get("uuid").changes().pluck("name", "code") =%=[ReqlInfiniteStream[ReqlObject]] """[33,[[152,[[16,[[15,["abc"]],"uuid"]]]],"name","code"]]"""
+      abcJsonTable.get("uuid").changes().pluck("name", "code") =%=[ReqlInfiniteStream[ReqlObject]] """[33,[[152,[[16,[[15,["abc"]],"uuid"]]]],"name","code"]]"""
 
       //array
       r.expr(Seq(
@@ -1179,7 +1214,7 @@ class RasterizationTest extends WordSpec {
       )).pluck("name", "code") =%=[ReqlArray[ReqlDatum]] """[33,[[2,[{},{}]],"name","code"]]"""
 
       //singleSelection
-      r.table("abc").get("uuid").pluck("code") =%=[ReqlObject] """[33,[[16,[[15,["abc"]],"uuid"]],"code"]]"""
+      abcJsonTable.get("uuid").pluck("code") =%=[ReqlObject] """[33,[[16,[[15,["abc"]],"uuid"]],"code"]]"""
 
       //object
       r.expr(Map("code" -> r.expr(123))).pluck("code") =%=[ReqlObject] """[33,[{"code":123},"code"]]"""
@@ -1207,7 +1242,7 @@ class RasterizationTest extends WordSpec {
       r.range(10).without("name", "code") =%=[ReqlFiniteStream[ReqlInteger]] """[34,[[173,[10]],"name","code"]]"""
 
       //changefeed
-      r.table("abc").get("uuid").changes().without("name", "code") =%=[ReqlInfiniteStream[ReqlObject]] """[34,[[152,[[16,[[15,["abc"]],"uuid"]]]],"name","code"]]"""
+      abcJsonTable.get("uuid").changes().without("name", "code") =%=[ReqlInfiniteStream[ReqlObject]] """[34,[[152,[[16,[[15,["abc"]],"uuid"]]]],"name","code"]]"""
 
       //array
       r.expr(Seq(
@@ -1215,7 +1250,7 @@ class RasterizationTest extends WordSpec {
       )).without("code") =%=[ReqlArray[ReqlDatum]] """[34,[[2,[{},{}]],"code"]]"""
 
       //singleSelection
-      r.table("abc").get("uuid").without("code") =%=[ReqlObject] """[34,[[16,[[15,["abc"]],"uuid"]],"code"]]"""
+      abcJsonTable.get("uuid").without("code") =%=[ReqlObject] """[34,[[16,[[15,["abc"]],"uuid"]],"code"]]"""
 
       //object
       r.expr(Map("code" -> r.expr(123))).without("code") =%=[ReqlObject] """[34,[{"code":123},"code"]]"""
@@ -1243,16 +1278,16 @@ class RasterizationTest extends WordSpec {
       //r.range(10).merge(r.expr(JsonObject.empty)) =%=[ReqlFiniteStream[ReqlObject]] """[35,[[173,[10]],{}]]"""
 
       //changefeed
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes().merge(r.expr(JsonObject.empty)) =%=[ReqlInfiniteStream[ReqlObject]] """[35,[[152,[[16,[[15,["abc"]],"uuid"]]]],{}]]"""
+      abcJsonTable.get("uuid").changes().merge(r.expr(JsonObject.empty)) =%=[ReqlInfiniteStream[ReqlObject]] """[35,[[152,[[16,[[15,["abc"]],"uuid"]]]],{}]]"""
 
       //array
       r.expr(Seq(r.expr(JsonObject.empty), r.expr(JsonObject.empty)))
         .merge({obj: ReqlObject => r.expr(JsonObject.empty)}) =%=[ReqlArray[ReqlObject]] """[35,[[2,[{},{}]],[69,[[2,[0]],{}]]]]"""
 
       //singleSelection
-      r.table("abc").get("uuid")
+      abcJsonTable.get("uuid")
         .merge(r.expr(JsonObject.empty)) =%=[ReqlObject] """[35,[[16,[[15,["abc"]],"uuid"]],{}]]"""
-      r.table[ReqlObject, UUID]("abc").get("uuid")
+      abcJsonTable.get("uuid")
         .merge(r.expr(JsonObject.empty), {obj: ReqlObject => r.expr(JsonObject.empty)}) =%=[ReqlObject] """[35,[[16,[[15,["abc"]],"uuid"]],{},[69,[[2,[0]],{}]]]]"""
 
       //object
@@ -1282,28 +1317,28 @@ class RasterizationTest extends WordSpec {
 
     "reduce" in {
       //table
-      r.table[ReqlObject, UUID]("abc").reduce {
-        (left: ReqlObject, right: ReqlObject) =>
+      r.table[JsonObject, String]("abc").reduce {
+        (left: ReqlModel[JsonObject, String], right: ReqlModel[JsonObject, String]) =>
           left.merge(right)
-      } =%=[ReqlObject] """[37,[[15,["abc"]],[69,[[2,[0,1]],[35,[[10,[0]],[10,[1]]]]]]]]"""
+      } =%=[ReqlModel[JsonObject, String]] """[37,[[15,["abc"]],[69,[[2,[0,1]],[35,[[10,[0]],[10,[1]]]]]]]]"""
 
       //tableSlice
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).reduce {
-        (left: ReqlObject, right: ReqlObject) =>
+      r.table[JsonObject, String]("abc").orderBy(OrderedIndex(r.asc("code"))).reduce {
+        (left: ReqlModel[JsonObject, String], right: ReqlModel[JsonObject, String]) =>
           left.merge(right)
-      } =%=[ReqlObject] """[37,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0,1]],[35,[[10,[0]],[10,[1]]]]]]]]"""
+      } =%=[ReqlModel[JsonObject, String]] """[37,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0,1]],[35,[[10,[0]],[10,[1]]]]]]]]"""
 
       //selectionOfArray
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).reduce {
-        (left: ReqlObject, right: ReqlObject) =>
+      r.table[JsonObject, String]("abc").orderBy(r.asc("code")).reduce {
+        (left: ReqlModel[JsonObject, String], right: ReqlModel[JsonObject, String]) =>
           left.merge(right)
-      } =%=[ReqlObject] """[37,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0,1]],[35,[[10,[0]],[10,[1]]]]]]]]"""
+      } =%=[ReqlModel[JsonObject, String]] """[37,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0,1]],[35,[[10,[0]],[10,[1]]]]]]]]"""
 
       //selectionOfStream
-      r.table[ReqlObject, UUID]("abc").skip(10).reduce {
-        (left: ReqlObject, right: ReqlObject) =>
+      r.table[JsonObject, String]("abc").skip(10).reduce {
+        (left: ReqlModel[JsonObject, String], right: ReqlModel[JsonObject, String]) =>
           left.merge(right)
-      } =%=[ReqlObject] """[37,[[70,[[15,["abc"]],10]],[69,[[2,[0,1]],[35,[[10,[0]],[10,[1]]]]]]]]"""
+      } =%=[ReqlModel[JsonObject, String]] """[37,[[70,[[15,["abc"]],10]],[69,[[2,[0,1]],[35,[[10,[0]],[10,[1]]]]]]]]"""
 
       //stream
       """
@@ -1322,19 +1357,19 @@ class RasterizationTest extends WordSpec {
 
     "map" in {
       //table
-      r.table[ReqlObject, UUID]("abc").map { x: ReqlObject => x.asNumber.mul(2) } =%=[ReqlFiniteStream[ReqlFloat]] """[38,[[15,["abc"]],[69,[[2,[0]],[26,[[10,[0]],2]]]]]]"""
+      abcJsonTable.map { x => x.asNumber.mul(2) } =%=[ReqlFiniteStream[ReqlFloat]] """[38,[[15,["abc"]],[69,[[2,[0]],[26,[[10,[0]],2]]]]]]"""
 
-      r.table[ReqlObject, UUID]("abc").map(r.table[ReqlObject, UUID]("bcd"), (x: ReqlObject, y: ReqlObject) => x.merge(y)) =%=[ReqlFiniteStream[ReqlObject]] """[38,[[15,["abc"]],[15,["bcd"]],[69,[[2,[0,1]],[35,[[10,[0]],[10,[1]]]]]]]]"""
+      abcJsonTable.map(bcdJsonTable, (x, y: ReqlModel[JsonObject, String]) => x.merge(y)) =%=[ReqlFiniteStream[ReqlObject]] """[38,[[15,["abc"]],[15,["bcd"]],[69,[[2,[0,1]],[35,[[10,[0]],[10,[1]]]]]]]]"""
 
       //tableSlice
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).map { x: ReqlObject => x.asNumber.mul(2) } =%=[ReqlFiniteStream[ReqlNumber]] """[38,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[26,[[10,[0]],2]]]]]]"""
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).map { x => x.asNumber.mul(2) } =%=[ReqlFiniteStream[ReqlNumber]] """[38,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[26,[[10,[0]],2]]]]]]"""
 
       //selectionOfArray
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).map { x: ReqlObject => x.asNumber.mul(2) } =%=[ReqlArray[ReqlNumber]] """[38,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[26,[[10,[0]],2]]]]]]"""
+      abcJsonTable.orderBy(r.asc("code")).map { x => x.asNumber.mul(2) } =%=[ReqlArray[ReqlNumber]] """[38,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[26,[[10,[0]],2]]]]]]"""
 
       //selectionOfStream
       //TODO: it should not work - should not allow to convert object to number?
-      r.table[ReqlObject, UUID]("abc").skip(10).map { x: ReqlObject => x.asNumber.mul(2) } =%=[ReqlFiniteStream[ReqlNumber]] """[38,[[70,[[15,["abc"]],10]],[69,[[2,[0]],[26,[[10,[0]],2]]]]]]"""
+      abcJsonTable.skip(10).map { x => x.asNumber.mul(2) } =%=[ReqlFiniteStream[ReqlNumber]] """[38,[[70,[[15,["abc"]],10]],[69,[[2,[0]],[26,[[10,[0]],2]]]]]]"""
 
       //infiniteStream
       r.range().map(_.mul(2)) =%=[ReqlInfiniteStream[ReqlInteger]] """[38,[[173,[]],[69,[[2,[0]],[26,[[10,[0]],2]]]]]]"""
@@ -1343,7 +1378,7 @@ class RasterizationTest extends WordSpec {
       r.range(10).map(_.mul(2)) =%=[ReqlFiniteStream[ReqlInteger]] """[38,[[173,[10]],[69,[[2,[0]],[26,[[10,[0]],2]]]]]]"""
 
       //changefeed
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes().map(_.merge(JsonObject.empty)) =%=[ReqlInfiniteStream[ReqlObject]] """[38,[[152,[[16,[[15,["abc"]],"uuid"]]]],[69,[[2,[0]],[35,[[10,[0]],{}]]]]]]"""
+      abcJsonTable.get("uuid").changes().map(_.merge(JsonObject.empty)) =%=[ReqlInfiniteStream[ReqlObject]] """[38,[[152,[[16,[[15,["abc"]],"uuid"]]]],[69,[[2,[0]],[35,[[10,[0]],{}]]]]]]"""
 
       //array
       r.expr(Seq(r.expr(123), r.expr(234))).map(_.add(r.expr(1))) =%=[ReqlArray[ReqlInteger]] """[38,[[2,[123,234]],[69,[[2,[0]],[24,[[10,[0]],1]]]]]]"""
@@ -1373,24 +1408,24 @@ class RasterizationTest extends WordSpec {
 
     "fold" in {
       //table
-      r.table[ReqlObject, UUID]("abc").fold(emptyReqlObject)((x, y) => x.merge(y)) =%=[ReqlDatum] """[187,[[15,["abc"]],{},[69,[[2,[0,1]],[35,[[10,[0]],[10,[1]]]]]]]]"""
+      r.table[JsonObject, String]("abc").fold[ReqlModel[JsonObject, String]](JsonObject.empty)((x, y) => x.merge(y)) =%=[ReqlModel[JsonObject, String]] """[187,[[15,["abc"]],{},[69,[[2,[0,1]],[35,[[10,[0]],[10,[1]]]]]]]]"""
 
       """
         |r.table("abc").fold(r.expr(JsonObject.empty))((x, y) => r.now())
       """.stripMargin.shouldNot(compile)
-      r.table[ReqlObject, UUID]("abc").fold[ReqlObject](JsonObject.empty)((x, y) => x.merge(y)) =%=[ReqlDatum] """[187,[[15,["abc"]],{},[69,[[2,[0,1]],[35,[[10,[0]],[10,[1]]]]]]]]"""
+      r.table[JsonObject, String]("abc").fold[ReqlObject](JsonObject.empty)((x, y) => x.merge(y)) =%=[ReqlObject] """[187,[[15,["abc"]],{},[69,[[2,[0,1]],[35,[[10,[0]],[10,[1]]]]]]]]"""
 
-      r.table[ReqlObject, UUID]("abc").foldAndEmit[ReqlTime](r.now())(
+      r.table[JsonObject, String]("abc").foldAndEmit[ReqlTime](r.now())(
         (x, y) => x.add(y.keys().count()),
-        Emit[ReqlTime, ReqlObject, ReqlDatum](
+        Emit[ReqlTime, ReqlModel[JsonObject, String], ReqlDatum](
           (acc, row, newAcc) =>
             r.expr(Seq(acc, row, newAcc))
         )
       ) =%=[ReqlFiniteStream[ReqlTime]] """[187,[[15,["abc"]],[103,[]],[69,[[2,[0,1]],[24,[[10,[0]],[43,[[94,[[10,[1]]]]]]]]]]],{"emit":[69,[[2,[0,1,2]],[2,[[10,[0]],[10,[1]],[10,[2]]]]]]}]"""
 
-      r.table[ReqlObject, UUID]("abc").foldAndEmit[ReqlTime](r.now())(
+      r.table[JsonObject, String]("abc").foldAndEmit[ReqlTime](r.now())(
         (x, y) => x.add(y.keys().count()),
-        Emit[ReqlTime, ReqlObject, ReqlDatum](
+        Emit[ReqlTime, ReqlModel[JsonObject, String], ReqlDatum](
           (acc, row, newAcc) =>
             r.expr(Seq(acc, row, newAcc))
         ).withFinalEmit(
@@ -1399,9 +1434,9 @@ class RasterizationTest extends WordSpec {
         )
       ) =%=[ReqlFiniteStream[ReqlTime]] """[187,[[15,["abc"]],[103,[]],[69,[[2,[0,1]],[24,[[10,[0]],[43,[[94,[[10,[1]]]]]]]]]]],{"emit":[69,[[2,[0,1,2]],[2,[[10,[0]],[10,[1]],[10,[2]]]]]],"final_emit":[69,[[2,[0]],[2,["finish",[10,[0]],"!"]]]]}]"""
 
-      r.table[ReqlObject, UUID]("abc").foldAndEmit[ReqlTime](r.now())(
+      r.table[JsonObject, String]("abc").foldAndEmit[ReqlTime](r.now())(
         (x, y) => x.add(y.keys().count()),
-        EmitWithFinalEmit[ReqlTime, ReqlObject, ReqlDatum](
+        EmitWithFinalEmit[ReqlTime, ReqlModel[JsonObject, String], ReqlDatum](
           (acc, row, newAcc) =>
             r.expr(Seq(acc, row, newAcc)),
           last =>
@@ -1410,13 +1445,13 @@ class RasterizationTest extends WordSpec {
       ) =%=[ReqlFiniteStream[ReqlTime]] """[187,[[15,["abc"]],[103,[]],[69,[[2,[0,1]],[24,[[10,[0]],[43,[[94,[[10,[1]]]]]]]]]]],{"emit":[69,[[2,[0,1,2]],[2,[[10,[0]],[10,[1]],[10,[2]]]]]],"final_emit":[69,[[2,[0]],[2,["finish",[10,[0]],"!"]]]]}]"""
 
       //tableSlice
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).
+      r.table[JsonObject, String]("abc").orderBy(OrderedIndex(r.asc("code"))).
         fold(emptyReqlObject)((x, y) => x.merge(y)) =%=[ReqlDatum] """[187,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],{},[69,[[2,[0,1]],[35,[[10,[0]],[10,[1]]]]]]]]"""
 
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).
+      r.table[JsonObject, String]("abc").orderBy(OrderedIndex(r.asc("code"))).
         foldAndEmit[ReqlTime](r.now())(
           (x, y) => x.add(y.keys().count()),
-          EmitWithFinalEmit[ReqlTime, ReqlObject, ReqlDatum](
+          EmitWithFinalEmit[ReqlTime, ReqlModel[JsonObject, String], ReqlDatum](
             (acc, row, newAcc) =>
               r.expr(Seq(acc, row, newAcc)),
             last =>
@@ -1425,13 +1460,13 @@ class RasterizationTest extends WordSpec {
         ) =%=[ReqlFiniteStream[ReqlTime]] """[187,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[103,[]],[69,[[2,[0,1]],[24,[[10,[0]],[43,[[94,[[10,[1]]]]]]]]]]],{"emit":[69,[[2,[0,1,2]],[2,[[10,[0]],[10,[1]],[10,[2]]]]]],"final_emit":[69,[[2,[0]],[2,["finish",[10,[0]],"!"]]]]}]"""
 
       //selectionOfArray
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).
+      r.table[JsonObject, String]("abc").orderBy(r.asc("code")).
         fold(emptyReqlObject)((x, y) => x.merge(y)) =%=[ReqlDatum] """[187,[[41,[[15,["abc"]],[73,["code"]]]],{},[69,[[2,[0,1]],[35,[[10,[0]],[10,[1]]]]]]]]"""
 
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).
+      r.table[JsonObject, String]("abc").orderBy(r.asc("code")).
         foldAndEmit[ReqlTime](r.now())(
           (x, y) => x.add(y.keys().count()),
-          EmitWithFinalEmit[ReqlTime, ReqlObject, ReqlDatum](
+          EmitWithFinalEmit[ReqlTime, ReqlModel[JsonObject, String], ReqlDatum](
             (acc, row, newAcc) =>
               r.expr(Seq(acc, row, newAcc)),
             last =>
@@ -1440,15 +1475,15 @@ class RasterizationTest extends WordSpec {
         ) =%=[ReqlArray[ReqlDatum]] """[187,[[41,[[15,["abc"]],[73,["code"]]]],[103,[]],[69,[[2,[0,1]],[24,[[10,[0]],[43,[[94,[[10,[1]]]]]]]]]]],{"emit":[69,[[2,[0,1,2]],[2,[[10,[0]],[10,[1]],[10,[2]]]]]],"final_emit":[69,[[2,[0]],[2,["finish",[10,[0]],"!"]]]]}]"""
 
       //selectionOfStream
-      r.table("abc").skip(10) shouldBe an[ReqlSelectionOfStream[ReqlObject, UUID]]
+      r.table[JsonObject, String]("abc").skip(10) shouldBe an[ReqlSelectionOfStream[JsonObject, String]]
 
-      r.table[ReqlObject, UUID]("abc").skip(10).
+      r.table[JsonObject, String]("abc").skip(10).
         fold(emptyReqlObject)((x, y) => x.merge(y)) =%=[ReqlDatum] """[187,[[70,[[15,["abc"]],10]],{},[69,[[2,[0,1]],[35,[[10,[0]],[10,[1]]]]]]]]"""
 
-      r.table[ReqlObject, UUID]("abc").skip(10).
+      r.table[JsonObject, String]("abc").skip(10).
         foldAndEmit[ReqlTime](r.now())(
           (x, y) => x.add(y.keys().count()),
-          EmitWithFinalEmit[ReqlTime, ReqlObject, ReqlDatum](
+          EmitWithFinalEmit[ReqlTime, ReqlModel[JsonObject, String], ReqlDatum](
             (acc, row, newAcc) =>
               r.expr(Seq(acc, row, newAcc)),
             last =>
@@ -1520,38 +1555,38 @@ class RasterizationTest extends WordSpec {
       """.stripMargin.shouldNot(compile)
 
       //table
-      r.table[ReqlObject, UUID]("abc").filter(r.expr(JsonObject.fromMap(Map(
+      abcJsonTable.filter(JsonObject.fromMap(Map(
         "code" -> Json.fromInt(123)
-      )))) =%=[ReqlSelectionOfStream[ReqlObject, UUID]] """[39,[[15,["abc"]],{"code":123}]]"""
+      ))) =%=[ReqlSelectionOfStream[JsonObject, String]] """[39,[[15,["abc"]],{"code":123}]]"""
 
-      r.table[ReqlObject, UUID]("abc").filter(r.expr(JsonObject.fromMap(Map(
+      abcJsonTable.filter(JsonObject.fromMap(Map(
         "code" -> Json.fromInt(123)
-      ))), Skip) =%=[ReqlSelectionOfStream[ReqlObject, UUID]] """[39,[[15,["abc"]],{"code":123}]]"""
+      )), Skip) =%=[ReqlSelectionOfStream[JsonObject, String]] """[39,[[15,["abc"]],{"code":123}]]"""
 
-      r.table[ReqlObject, UUID]("abc").filter(r.expr(JsonObject.fromMap(Map(
+      abcJsonTable.filter(JsonObject.fromMap(Map(
         "code" -> Json.fromInt(123)
-      ))), NoSkip) =%=[ReqlSelectionOfStream[ReqlObject, UUID]] """[39,[[15,["abc"]],{"code":123}],{"default":true}]"""
+      )), NoSkip) =%=[ReqlSelectionOfStream[JsonObject, String]] """[39,[[15,["abc"]],{"code":123}],{"default":true}]"""
 
-      r.table[ReqlObject, UUID]("abc").filter(r.expr(JsonObject.fromMap(Map(
+      abcJsonTable.filter(JsonObject.fromMap(Map(
         "code" -> Json.fromInt(123)
-      ))), RethrowError) =%=[ReqlSelectionOfStream[ReqlObject, UUID]] """[39,[[15,["abc"]],{"code":123}],{"default":[12,[]]}]"""
+      )), RethrowError) =%=[ReqlSelectionOfStream[JsonObject, String]] """[39,[[15,["abc"]],{"code":123}],{"default":[12,[]]}]"""
 
-      r.table[ReqlObject, UUID]("abc").filter(_.asObject.getField("code").eq_(5)) =%=[ReqlSelectionOfStream[ReqlObject, UUID]] """[39,[[15,["abc"]],[69,[[2,[0]],[17,[[31,[[10,[0]],"code"]],5]]]]]]"""
+      abcJsonTable.filter(_.asObject.getField("code").eq_(5)) =%=[ReqlSelectionOfStream[JsonObject, String]] """[39,[[15,["abc"]],[69,[[2,[0]],[17,[[31,[[10,[0]],"code"]],5]]]]]]"""
 
       //tableSlice
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).filter(r.expr(JsonObject.fromMap(Map(
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).filter(JsonObject.fromMap(Map(
         "code" -> Json.fromInt(123)
-      )))) =%=[ReqlSelectionOfStream[ReqlObject, UUID]] """[39,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],{"code":123}]]"""
+      ))) =%=[ReqlSelectionOfStream[JsonObject, String]] """[39,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],{"code":123}]]"""
 
       //selectionOfArray
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).filter(r.expr(JsonObject.fromMap(Map(
+      abcJsonTable.orderBy(r.asc("code")).filter(JsonObject.fromMap(Map(
         "code" -> Json.fromInt(123)
-      )))) =%=[ReqlSelectionOfArray[ReqlObject, UUID]] """[39,[[41,[[15,["abc"]],[73,["code"]]]],{"code":123}]]"""
+      ))) =%=[ReqlSelectionOfArray[JsonObject, String]] """[39,[[41,[[15,["abc"]],[73,["code"]]]],{"code":123}]]"""
 
       //selectionOfStream
-      r.table[ReqlObject, UUID]("abc").skip(10).filter(r.expr(JsonObject.fromMap(Map(
+      abcJsonTable.skip(10).filter(JsonObject.fromMap(Map(
         "code" -> Json.fromInt(123)
-      )))) =%=[ReqlSelectionOfStream[ReqlObject, UUID]] """[39,[[70,[[15,["abc"]],10]],{"code":123}]]"""
+      ))) =%=[ReqlSelectionOfStream[JsonObject, String]] """[39,[[70,[[15,["abc"]],10]],{"code":123}]]"""
 
       // infiniteStream
       r.range().filter(_ => true) =%=[ReqlInfiniteStream[ReqlInteger]] """[39,[[173,[]],[69,[[2,[0]],true]]]]"""
@@ -1560,9 +1595,12 @@ class RasterizationTest extends WordSpec {
       r.range(10).filter(_ => true) =%=[ReqlFiniteStream[ReqlInteger]] """[39,[[173,[10]],[69,[[2,[0]],true]]]]"""
 
       // changefeed
-      val notification: ReqlChangefeedNotification[ReqlObject] = new ReqlChangefeedNotificationImpl("code" := 1, "code" := 2)
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes()
-        .filter(notification) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlObject]]] """[39,[[152,[[16,[[15,["abc"]],"uuid"]]]],{"old_val":{"code":1},"new_val":{"code":2}}]]"""
+      val notification: ReqlChangefeedNotification[JsonObject] = ChangefeedNotification(
+        Some(JsonObject.fromMap(Map("code" -> Json.fromInt(1)))),
+        Some(JsonObject.fromMap(Map("code" -> Json.fromInt(2))))
+      )
+      abcJsonTable.get("uuid").changes()
+        .filter(notification) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[JsonObject]]] """[39,[[152,[[16,[[15,["abc"]],"uuid"]]]],{"old_val":{"code":1},"new_val":{"code":2}}]]"""
 
       // array
       """
@@ -1591,23 +1629,23 @@ class RasterizationTest extends WordSpec {
       r.range(10) shouldBe an[ReqlFiniteStream[ReqlInteger]]
       r.range(10) shouldBe an[ReqlFiniteSequence[ReqlInteger]]
 
-      r.table("abc").get("uuid").changes() shouldBe an[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlObject]]]
-      r.table("abc").get("uuid").changes() should not be an[ReqlFiniteSequence[ReqlChangefeedNotification[ReqlObject]]]
+      abcJsonTable.get("uuid").changes() shouldBe an[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlModel[JsonObject, String]]]]
+      abcJsonTable.get("uuid").changes() should not be an[ReqlFiniteSequence[ReqlChangefeedNotification[ReqlModel[JsonObject, String]]]]
 
       r.expr(Seq(r.expr(123), r.expr(234))) shouldBe an[ReqlArray[ReqlInteger]]
       r.expr(Seq(r.expr(123), r.expr(234))) shouldBe an[ReqlFiniteSequence[ReqlInteger]]
 
       //table
-      r.table[ReqlObject, UUID]("abc").concatMap(_ => r.table("bcd")) =%=[ReqlFiniteStream[ReqlObject]] """[40,[[15,["abc"]],[69,[[2,[0]],[15,["bcd"]]]]]]"""
+      r.table[JsonObject, String]("abc").concatMap(_ => r.table("bcd")) =%=[ReqlFiniteStream[ReqlObject]] """[40,[[15,["abc"]],[69,[[2,[0]],[15,["bcd"]]]]]]"""
 
       //tableSlice
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).concatMap(_ => r.table("bcd")) =%=[ReqlFiniteStream[ReqlObject]] """[40,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[15,["bcd"]]]]]]"""
+      r.table[JsonObject, String]("abc").orderBy(OrderedIndex(r.asc("code"))).concatMap(_ => r.table("bcd")) =%=[ReqlFiniteStream[ReqlObject]] """[40,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[15,["bcd"]]]]]]"""
 
       //selectionOfArray
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).concatMap(_ => r.table("bcd")) =%=[ReqlArray[ReqlObject]] """[40,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[15,["bcd"]]]]]]"""
+      r.table[JsonObject, String]("abc").orderBy(r.asc("code")).concatMap(_ => r.table("bcd")) =%=[ReqlArray[ReqlObject]] """[40,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[15,["bcd"]]]]]]"""
 
       //selectionOfStream
-      r.table[ReqlObject, UUID]("abc").skip(10).concatMap(_ => r.table("bcd")) =%=[ReqlFiniteStream[ReqlObject]] """[40,[[70,[[15,["abc"]],10]],[69,[[2,[0]],[15,["bcd"]]]]]]"""
+      r.table[JsonObject, String]("abc").skip(10).concatMap(_ => r.table("bcd")) =%=[ReqlFiniteStream[ReqlObject]] """[40,[[70,[[15,["abc"]],10]],[69,[[2,[0]],[15,["bcd"]]]]]]"""
 
       //infiniteStream
       r.range().concatMap(_ => r.range(10)) =%=[ReqlInfiniteStream[ReqlInteger]] """[40,[[173,[]],[69,[[2,[0]],[173,[10]]]]]]"""
@@ -1622,7 +1660,7 @@ class RasterizationTest extends WordSpec {
       """.stripMargin.shouldNot(compile)
 
       //changefeed
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes().concatMap(_ => r.table("bcd")) =%=[ReqlInfiniteStream[ReqlObject]] """[40,[[152,[[16,[[15,["abc"]],"uuid"]]]],[69,[[2,[0]],[15,["bcd"]]]]]]"""
+      abcJsonTable.get("uuid").changes().concatMap(_ => r.table("bcd")) =%=[ReqlInfiniteStream[ReqlObject]] """[40,[[152,[[16,[[15,["abc"]],"uuid"]]]],[69,[[2,[0]],[15,["bcd"]]]]]]"""
 
       //array
       """
@@ -1648,14 +1686,14 @@ class RasterizationTest extends WordSpec {
         concatMap(_ => r.table("def")) =%=[ReqlFiniteStream[ReqlObject]] """[40,[[31,[[15,["abc"]],"code"]],[69,[[2,[0]],[15,["def"]]]]]]"""
 
       //complex example
-      r.table[ReqlObject, UUID]("abc")
-        .concatMap(_ =>
-          r.table[ReqlObject, UUID]("abc")
-            .concatMap(_ =>
-              r.table[ReqlObject, UUID]("abc")
+      r.table[JsonObject, String]("abc").
+        concatMap(_ =>
+          r.table[JsonObject, String]("abc").
+            concatMap(_ =>
+              r.table[JsonObject, String]("abc")
             )
-        )
-        .count() =%=[ReqlInteger] """[43,[[40,[[15,["abc"]],[69,[[2,[0]],[40,[[15,["abc"]],[69,[[2,[0]],[15,["abc"]]]]]]]]]]]]"""
+        ).
+        count() =%=[ReqlInteger] """[43,[[40,[[15,["abc"]],[69,[[2,[0]],[40,[[15,["abc"]],[69,[[2,[0]],[15,["abc"]]]]]]]]]]]]"""
     }
 
     "order_by" in {
@@ -1713,14 +1751,14 @@ class RasterizationTest extends WordSpec {
 
 
       //selectionOfStream
-      r.table[ReqlObject, UUID]("abc").filter(JsonObject.empty) shouldBe an[ReqlSelectionOfStream[ReqlObject, UUID]]
-      r.table[ReqlObject, UUID]("abc").filter(JsonObject.empty).orderBy(r.asc("code")) =%=[ReqlSelectionOfArray[ReqlObject, UUID]] """[41,[[39,[[15,["abc"]],{}]],[73,["code"]]]]"""
-      r.table[ReqlObject, UUID]("abc").filter(r.expr(JsonObject.empty)).
-        orderBy(r.asc("major"), r.desc("minor")) =%=[ReqlSelectionOfArray[ReqlObject, UUID]] """[41,[[39,[[15,["abc"]],{}]],[73,["major"]],[74,["minor"]]]]"""
+      abcJsonTable.filter(JsonObject.empty) shouldBe an[ReqlSelectionOfStream[JsonObject, String]]
+      abcJsonTable.filter(JsonObject.empty).orderBy(r.asc("code")) =%=[ReqlSelectionOfArray[JsonObject, String]] """[41,[[39,[[15,["abc"]],{}]],[73,["code"]]]]"""
+      abcJsonTable.filter(JsonObject.empty).
+        orderBy(r.asc("major"), r.desc("minor")) =%=[ReqlSelectionOfArray[JsonObject, String]] """[41,[[39,[[15,["abc"]],{}]],[73,["major"]],[74,["minor"]]]]"""
 
 
       //should not work on stream
-      r.table("abc").get("uuid").changes() shouldBe an[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlObject]]]
+      abcJsonTable.get("uuid").changes() shouldBe an[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlModel[JsonObject, String]]]]
       """
         |r.table("abc").get("uuid").changes().orderBy(r.asc("code"))
       """.stripMargin.shouldNot(compile)
@@ -1777,41 +1815,38 @@ class RasterizationTest extends WordSpec {
 
     "count" in {
       //table
-      r.table[ReqlObject, UUID]("abc").count() =%=[ReqlInteger] """[43,[[15,["abc"]]]]"""
-      r.table[ReqlObject, UUID]("abc").count(JsonObject.empty) =%=[ReqlInteger] """[43,[[15,["abc"]],{}]]"""
-      r.table[ReqlObject, UUID]("abc").count(_ => true) =%=[ReqlInteger] """[43,[[15,["abc"]],[69,[[2,[0]],true]]]]"""
+      r.table[JsonObject, String]("abc").count() =%=[ReqlInteger] """[43,[[15,["abc"]]]]"""
+      r.table[JsonObject, String]("abc").count(JsonObject.empty) =%=[ReqlInteger] """[43,[[15,["abc"]],{}]]"""
+      r.table[JsonObject, String]("abc").count(_ => true) =%=[ReqlInteger] """[43,[[15,["abc"]],[69,[[2,[0]],true]]]]"""
 
       //TODO: fixit?
       //r.table("abc").count(r.table("abc").get("uuid")) =%=[ReqlInteger] """[43,[[15,["abc"]],[16,[[15,["abc"]],"uuid"]]]]"""
       //r.table("abc").count(r.now()) =%=[ReqlInteger] """[43,[[15,["abc"]],[103,[]]]]"""
-      r.table[ReqlObject, UUID]("abc").count(_.getField("code").gt(5)) =%=[ReqlInteger] """[43,[[15,["abc"]],[69,[[2,[0]],[21,[[31,[[10,[0]],"code"]],5]]]]]]"""
-      r.table[ReqlObject, UUID]("abc").count(_("code").ge(123)) =%=[ReqlInteger] """[43,[[15,["abc"]],[69,[[2,[0]],[22,[[170,[[10,[0]],"code"]],123]]]]]]"""
-      r.table[ReqlObject, UUID]("abc").count(emptyReqlObject) =%=[ReqlInteger] """[43,[[15,["abc"]],{}]]"""
-      r.table[ReqlObject, UUID]("abc").apply[ReqlInteger]("code").count(r.expr(123)) =*= """[43,[[170,[[15,["abc"]],"code"]],123]]"""
+      r.table[JsonObject, String]("abc").count(_.getField("code").gt(5)) =%=[ReqlInteger] """[43,[[15,["abc"]],[69,[[2,[0]],[21,[[31,[[10,[0]],"code"]],5]]]]]]"""
+      r.table[JsonObject, String]("abc").count(_("code").ge(123)) =%=[ReqlInteger] """[43,[[15,["abc"]],[69,[[2,[0]],[22,[[170,[[10,[0]],"code"]],123]]]]]]"""
+      r.table[JsonObject, String]("abc").count(JsonObject.empty) =%=[ReqlInteger] """[43,[[15,["abc"]],{}]]"""
+      r.table[JsonObject, String]("abc").apply[ReqlInteger]("code").count(r.expr(123)) =*= """[43,[[170,[[15,["abc"]],"code"]],123]]"""
 
 
       //tableSlice
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))) shouldBe an[ReqlTableSlice[ReqlObject, UUID]]
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).count() =%=[ReqlInteger] """[43,[[41,[[15,["abc"]]],{"index":[73,["code"]]}]]]"""
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).count(JsonObject.empty) =%=[ReqlInteger] """[43,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],{}]]"""
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).count(_.getField("code").gt(5)) =%=[ReqlInteger] """[43,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[21,[[31,[[10,[0]],"code"]],5]]]]]]"""
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).count(emptyReqlObject) =%=[ReqlInteger] """[43,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],{}]]"""
+      r.table[JsonObject, String]("abc").orderBy(OrderedIndex(r.asc("code"))) shouldBe an[ReqlTableSlice[ReqlObject, UUID]]
+      r.table[JsonObject, String]("abc").orderBy(OrderedIndex(r.asc("code"))).count() =%=[ReqlInteger] """[43,[[41,[[15,["abc"]]],{"index":[73,["code"]]}]]]"""
+      r.table[JsonObject, String]("abc").orderBy(OrderedIndex(r.asc("code"))).count(JsonObject.empty) =%=[ReqlInteger] """[43,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],{}]]"""
+      r.table[JsonObject, String]("abc").orderBy(OrderedIndex(r.asc("code"))).count(_.getField("code").gt(5)) =%=[ReqlInteger] """[43,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[21,[[31,[[10,[0]],"code"]],5]]]]]]"""
 
 
       //selectionOfArray
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")) shouldBe an[ReqlSelectionOfArray[ReqlObject, UUID]]
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).count() =%=[ReqlInteger] """[43,[[41,[[15,["abc"]],[73,["code"]]]]]]"""
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).count(JsonObject.empty) =%=[ReqlInteger] """[43,[[41,[[15,["abc"]],[73,["code"]]]],{}]]"""
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).count(_.getField("code").gt(5)) =%=[ReqlInteger] """[43,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[21,[[31,[[10,[0]],"code"]],5]]]]]]"""
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).count(emptyReqlObject) =%=[ReqlInteger] """[43,[[41,[[15,["abc"]],[73,["code"]]]],{}]]"""
+      r.table[JsonObject, String]("abc").orderBy(r.asc("code")) shouldBe an[ReqlSelectionOfArray[ReqlObject, UUID]]
+      r.table[JsonObject, String]("abc").orderBy(r.asc("code")).count() =%=[ReqlInteger] """[43,[[41,[[15,["abc"]],[73,["code"]]]]]]"""
+      r.table[JsonObject, String]("abc").orderBy(r.asc("code")).count(JsonObject.empty) =%=[ReqlInteger] """[43,[[41,[[15,["abc"]],[73,["code"]]]],{}]]"""
+      r.table[JsonObject, String]("abc").orderBy(r.asc("code")).count(_.getField("code").gt(5)) =%=[ReqlInteger] """[43,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[21,[[31,[[10,[0]],"code"]],5]]]]]]"""
 
 
       //selectionOfStream
-      r.table[ReqlObject, UUID]("abc").skip(10) shouldBe an[ReqlSelectionOfStream[ReqlObject, UUID]]
-      r.table[ReqlObject, UUID]("abc").skip(10).count() =%=[ReqlInteger] """[43,[[70,[[15,["abc"]],10]]]]"""
-      r.table[ReqlObject, UUID]("abc").skip(10).count(JsonObject.empty) =%=[ReqlInteger] """[43,[[70,[[15,["abc"]],10]],{}]]"""
-      r.table[ReqlObject, UUID]("abc").skip(10).count(_.getField("code").gt(5)) =%=[ReqlInteger] """[43,[[70,[[15,["abc"]],10]],[69,[[2,[0]],[21,[[31,[[10,[0]],"code"]],5]]]]]]"""
-      r.table[ReqlObject, UUID]("abc").skip(10).count(emptyReqlObject) =%=[ReqlInteger] """[43,[[70,[[15,["abc"]],10]],{}]]"""
+      r.table[JsonObject, String]("abc").skip(10) shouldBe an[ReqlSelectionOfStream[ReqlObject, UUID]]
+      r.table[JsonObject, String]("abc").skip(10).count() =%=[ReqlInteger] """[43,[[70,[[15,["abc"]],10]]]]"""
+      r.table[JsonObject, String]("abc").skip(10).count(JsonObject.empty) =%=[ReqlInteger] """[43,[[70,[[15,["abc"]],10]],{}]]"""
+      r.table[JsonObject, String]("abc").skip(10).count(_.getField("code").gt(5)) =%=[ReqlInteger] """[43,[[70,[[15,["abc"]],10]],[69,[[2,[0]],[21,[[31,[[10,[0]],"code"]],5]]]]]]"""
 
 
       //infinite stream
@@ -1884,8 +1919,8 @@ class RasterizationTest extends WordSpec {
       r.range(10).isEmpty() =%=[ReqlBoolean] """[86,[[173,[10]]]]"""
 
       //changefeed
-      r.table("abc").get("uuid").changes() shouldBe an[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlObject]]]
-      r.table("abc").get("uuid").changes().isEmpty() =%=[ReqlBoolean] """[86,[[152,[[16,[[15,["abc"]],"uuid"]]]]]]"""
+      abcJsonTable.get("uuid").changes() shouldBe an[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlModel[JsonObject, String]]]]
+      abcJsonTable.get("uuid").changes().isEmpty() =%=[ReqlBoolean] """[86,[[152,[[16,[[15,["abc"]],"uuid"]]]]]]"""
       r.table("abc").distinct() shouldBe an[ReqlFiniteStream[ReqlObject]]
       r.table("abc").distinct().isEmpty() =%=[ReqlBoolean] """[86,[[42,[[15,["abc"]]]]]]"""
 
@@ -1901,102 +1936,102 @@ class RasterizationTest extends WordSpec {
 
     "union" in {
       //table
-      r.table[ReqlObject, UUID]("abc")
-        .union(Nil: Seq[ReqlArray[ReqlObject]]) =%=[ReqlFiniteStream[ReqlObject]] """[44,[[15,["abc"]]]]"""
+      r.table[JsonObject, String]("abc")
+        .union(Nil: Seq[ReqlArray[ReqlModel[JsonObject, String]]]) =%=[ReqlFiniteStream[ReqlObject]] """[44,[[15,["abc"]]]]"""
 
-      r.table[ReqlObject, UUID]("abc")
-        .union(Seq(r.table[ReqlObject, UUID]("bcd"))) =%=[ReqlFiniteStream[ReqlObject]] """[44,[[15,["abc"]],[15,["bcd"]]]]"""
+      r.table[JsonObject, String]("abc")
+        .union(Seq(r.table[JsonObject, String]("bcd"))) =%=[ReqlFiniteStream[ReqlObject]] """[44,[[15,["abc"]],[15,["bcd"]]]]"""
 
-      r.table[ReqlObject, UUID]("abc")
+      r.table[JsonObject, String]("abc")
         .union(Seq(
-          r.expr(Seq(r.expr(JsonObject.empty)))
+          r.expr(Seq(JsonObject.empty: ReqlModel[JsonObject, String]))
         )) =%=[ReqlFiniteStream[ReqlObject]] """[44,[[15,["abc"]],[2,[{}]]]]"""
 
-      r.table[ReqlObject, UUID]("abc")
+      r.table[JsonObject, String]("abc")
         .union(Seq(
-          r.table[ReqlObject, UUID]("bcd"),
-          r.expr(Seq(r.expr(JsonObject.empty)))
+          r.table[JsonObject, String]("bcd"),
+          r.expr(Seq(JsonObject.empty: ReqlModel[JsonObject, String]))
         )) =%=[ReqlFiniteStream[ReqlObject]] """[44,[[15,["abc"]],[15,["bcd"]],[2,[{}]]]]"""
 
-      r.table[ReqlObject, UUID]("abc")
+      r.table[JsonObject, String]("abc")
         .union(Seq(
-          r.range().map(_ => r.expr(JsonObject.empty))
+          r.range().map(_ => JsonObject.empty: ReqlModel[JsonObject, String])
         )) =%=[ReqlInfiniteStream[ReqlObject]] """[44,[[15,["abc"]],[38,[[173,[]],[69,[[2,[0]],{}]]]]]]"""
 
-      r.table[ReqlObject, UUID]("abc")
+      r.table[JsonObject, String]("abc")
         .union(Seq(
-          r.table[ReqlObject, UUID]("bcd"),
-          r.expr(Seq(r.expr(JsonObject.empty)))
+          r.table[JsonObject, String]("bcd"),
+          r.expr(Seq(JsonObject.empty: ReqlModel[JsonObject, String]))
         ), MergeSort("code")) =%=[ReqlFiniteStream[ReqlObject]] """[44,[[15,["abc"]],[15,["bcd"]],[2,[{}]]],{"interleave":"code"}]"""
 
 
       //tableSlice
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code")))
-        .union(Nil: Seq[ReqlArray[ReqlObject]]) =%=[ReqlFiniteStream[ReqlObject]] """[44,[[41,[[15,["abc"]]],{"index":[73,["code"]]}]]]"""
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code")))
+        .union(Nil: Seq[ReqlArray[ReqlModel[JsonObject, String]]]) =%=[ReqlFiniteStream[ReqlObject]] """[44,[[41,[[15,["abc"]]],{"index":[73,["code"]]}]]]"""
 
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code")))
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code")))
         .union(Seq(
-          r.table[ReqlObject, UUID]("bcd"),
-          r.expr(Seq(r.expr(JsonObject.empty)))
+          bcdJsonTable,
+          r.expr(Seq(JsonObject.empty: ReqlModel[JsonObject, String]))
         )) =%=[ReqlFiniteStream[ReqlObject]] """[44,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[15,["bcd"]],[2,[{}]]]]"""
 
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code")))
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code")))
         .union(Seq(
-          r.range().map(_ => r.expr(JsonObject.empty))
+          r.range().map(_ => JsonObject.empty: ReqlModel[JsonObject, String])
         )) =%=[ReqlInfiniteStream[ReqlObject]] """[44,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[38,[[173,[]],[69,[[2,[0]],{}]]]]]]"""
 
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code")))
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code")))
         .union(Seq(
-          r.table[ReqlObject, UUID]("bcd"),
-          r.expr(Seq(r.expr(JsonObject.empty)))
+          bcdJsonTable,
+          r.expr(Seq(JsonObject.empty: ReqlModel[JsonObject, String]))
         ), MergeSort("code")) =%=[ReqlFiniteStream[ReqlObject]] """[44,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[15,["bcd"]],[2,[{}]]],{"interleave":"code"}]"""
 
 
       //selectionOfStream
-      r.table[ReqlObject, UUID]("abc").skip(10).union(Nil: Seq[ReqlArray[ReqlObject]])
+      r.table[JsonObject, String]("abc").skip(10).union(Nil: Seq[ReqlArray[ReqlModel[JsonObject, String]]])
 
-      r.table[ReqlObject, UUID]("abc").skip(10)
+      r.table[JsonObject, String]("abc").skip(10)
         .union(Seq(
-          r.table[ReqlObject, UUID]("bcd"),
-          r.expr(Seq(r.expr(JsonObject.empty)))
+          r.table[JsonObject, String]("bcd"),
+          r.expr(Seq(JsonObject.empty: ReqlModel[JsonObject, String]))
         )) =%=[ReqlFiniteStream[ReqlObject]] """[44,[[70,[[15,["abc"]],10]],[15,["bcd"]],[2,[{}]]]]"""
 
-      r.table[ReqlObject, UUID]("abc").skip(10)
+      r.table[JsonObject, String]("abc").skip(10)
         .union(Seq(
-          r.range().map(_ => r.expr(JsonObject.empty))
+          r.range().map(_ => JsonObject.empty: ReqlModel[JsonObject, String])
         )) =%=[ReqlInfiniteStream[ReqlObject]] """[44,[[70,[[15,["abc"]],10]],[38,[[173,[]],[69,[[2,[0]],{}]]]]]]"""
 
-      r.table[ReqlObject, UUID]("abc").skip(10)
+      r.table[JsonObject, String]("abc").skip(10)
         .union(Seq(
-          r.table[ReqlObject, UUID]("bcd"),
-          r.expr(Seq(r.expr(JsonObject.empty)))
+          r.table[JsonObject, String]("bcd"),
+          r.expr(Seq(JsonObject.empty: ReqlModel[JsonObject, String]))
         ), MergeSort("code")) =%=[ReqlFiniteStream[ReqlObject]] """[44,[[70,[[15,["abc"]],10]],[15,["bcd"]],[2,[{}]]],{"interleave":"code"}]"""
 
 
       //selectionOfArray
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code"))
-        .union(Nil: Seq[ReqlArray[ReqlObject]]) =%=[ReqlArray[ReqlObject]] """[44,[[41,[[15,["abc"]],[73,["code"]]]]]]"""
+      r.table[JsonObject, String]("abc").orderBy(r.asc("code"))
+        .union(Nil: Seq[ReqlArray[ReqlModel[JsonObject, String]]]) =%=[ReqlArray[ReqlObject]] """[44,[[41,[[15,["abc"]],[73,["code"]]]]]]"""
 
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code"))
+      r.table[JsonObject, String]("abc").orderBy(r.asc("code"))
         .union(Seq(
-          r.expr(Seq(r.expr(JsonObject.empty)))
+          r.expr(Seq(JsonObject.empty: ReqlModel[JsonObject, String]))
         )) =%=[ReqlArray[ReqlObject]] """[44,[[41,[[15,["abc"]],[73,["code"]]]],[2,[{}]]]]"""
 
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code"))
+      r.table[JsonObject, String]("abc").orderBy(r.asc("code"))
         .union(Seq(
-          r.table[ReqlObject, UUID]("bcd"),
-          r.expr(Seq(r.expr(JsonObject.empty)))
+          r.table[JsonObject, String]("bcd"),
+          r.expr(Seq(JsonObject.empty: ReqlModel[JsonObject, String]))
         )) =%=[ReqlFiniteStream[ReqlObject]] """[44,[[41,[[15,["abc"]],[73,["code"]]]],[15,["bcd"]],[2,[{}]]]]"""
 
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code"))
+      r.table[JsonObject, String]("abc").orderBy(r.asc("code"))
         .union(Seq(
-          r.range().map(_ => r.expr(JsonObject.empty))
+          r.range().map(_ => JsonObject.empty: ReqlModel[JsonObject, String])
         )) =%=[ReqlInfiniteStream[ReqlObject]] """[44,[[41,[[15,["abc"]],[73,["code"]]]],[38,[[173,[]],[69,[[2,[0]],{}]]]]]]"""
 
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code"))
+      r.table[JsonObject, String]("abc").orderBy(r.asc("code"))
         .union(Seq(
-          r.table[ReqlObject, UUID]("bcd"),
-          r.expr(Seq(r.expr(JsonObject.empty)))
+          r.table[JsonObject, String]("bcd"),
+          r.expr(Seq(JsonObject.empty: ReqlModel[JsonObject, String]))
         ), MergeSort("code")) =%=[ReqlFiniteStream[ReqlObject]] """[44,[[41,[[15,["abc"]],[73,["code"]]]],[15,["bcd"]],[2,[{}]]],{"interleave":"code"}]"""
 
 
@@ -2015,11 +2050,11 @@ class RasterizationTest extends WordSpec {
           r.range().map(_ => r.expr(JsonObject.empty))
         )) =%=[ReqlInfiniteStream[ReqlJsonObject]] """[44,[[38,[[173,[1,4]],[69,[[2,[0]],{}]]]],[38,[[173,[]],[69,[[2,[0]],{}]]]]]]"""
 
-      r.range(1, 4).map(_ => r.expr(JsonObject.empty))
+      r.range(1, 4).map(_ => JsonObject.empty: ReqlModel[JsonObject, String])
         .union(Seq(
-          r.table[ReqlJsonObject, UUID]("bcd"),
-          r.expr(Seq(r.expr(JsonObject.empty)))
-        ), MergeSort("code")) =%=[ReqlFiniteStream[ReqlJsonObject]] """[44,[[38,[[173,[1,4]],[69,[[2,[0]],{}]]]],[15,["bcd"]],[2,[{}]]],{"interleave":"code"}]"""
+          r.table[JsonObject, String]("bcd"),
+          r.expr(Seq(JsonObject.empty: ReqlModel[JsonObject, String]))
+        ), MergeSort("code")) =%=[ReqlFiniteStream[ReqlModel[JsonObject, String]]] """[44,[[38,[[173,[1,4]],[69,[[2,[0]],{}]]]],[15,["bcd"]],[2,[{}]]],{"interleave":"code"}]"""
 
 
       //infiniteStream
@@ -2036,17 +2071,17 @@ class RasterizationTest extends WordSpec {
           r.range().map(_ => r.expr(JsonObject.empty))
         )) =%=[ReqlInfiniteStream[ReqlJsonObject]] """[44,[[38,[[173,[]],[69,[[2,[0]],{}]]]],[38,[[173,[]],[69,[[2,[0]],{}]]]]]]"""
 
-      r.range().map(_ => r.expr(JsonObject.empty))
+      r.range().map(_ => JsonObject.empty: ReqlModel[JsonObject, String])
         .union(Seq(
-          r.table[ReqlJsonObject, UUID]("bcd"),
-          r.expr(Seq(r.expr(JsonObject.empty)))
-        )) =%=[ReqlInfiniteStream[ReqlJsonObject]] """[44,[[38,[[173,[]],[69,[[2,[0]],{}]]]],[15,["bcd"]],[2,[{}]]]]"""
+          bcdJsonTable,
+          r.expr(Seq(JsonObject.empty: ReqlModel[JsonObject, String]))
+        )) =%=[ReqlInfiniteStream[ReqlModel[JsonObject, String]]] """[44,[[38,[[173,[]],[69,[[2,[0]],{}]]]],[15,["bcd"]],[2,[{}]]]]"""
 
-      r.range().map(_ => r.expr(JsonObject.empty))
+      r.range().map(_ => JsonObject.empty: ReqlModel[JsonObject, String])
         .union(Seq(
-          r.table[ReqlJsonObject, UUID]("bcd"),
-          r.expr(Seq(r.expr(JsonObject.empty)))
-        ), MergeSort("code")) =%=[ReqlInfiniteStream[ReqlJsonObject]] """[44,[[38,[[173,[]],[69,[[2,[0]],{}]]]],[15,["bcd"]],[2,[{}]]],{"interleave":"code"}]"""
+          bcdJsonTable,
+          r.expr(Seq(JsonObject.empty: ReqlModel[JsonObject, String]))
+        ), MergeSort("code")) =%=[ReqlInfiniteStream[ReqlModel[JsonObject, String]]] """[44,[[38,[[173,[]],[69,[[2,[0]],{}]]]],[15,["bcd"]],[2,[{}]]],{"interleave":"code"}]"""
 
 
       //array
@@ -2058,29 +2093,29 @@ class RasterizationTest extends WordSpec {
           r.expr(Seq(r.expr(234), r.expr(345)))
         )) =%=[ReqlArray[ReqlInteger]] """[44,[[2,[123]],[2,[234,345]]]]"""
 
-      r.expr(Seq(r.expr(JsonObject.empty)))
+      r.expr(Seq(JsonObject.empty: ReqlModel[JsonObject, String]))
         .union(Seq(
-          r.table[ReqlJsonObject, UUID]("abc").orderBy(r.asc("code")),
-          r.expr(Seq(r.expr(JsonObject.empty)))
-        )) =%=[ReqlArray[ReqlJsonObject]] """[44,[[2,[{}]],[41,[[15,["abc"]],[73,["code"]]]],[2,[{}]]]]"""
+          abcJsonTable.orderBy(r.asc("code")),
+          r.expr(Seq(JsonObject.empty: ReqlModel[JsonObject, String]))
+        )) =%=[ReqlArray[ReqlModel[JsonObject, String]]] """[44,[[2,[{}]],[41,[[15,["abc"]],[73,["code"]]]],[2,[{}]]]]"""
 
-      r.expr(Seq(r.expr(JsonObject.empty)))
+      r.expr(Seq(JsonObject.empty: ReqlModel[JsonObject, String]))
         .union(Seq(
-          r.table[ReqlJsonObject, UUID]("bcd"),
-          r.expr(Seq(r.expr(JsonObject.empty)))
-        )) =%=[ReqlFiniteStream[ReqlJsonObject]] """[44,[[2,[{}]],[15,["bcd"]],[2,[{}]]]]"""
+          bcdJsonTable,
+          r.expr(Seq(JsonObject.empty: ReqlModel[JsonObject, String]))
+        )) =%=[ReqlFiniteStream[ReqlModel[JsonObject, String]]] """[44,[[2,[{}]],[15,["bcd"]],[2,[{}]]]]"""
 
-      r.expr(Seq(r.expr(JsonObject.empty)))
+      r.expr(Seq(JsonObject.empty: ReqlModel[JsonObject, String]))
         .union(Seq(
-          r.range().map(_ => r.expr(JsonObject.empty)),
-          r.expr(Seq(r.expr(JsonObject.empty)))
-        )) =%=[ReqlInfiniteStream[ReqlObject]] """[44,[[2,[{}]],[38,[[173,[]],[69,[[2,[0]],{}]]]],[2,[{}]]]]"""
+          r.range().map(_ => JsonObject.empty: ReqlModel[JsonObject, String]),
+          r.expr(Seq(JsonObject.empty: ReqlModel[JsonObject, String]))
+        )) =%=[ReqlInfiniteStream[ReqlModel[JsonObject, String]]] """[44,[[2,[{}]],[38,[[173,[]],[69,[[2,[0]],{}]]]],[2,[{}]]]]"""
 
-      r.expr(Seq(r.expr(JsonObject.empty)))
+      r.expr(Seq(JsonObject.empty: ReqlModel[JsonObject, String]))
         .union(Seq(
-          r.table[ReqlJsonObject, UUID]("bcd"),
-          r.expr(Seq(r.expr(JsonObject.empty)))
-        ), MergeSort("code")) =%=[ReqlFiniteStream[ReqlJsonObject]] """[44,[[2,[{}]],[15,["bcd"]],[2,[{}]]],{"interleave":"code"}]"""
+          bcdJsonTable,
+          r.expr(Seq(JsonObject.empty: ReqlModel[JsonObject, String]))
+        ), MergeSort("code")) =%=[ReqlFiniteStream[ReqlModel[JsonObject, String]]] """[44,[[2,[{}]],[15,["bcd"]],[2,[{}]]],{"interleave":"code"}]"""
 
 
       //options
@@ -2127,7 +2162,7 @@ class RasterizationTest extends WordSpec {
 
     "bracket" in {
       //table
-      r.table("table")("field") =%=[ReqlFiniteStream[ReqlDatum]] """[170,[[15,["table"]],"field"]]"""
+      r.table[JsonObject, String]("table")("field") =%=[ReqlFiniteStream[ReqlModel[JsonObject, String]]] """[170,[[15,["table"]],"field"]]"""
 
       //tableSlice
       r.table("abc").orderBy(OrderedIndex(r.asc("code")))("field") =%=[ReqlFiniteStream[ReqlDatum]] """[170,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],"field"]]"""
@@ -2165,7 +2200,7 @@ class RasterizationTest extends WordSpec {
       ))(2) =%=[ReqlDatum] """[170,[[2,[1,2,3]],2]]"""
 
       //selectionOfObject
-      r.table("table").get("uuid")("field") =%=[ReqlDatum] """[170,[[16,[[15,["table"]],"uuid"]],"field"]]"""
+      jsonTable("table").get("uuid")("field") =%=[ReqlDatum] """[170,[[16,[[15,["table"]],"uuid"]],"field"]]"""
 
       //object
       r.expr(Map(
@@ -2175,9 +2210,9 @@ class RasterizationTest extends WordSpec {
 
     "inner_join" in {
       //table
-      r.table[ReqlObject, UUID]("abc").innerJoin(
+      abcJsonTable.innerJoin(
         r.expr(Seq(r.expr(4), r.expr(5), r.expr(6))),
-        (x: ReqlObject, y: ReqlInteger) => r.expr(true)
+        (x: ReqlModel[JsonObject, String], y: ReqlInteger) => r.expr(true)
       ) =%=[ReqlFiniteStream[ReqlObject]] """[48,[[15,["abc"]],[2,[4,5,6]],[69,[[2,[0,1]],true]]]]"""
 
       // Cannot call a terminal (`reduce`, `count`, etc.) on an infinite stream (such as a changefeed)
@@ -2190,9 +2225,9 @@ class RasterizationTest extends WordSpec {
 
 
       //tableSlice
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).innerJoin(
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).innerJoin(
         r.expr(Seq(r.expr(4), r.expr(5), r.expr(6))),
-        (x: ReqlObject, y: ReqlInteger) => r.expr(true)
+        (x: ReqlModel[JsonObject, String], y: ReqlInteger) => r.expr(true)
       ) =%=[ReqlFiniteStream[ReqlObject]] """[48,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[2,[4,5,6]],[69,[[2,[0,1]],true]]]]"""
 
       // Cannot call a terminal (`reduce`, `count`, etc.) on an infinite stream (such as a changefeed)
@@ -2205,9 +2240,9 @@ class RasterizationTest extends WordSpec {
 
 
       //selectionOfStream
-      r.table[ReqlObject, UUID]("abc").skip(10).innerJoin(
+      abcJsonTable.skip(10).innerJoin(
         r.expr(Seq(r.expr(4), r.expr(5), r.expr(6))),
-        (x: ReqlObject, y: ReqlInteger) => r.expr(true)
+        (x: ReqlModel[JsonObject, String], y: ReqlInteger) => r.expr(true)
       ) =%=[ReqlFiniteStream[ReqlObject]] """[48,[[70,[[15,["abc"]],10]],[2,[4,5,6]],[69,[[2,[0,1]],true]]]]"""
 
       // Cannot call a terminal (`reduce`, `count`, etc.) on an infinite stream (such as a changefeed)
@@ -2233,7 +2268,7 @@ class RasterizationTest extends WordSpec {
 
 
       //changefeed
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes().innerJoin(
+      abcJsonTable.get("uuid").changes().innerJoin(
         r.expr(Seq(r.expr(4), r.expr(5), r.expr(6))),
         (x: ReqlObject, y: ReqlInteger) => r.expr(true)
       ) =%=[ReqlInfiniteStream[ReqlDatum]] """[48,[[152,[[16,[[15,["abc"]],"uuid"]]]],[2,[4,5,6]],[69,[[2,[0,1]],true]]]]"""
@@ -2248,19 +2283,19 @@ class RasterizationTest extends WordSpec {
 
 
       //selectionOfArray
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).innerJoin(
+      abcJsonTable.orderBy(r.asc("code")).innerJoin(
         r.expr(Seq(r.expr(4), r.expr(5), r.expr(6))),
-        (x: ReqlObject, y: ReqlInteger) => r.expr(true)
+        (x: ReqlModel[JsonObject, String], y: ReqlInteger) => r.expr(true)
       ) =%=[ReqlArray[ReqlDatum]] """[48,[[41,[[15,["abc"]],[73,["code"]]]],[2,[4,5,6]],[69,[[2,[0,1]],true]]]]"""
 
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).innerJoin[ReqlObject](
+      abcJsonTable.orderBy(r.asc("code")).innerJoin[ReqlObject](
         r.table("abc").orderBy(r.asc("code")),
-        (x: ReqlObject, y: ReqlObject) => r.expr(true)
+        (x: ReqlModel[JsonObject, String], y: ReqlObject) => r.expr(true)
       ) =%=[ReqlArray[ReqlDatum]] """[48,[[41,[[15,["abc"]],[73,["code"]]]],[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0,1]],true]]]]"""
 
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).innerJoin[ReqlObject](
+      abcJsonTable.orderBy(r.asc("code")).innerJoin[ReqlObject](
         r.table("bcd"),
-        (x: ReqlObject, y: ReqlObject) => r.expr(true)
+        (x: ReqlModel[JsonObject, String], y: ReqlObject) => r.expr(true)
       ) =%=[ReqlArray[ReqlDatum]] """[48,[[41,[[15,["abc"]],[73,["code"]]]],[15,["bcd"]],[69,[[2,[0,1]],true]]]]"""
 
       // Cannot call a terminal (`reduce`, `count`, etc.) on an infinite stream (such as a changefeed)
@@ -2294,9 +2329,9 @@ class RasterizationTest extends WordSpec {
 
     "outer_join" in {
       //table
-      r.table[ReqlObject, UUID]("abc").outerJoin(
+      abcJsonTable.outerJoin[ReqlInteger](
         r.expr(Seq(r.expr(4), r.expr(5), r.expr(6))),
-        (x: ReqlObject, y: ReqlInteger) => r.expr(true)
+        (x: ReqlModel[JsonObject, String], y: ReqlInteger) => r.expr(true)
       ) =%=[ReqlFiniteStream[ReqlObject]] """[49,[[15,["abc"]],[2,[4,5,6]],[69,[[2,[0,1]],true]]]]"""
 
       // Cannot call a terminal (`reduce`, `count`, etc.) on an infinite stream (such as a changefeed)
@@ -2309,7 +2344,7 @@ class RasterizationTest extends WordSpec {
 
 
       //tableSlice
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).outerJoin[ReqlInteger](
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).outerJoin[ReqlInteger](
         r.expr(Seq(r.expr(4), r.expr(5), r.expr(6))),
         (x, y) => r.expr(true)
       ) =%=[ReqlFiniteStream[ReqlObject]] """[49,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[2,[4,5,6]],[69,[[2,[0,1]],true]]]]"""
@@ -2324,7 +2359,7 @@ class RasterizationTest extends WordSpec {
 
 
       //selectionOfStream
-      r.table[ReqlObject, UUID]("abc").skip(10).outerJoin[ReqlInteger](
+      abcJsonTable.skip(10).outerJoin[ReqlInteger](
         r.expr(Seq(r.expr(4), r.expr(5), r.expr(6))),
         (x, y) => r.expr(true)
       ) =%=[ReqlFiniteStream[ReqlObject]] """[49,[[70,[[15,["abc"]],10]],[2,[4,5,6]],[69,[[2,[0,1]],true]]]]"""
@@ -2353,7 +2388,7 @@ class RasterizationTest extends WordSpec {
 
 
       //changefeed
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes().outerJoin[ReqlInteger](
+      abcJsonTable.get("uuid").changes().outerJoin[ReqlInteger](
         r.expr(Seq(r.expr(4), r.expr(5), r.expr(6))),
         (x, y) => r.expr(true)
       ) =%=[ReqlInfiniteStream[ReqlDatum]] """[49,[[152,[[16,[[15,["abc"]],"uuid"]]]],[2,[4,5,6]],[69,[[2,[0,1]],true]]]]"""
@@ -2368,20 +2403,20 @@ class RasterizationTest extends WordSpec {
 
 
       //selectionOfArray
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).outerJoin[ReqlInteger](
+      abcJsonTable.orderBy(r.asc("code")).outerJoin[ReqlInteger](
         r.expr(Seq(r.expr(4), r.expr(5), r.expr(6))),
         (x, y) => r.expr(true)
-      ) =%=[ReqlArray[ReqlJoinResult[ReqlObject, ReqlInteger]]] """[49,[[41,[[15,["abc"]],[73,["code"]]]],[2,[4,5,6]],[69,[[2,[0,1]],true]]]]"""
+      ) =%=[ReqlArray[ReqlJoinResult[ReqlModel[JsonObject, String], ReqlInteger]]] """[49,[[41,[[15,["abc"]],[73,["code"]]]],[2,[4,5,6]],[69,[[2,[0,1]],true]]]]"""
 
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).outerJoin[ReqlObject](
-        r.table("abc").orderBy(r.asc("code")),
+      abcJsonTable.orderBy(r.asc("code")).outerJoin[ReqlModel[JsonObject, String]](
+        abcJsonTable.orderBy(r.asc("code")),
         (x, y) => r.expr(true)
-      ) =%=[ReqlArray[ReqlJoinResult[ReqlObject, ReqlObject]]] """[49,[[41,[[15,["abc"]],[73,["code"]]]],[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0,1]],true]]]]"""
+      ) =%=[ReqlArray[ReqlJoinResult[ReqlModel[JsonObject, String], ReqlModel[JsonObject, String]]]] """[49,[[41,[[15,["abc"]],[73,["code"]]]],[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0,1]],true]]]]"""
 
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).outerJoin[ReqlObject](
-        r.table("bcd"),
+      abcJsonTable.orderBy(r.asc("code")).outerJoin[ReqlModel[JsonObject, String]](
+        bcdJsonTable,
         (x, y) => r.expr(true)
-      ) =%=[ReqlArray[ReqlJoinResult[ReqlObject, ReqlObject]]] """[49,[[41,[[15,["abc"]],[73,["code"]]]],[15,["bcd"]],[69,[[2,[0,1]],true]]]]"""
+      ) =%=[ReqlArray[ReqlJoinResult[ReqlModel[JsonObject, String], ReqlModel[JsonObject, String]]]] """[49,[[41,[[15,["abc"]],[73,["code"]]]],[15,["bcd"]],[69,[[2,[0,1]],true]]]]"""
 
       // Cannot call a terminal (`reduce`, `count`, etc.) on an infinite stream (such as a changefeed)
       """
@@ -2414,31 +2449,31 @@ class RasterizationTest extends WordSpec {
 
     "eq_join" in {
       //table
-      r.table("abc").eqJoin("code", r.table("bcd")) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[15,["abc"]],"code",[15,["bcd"]]]]"""
-      r.table("abc").eqJoin("code", r.table("bcd"), ordered = Ordered) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[15,["abc"]],"code",[15,["bcd"]]],{"ordered":true}]"""
-      r.table("abc").eqJoin("code", r.table("bcd"), Index("code")) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[15,["abc"]],"code",[15,["bcd"]]],{"index":"code"}]"""
-      r.table("abc").eqJoin("code", r.table("bcd"), Index("code"), Ordered) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[15,["abc"]],"code",[15,["bcd"]]],{"index":"code","ordered":true}]"""
+      abcJsonTable.eqJoin("code", bcdJsonTable) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[15,["abc"]],"code",[15,["bcd"]]]]"""
+      abcJsonTable.eqJoin("code", bcdJsonTable, ordered = Ordered) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[15,["abc"]],"code",[15,["bcd"]]],{"ordered":true}]"""
+      abcJsonTable.eqJoin("code", bcdJsonTable, Index("code")) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[15,["abc"]],"code",[15,["bcd"]]],{"index":"code"}]"""
+      abcJsonTable.eqJoin("code", bcdJsonTable, Index("code"), Ordered) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[15,["abc"]],"code",[15,["bcd"]]],{"index":"code","ordered":true}]"""
 
-      r.table("abc").eqJoin({x: ReqlObject => r.expr(123)}, r.table("bcd")) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[15,["abc"]],[69,[[2,[0]],123]],[15,["bcd"]]]]"""
-      r.table("abc").eqJoin({x: ReqlObject => r.expr(123)}, r.table("bcd"), ordered = Ordered) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[15,["abc"]],[69,[[2,[0]],123]],[15,["bcd"]]],{"ordered":true}]"""
-      r.table("abc").eqJoin({x: ReqlObject => r.expr(123)}, r.table("bcd"), Index("code")) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[15,["abc"]],[69,[[2,[0]],123]],[15,["bcd"]]],{"index":"code"}]"""
-      r.table("abc").eqJoin({x: ReqlObject => r.expr(123)}, r.table("bcd"), Index("code"), Ordered) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[15,["abc"]],[69,[[2,[0]],123]],[15,["bcd"]]],{"index":"code","ordered":true}]"""
+      abcJsonTable.eqJoin({x: ReqlModel[JsonObject, String] => r.expr(123)}, bcdJsonTable) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[15,["abc"]],[69,[[2,[0]],123]],[15,["bcd"]]]]"""
+      abcJsonTable.eqJoin({x: ReqlModel[JsonObject, String] => r.expr(123)}, bcdJsonTable, ordered = Ordered) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[15,["abc"]],[69,[[2,[0]],123]],[15,["bcd"]]],{"ordered":true}]"""
+      abcJsonTable.eqJoin({x: ReqlModel[JsonObject, String] => r.expr(123)}, bcdJsonTable, Index("code")) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[15,["abc"]],[69,[[2,[0]],123]],[15,["bcd"]]],{"index":"code"}]"""
+      abcJsonTable.eqJoin({x: ReqlModel[JsonObject, String] => r.expr(123)}, bcdJsonTable, Index("code"), Ordered) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[15,["abc"]],[69,[[2,[0]],123]],[15,["bcd"]]],{"index":"code","ordered":true}]"""
 
 
       //tableSlice
-      r.table("abc").orderBy(OrderedIndex(r.asc("code"))).
-        eqJoin("code", r.table("bcd"), Index("code")) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],"code",[15,["bcd"]]],{"index":"code"}]"""
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).
+        eqJoin("code", bcdJsonTable, Index("code")) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],"code",[15,["bcd"]]],{"index":"code"}]"""
 
-      r.table("abc").orderBy(OrderedIndex(r.asc("code"))).
-        eqJoin({x: ReqlObject => r.expr(123)}, r.table("bcd"), Index("code")) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],123]],[15,["bcd"]]],{"index":"code"}]"""
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).
+        eqJoin({x: ReqlModel[JsonObject, String] => r.expr(123)}, bcdJsonTable, Index("code")) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],123]],[15,["bcd"]]],{"index":"code"}]"""
 
 
       //selectionOfStream
-      r.table("abc").skip(10).
-        eqJoin("code", r.table("bcd"), Index("code")) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[70,[[15,["abc"]],10]],"code",[15,["bcd"]]],{"index":"code"}]"""
+      abcJsonTable.skip(10).
+        eqJoin("code", bcdJsonTable, Index("code")) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[70,[[15,["abc"]],10]],"code",[15,["bcd"]]],{"index":"code"}]"""
 
-      r.table("abc").skip(10).
-        eqJoin({x: ReqlObject => r.expr(123)}, r.table("bcd"), Index("code")) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[70,[[15,["abc"]],10]],[69,[[2,[0]],123]],[15,["bcd"]]],{"index":"code"}]"""
+      abcJsonTable.skip(10).
+        eqJoin({x: ReqlModel[JsonObject, String] => r.expr(123)}, bcdJsonTable, Index("code")) =%=[ReqlFiniteStream[ReqlObject]] """[50,[[70,[[15,["abc"]],10]],[69,[[2,[0]],123]],[15,["bcd"]]],{"index":"code"}]"""
 
 
       //infiniteStream
@@ -2452,19 +2487,19 @@ class RasterizationTest extends WordSpec {
 
 
       //changefeed
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes().
+      abcJsonTable.get("uuid").changes().
         eqJoin("code", r.table("bcd"), Index("code")) =%=[ReqlInfiniteStream[ReqlDatum]] """[50,[[152,[[16,[[15,["abc"]],"uuid"]]]],"code",[15,["bcd"]]],{"index":"code"}]"""
 
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes().
+      abcJsonTable.get("uuid").changes().
         eqJoin({x: ReqlObject => r.expr(123)}, r.table("bcd"), Index("code")) =%=[ReqlInfiniteStream[ReqlDatum]] """[50,[[152,[[16,[[15,["abc"]],"uuid"]]]],[69,[[2,[0]],123]],[15,["bcd"]]],{"index":"code"}]"""
 
 
       //selectionOfArray
-      r.table("abc").orderBy(r.asc("code")).
-        eqJoin("code", r.table("bcd"), Index("code")) =%=[ReqlArray[ReqlDatum]] """[50,[[41,[[15,["abc"]],[73,["code"]]]],"code",[15,["bcd"]]],{"index":"code"}]"""
+      r.table[JsonObject, String]("abc").orderBy(r.asc("code")).
+        eqJoin("code", r.table[JsonObject, String]("bcd"), Index("code")) =%=[ReqlArray[ReqlDatum]] """[50,[[41,[[15,["abc"]],[73,["code"]]]],"code",[15,["bcd"]]],{"index":"code"}]"""
 
-      r.table("abc").orderBy(r.asc("code")).
-        eqJoin({x: ReqlObject => r.expr(123)}, r.table("bcd"), Index("code")) =%=[ReqlArray[ReqlDatum]] """[50,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],123]],[15,["bcd"]]],{"index":"code"}]"""
+      r.table[JsonObject, String]("abc").orderBy(r.asc("code")).
+        eqJoin({x: ReqlModel[JsonObject, String] => r.expr(123)}, r.table[JsonObject, String]("bcd"), Index("code")) =%=[ReqlArray[ReqlDatum]] """[50,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],123]],[15,["bcd"]]],{"index":"code"}]"""
 
 
       //array
@@ -2494,20 +2529,20 @@ class RasterizationTest extends WordSpec {
       r.range().innerJoin(r.range(2), (x: ReqlInteger, y: ReqlInteger) => true).zip() =%=[ReqlInfiniteStream[ReqlDatum]] """[72,[[48,[[173,[]],[173,[2]],[69,[[2,[0,1]],true]]]]]]"""
 
       //finiteStream
-      r.table("abc").eqJoin("code", r.table("bcd")) shouldBe an[ReqlFiniteStream[ReqlDatum]]
-      r.table("abc").eqJoin("code", r.table("bcd")).zip() =%=[ReqlFiniteStream[ReqlDatum]] """[72,[[50,[[15,["abc"]],"code",[15,["bcd"]]]]]]"""
+      r.table[JsonObject, String]("abc").eqJoin("code", r.table[JsonObject, String]("bcd")) shouldBe an[ReqlFiniteStream[ReqlDatum]]
+      r.table[JsonObject, String]("abc").eqJoin("code", r.table[JsonObject, String]("bcd")).zip() =%=[ReqlFiniteStream[ReqlDatum]] """[72,[[50,[[15,["abc"]],"code",[15,["bcd"]]]]]]"""
 
       //array
       r.expr(Seq(
-        r.expr(Map("code" -> r.expr(123))),
-        r.expr(Map("code" -> r.expr(234)))
-      )).eqJoin("code", r.table("abc")).zip() =%=[ReqlArray[ReqlDatum]] """[72,[[50,[[2,[{"code":123},{"code":234}]],"code",[15,["abc"]]]]]]"""
+        JsonObject.fromMap(Map("code" -> Json.fromInt(123))): ReqlModel[JsonObject, String],
+        JsonObject.fromMap(Map("code" -> Json.fromInt(234))): ReqlModel[JsonObject, String]
+      )).eqJoin("code", r.table[JsonObject, String]("abc")).zip() =%=[ReqlArray[ReqlDatum]] """[72,[[50,[[2,[{"code":123},{"code":234}]],"code",[15,["abc"]]]]]]"""
 
       r.expr(Seq(
-        new ReqlJoinResultImpl(
-          left = r.expr(Map("test" -> r.expr(123))),
-          right = r.expr(Map("code" -> r.expr(234)))
-        )
+        JoinResult[JsonObject, JsonObject](
+          left = JsonObject.fromMap(Map("test" -> Json.fromInt(123))),
+          right = JsonObject.fromMap(Map("code" -> Json.fromInt(234)))
+        ): ReqlJoinResult[JsonObject, JsonObject]
       )).zip() =%=[ReqlArray[ReqlDatum]] """[72,[[2,[{"left":{"test":123},"right":{"code":234}}]]]]"""
 
       //by docs it should not work on other sequence types
@@ -2601,7 +2636,7 @@ class RasterizationTest extends WordSpec {
       (false :: 123 :: "abc" :: ReNil).coerceTo(`string`) =%=[ReqlString] """[51,[[2,[false,123,"abc"]],"string"]]"""
       (("abc" := 123) ~ ("bcd" := "cde")).coerceTo(`string`) =%=[ReqlString] """[51,[{"abc":123,"bcd":"cde"},"string"]]"""
       r.binary(ByteString(10, 20, 30, 40)).coerceTo(`string`) =%=[ReqlString] """[51,[{"$reql_type$":"BINARY","data":"ChQeKA=="},"string"]]"""
-      r.table("abc").get("uuid").coerceTo(`string`) =%=[ReqlString] """[51,[[16,[[15,["abc"]],"uuid"]],"string"]]"""
+      abcJsonTable.get("uuid").coerceTo(`string`) =%=[ReqlString] """[51,[[16,[[15,["abc"]],"uuid"]],"string"]]"""
 
       //to array
       r.table("abc").coerceTo(`array`) =%=[ReqlArray[ReqlDatum]] """[51,[[15,["abc"]],"array"]]"""
@@ -2612,13 +2647,13 @@ class RasterizationTest extends WordSpec {
       """r.range().coerceTo(`array`)""".shouldNot(compile)
       (false :: 123 :: "abc" :: ReNil).coerceTo(`array`) =%=[ReqlArray[ReqlDatum]] """[51,[[2,[false,123,"abc"]],"array"]]"""
       (("abc" := 123) ~ ("bcd" := "cde")).coerceTo(`array`) =%=[ReqlArray[ReqlDatum]] """[51,[{"abc":123,"bcd":"cde"},"array"]]"""
-      r.table("abc").get("uuid").coerceTo(`array`) =%=[ReqlArray[ReqlDatum]] """[51,[[16,[[15,["abc"]],"uuid"]],"array"]]"""
+      abcJsonTable.get("uuid").coerceTo(`array`) =%=[ReqlArray[ReqlDatum]] """[51,[[16,[[15,["abc"]],"uuid"]],"array"]]"""
 
       //to object
       r.range(4).coerceTo(`object`) =%=[ReqlObject] """[51,[[173,[4]],"object"]]"""
       (("abc" :: 123 :: ReNil) :: ("bcd" :: "cde" :: ReNil) :: ReNil).coerceTo(`object`) =%=[ReqlObject] """[51,[[2,[[2,["abc",123]],[2,["bcd","cde"]]]],"object"]]"""
       (("abc" := 123) ~ ("bcd" := "cde")).coerceTo(`object`) =%=[ReqlObject] """[51,[{"abc":123,"bcd":"cde"},"object"]]"""
-      r.table("abc").get("uuid").coerceTo(`object`) =%=[ReqlObject] """[51,[[16,[[15,["abc"]],"uuid"]],"object"]]"""
+      abcJsonTable.get("uuid").coerceTo(`object`) =%=[ReqlObject] """[51,[[16,[[15,["abc"]],"uuid"]],"object"]]"""
 
       //to binary
       r.expr("abc").coerceTo(`binary`) =%=[ReqlBinary] """[51,["abc","binary"]]"""
@@ -2644,10 +2679,11 @@ class RasterizationTest extends WordSpec {
 
     "update" in {
       //table
-      r.table[ReqlObject, UUID]("abc").update(r.expr(null)) =%=[ReqlModificationResult[ReqlObject, UUID]] """[53,[[15,["abc"]],null]]"""
-      r.table[ReqlObject, UUID]("abc").update(JsonObject.empty) =%=[ReqlModificationResult[ReqlObject, UUID]] """[53,[[15,["abc"]],{}]]"""
-      r.table[ReqlObject, UUID]("abc").update(r.expr(JsonObject.empty)) =%=[ReqlModificationResult[ReqlObject, UUID]] """[53,[[15,["abc"]],{}]]"""
-      r.table[ReqlObject, UUID]("abc").update({x: ReqlObject => r.expr(JsonObject.empty)}) =%=[ReqlModificationResult[ReqlObject, UUID]] """[53,[[15,["abc"]],[69,[[2,[0]],{}]]]]"""
+      r.table[JsonObject, String]("abc").update(r.expr(null)) =%=[ReqlModificationResult[JsonObject, String]] """[53,[[15,["abc"]],null]]"""
+      r.table[JsonObject, String]("abc").update(JsonObject.empty) =%=[ReqlModificationResult[JsonObject, String]] """[53,[[15,["abc"]],{}]]"""
+      r.table[JsonObject, String]("abc").update(JsonObject.empty) =%=[ReqlModificationResult[JsonObject, String]] """[53,[[15,["abc"]],{}]]"""
+      r.table[JsonObject, String]("abc").
+        update({x: ReqlModel[JsonObject, String] => JsonObject.empty: ReqlModel[JsonObject, String]}) =%=[ReqlModificationResult[JsonObject, String]] """[53,[[15,["abc"]],[69,[[2,[0]],{}]]]]"""
 
       r.table[ReqlObject, UUID]("abc").update(
         JsonObject.empty,
@@ -2666,12 +2702,12 @@ class RasterizationTest extends WordSpec {
         returnChanges = DoNotReturnChanges,
         nonAtomic = AtomicUpdate) =%=[ReqlModificationResult[ReqlObject, UUID]] """[53,[[15,["abc"]],{}],{"durability":"soft"}]"""
 
-      r.table[ReqlObject, UUID]("abc").update(
-        { x: ReqlObject => r.expr(JsonObject.empty) },
+      r.table[JsonObject, String]("abc").update(
+        { x: ReqlModel[JsonObject, String] => JsonObject.empty: ReqlModel[JsonObject, String] },
         durability = Hard,
         returnChanges = AlwaysReturnChanges,
         nonAtomic = NonAtomicUpdate
-      ) =%=[ReqlModificationResult[ReqlObject, UUID]] """[53,[[15,["abc"]],[69,[[2,[0]],{}]]],{"durability":"hard","return_changes":"always","non_atomic":true}]"""
+      ) =%=[ReqlModificationResult[JsonObject, String]] """[53,[[15,["abc"]],[69,[[2,[0]],{}]]],{"durability":"hard","return_changes":"always","non_atomic":true}]"""
 
       //tableSlice
       r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))) shouldBe an[ReqlTableSlice[ReqlObject, UUID]]
@@ -2695,11 +2731,11 @@ class RasterizationTest extends WordSpec {
       ) =%=[ReqlModificationResult[ReqlObject, UUID]] """[53,[[41,[[15,["abc"]],[73,["code"]]]],{}],{"non_atomic":true}]"""
 
       //selectionOfObject
-      r.table[ReqlObject, UUID]("abc").get("uuid") shouldBe an[ReqlSelectionOfObject[ReqlObject, UUID]]
-      r.table[ReqlObject, UUID]("abc").get("uuid").update(
+      abcJsonTable.get("uuid") shouldBe an[ReqlSelectionOfObject[ReqlModel[JsonObject, String], String]]
+      abcJsonTable.get("uuid").update(
         JsonObject.empty,
         nonAtomic = NonAtomicUpdate
-      ) =%=[ReqlModificationResult[ReqlObject, UUID]] """[53,[[16,[[15,["abc"]],"uuid"]],{}],{"non_atomic":true}]"""
+      ) =%=[ReqlModificationResult[JsonObject, String]] """[53,[[16,[[15,["abc"]],"uuid"]],{}],{"non_atomic":true}]"""
     }
 
     "delete" in {
@@ -2725,89 +2761,86 @@ class RasterizationTest extends WordSpec {
       r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).delete() =%=[ReqlModificationResult[ReqlObject, UUID]] """[54,[[41,[[15,["abc"]],[73,["code"]]]]]]"""
 
       //selectionOfObject
-      r.table[ReqlObject, UUID]("abc").get("uuid") shouldBe an[ReqlSelectionOfObject[ReqlObject, UUID]]
-      r.table[ReqlObject, UUID]("abc").get("uuid").delete() =%=[ReqlModificationResult[ReqlObject, UUID]] """[54,[[16,[[15,["abc"]],"uuid"]]]]"""
+      abcJsonTable.get("uuid") shouldBe an[ReqlSelectionOfObject[JsonObject, String]]
+      abcJsonTable.get("uuid").delete() =%=[ReqlModificationResult[JsonObject, String]] """[54,[[16,[[15,["abc"]],"uuid"]]]]"""
     }
 
     "replace" in {
       //table
-      r.table[ReqlObject, UUID]("abc").replace(r.expr(null)) =%=[ReqlModificationResult[ReqlObject, UUID]] """[55,[[15,["abc"]],null]]"""
-      r.table[ReqlObject, UUID]("abc").replace(JsonObject.empty) =%=[ReqlModificationResult[ReqlObject, UUID]] """[55,[[15,["abc"]],{}]]"""
-      r.table[ReqlObject, UUID]("abc").replace(r.expr(JsonObject.empty)) =%=[ReqlModificationResult[ReqlObject, UUID]] """[55,[[15,["abc"]],{}]]"""
-      r.table[ReqlObject, UUID]("abc").replace({x: ReqlObject => x}) =%=[ReqlModificationResult[ReqlObject, UUID]] """[55,[[15,["abc"]],[69,[[2,[0]],[10,[0]]]]]]"""
-      r.table[ReqlObject, UUID]("abc").replace(r.expr(JsonObject.empty), Soft, AlwaysReturnChanges, NonAtomicUpdate) =%=[ReqlModificationResult[ReqlObject, UUID]] """[55,[[15,["abc"]],{}],{"durability":"soft","return_changes":"always","non_atomic":true}]"""
+      r.table[JsonObject, String]("abc").replace(r.expr(null)) =%=[ReqlModificationResult[JsonObject, String]] """[55,[[15,["abc"]],null]]"""
+      r.table[JsonObject, String]("abc").replace(JsonObject.empty) =%=[ReqlModificationResult[JsonObject, String]] """[55,[[15,["abc"]],{}]]"""
+      r.table[JsonObject, String]("abc").replace({x: ReqlModel[JsonObject, String] => x}) =%=[ReqlModificationResult[JsonObject, String]] """[55,[[15,["abc"]],[69,[[2,[0]],[10,[0]]]]]]"""
+      r.table[JsonObject, String]("abc").replace(JsonObject.empty, Soft, AlwaysReturnChanges, NonAtomicUpdate) =%=[ReqlModificationResult[JsonObject, String]] """[55,[[15,["abc"]],{}],{"durability":"soft","return_changes":"always","non_atomic":true}]"""
 
       //tableSlice
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))) shouldBe an[ReqlTableSlice[ReqlObject, UUID]]
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).replace(
-        r.expr(JsonObject.empty),
+      r.table[JsonObject, String]("abc").orderBy(OrderedIndex(r.asc("code"))) shouldBe an[ReqlTableSlice[JsonObject, String]]
+      r.table[JsonObject, String]("abc").orderBy(OrderedIndex(r.asc("code"))).replace(
+        JsonObject.empty,
         nonAtomic = NonAtomicUpdate
-      ) =%=[ReqlModificationResult[ReqlObject, UUID]] """[55,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],{}],{"non_atomic":true}]"""
+      ) =%=[ReqlModificationResult[JsonObject, String]] """[55,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],{}],{"non_atomic":true}]"""
 
       //selectionOfStream
-      r.table[ReqlObject, UUID]("abc").skip(10) shouldBe an[ReqlSelectionOfStream[ReqlObject, UUID]]
-      r.table[ReqlObject, UUID]("abc").skip(10).replace(
-        r.expr(JsonObject.empty),
+      r.table[JsonObject, String]("abc").skip(10) shouldBe an[ReqlSelectionOfStream[JsonObject, String]]
+      r.table[JsonObject, String]("abc").skip(10).replace(
+        JsonObject.empty,
         nonAtomic = NonAtomicUpdate
-      ) =%=[ReqlModificationResult[ReqlObject, UUID]] """[55,[[70,[[15,["abc"]],10]],{}],{"non_atomic":true}]"""
+      ) =%=[ReqlModificationResult[JsonObject, String]] """[55,[[70,[[15,["abc"]],10]],{}],{"non_atomic":true}]"""
 
       //selectionOfArray
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")) shouldBe an[ReqlSelectionOfArray[ReqlObject, UUID]]
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).replace(
-        r.expr(JsonObject.empty),
+      r.table[JsonObject, String]("abc").orderBy(r.asc("code")) shouldBe an[ReqlSelectionOfArray[JsonObject, String]]
+      r.table[JsonObject, String]("abc").orderBy(r.asc("code")).replace(
+        JsonObject.empty,
         nonAtomic = NonAtomicUpdate
-      ) =%=[ReqlModificationResult[ReqlObject, UUID]] """[55,[[41,[[15,["abc"]],[73,["code"]]]],{}],{"non_atomic":true}]"""
+      ) =%=[ReqlModificationResult[JsonObject, String]] """[55,[[41,[[15,["abc"]],[73,["code"]]]],{}],{"non_atomic":true}]"""
 
       //selectionOfObject
-      r.table[ReqlObject, UUID]("abc").get("uuid") shouldBe an[ReqlSelectionOfObject[ReqlObject, UUID]]
-      r.table[ReqlObject, UUID]("abc").get("uuid").replace(
-        r.expr(JsonObject.empty),
+      abcJsonTable.get("uuid") shouldBe an[ReqlSelectionOfObject[JsonObject, String]]
+      abcJsonTable.get("uuid").replace(
+        JsonObject.empty,
         nonAtomic = NonAtomicUpdate
-      ) =%=[ReqlModificationResult[ReqlObject, UUID]] """[55,[[16,[[15,["abc"]],"uuid"]],{}],{"non_atomic":true}]"""
+      ) =%=[ReqlModificationResult[JsonObject, String]] """[55,[[16,[[15,["abc"]],"uuid"]],{}],{"non_atomic":true}]"""
     }
 
     "insert" in new ShapesData {
       //one document
-      r.table[ReqlObject, UUID]("abc").insert(JsonObject.empty) =%=[ReqlModificationResult[ReqlObject, UUID]] """[56,[[15,["abc"]],{}]]"""
+      r.table[JsonObject, String]("abc").insert(JsonObject.empty) =%=[ReqlModificationResult[JsonObject, String]] """[56,[[15,["abc"]],{}]]"""
 
-      r.table[ReqlObject, UUID]("abc").insert(
+      r.table[JsonObject, String]("abc").insert(
         JsonObject.empty,
         Soft,
         AlwaysReturnChanges,
-        ReplaceOnConflict
-      ) =%=[ReqlModificationResult[ReqlObject, UUID]] """[56,[[15,["abc"]],{}],{"durability":"soft","return_changes":"always","conflict":"replace"}]"""
+        ReplaceOnConflict()
+      ) =%=[ReqlModificationResult[JsonObject, String]] """[56,[[15,["abc"]],{}],{"durability":"soft","return_changes":"always","conflict":"replace"}]"""
 
-      r.table[ReqlObject, UUID]("abc").insert(JsonObject.empty, conflict = ErrorOnConflict) =%=[ReqlModificationResult[ReqlObject, UUID]] """[56,[[15,["abc"]],{}]]"""
-      r.table[ReqlObject, UUID]("abc").insert(JsonObject.empty, conflict = ReplaceOnConflict) =%=[ReqlModificationResult[ReqlObject, UUID]] """[56,[[15,["abc"]],{}],{"conflict":"replace"}]"""
-      r.table[ReqlObject, UUID]("abc").insert(JsonObject.empty, conflict = UpdateOnConflict) =%=[ReqlModificationResult[ReqlObject, UUID]] """[56,[[15,["abc"]],{}],{"conflict":"update"}]"""
-      r.table[ReqlObject, UUID]("abc").insert(
+      r.table[JsonObject, String]("abc").insert(JsonObject.empty, conflict = ErrorOnConflict()) =%=[ReqlModificationResult[JsonObject, String]] """[56,[[15,["abc"]],{}]]"""
+      r.table[JsonObject, String]("abc").insert(JsonObject.empty, conflict = ReplaceOnConflict()) =%=[ReqlModificationResult[JsonObject, String]] """[56,[[15,["abc"]],{}],{"conflict":"replace"}]"""
+      r.table[JsonObject, String]("abc").insert(JsonObject.empty, conflict = UpdateOnConflict()) =%=[ReqlModificationResult[JsonObject, String]] """[56,[[15,["abc"]],{}],{"conflict":"update"}]"""
+      r.table[JsonObject, String]("abc").insert(
         JsonObject.empty,
-        conflict = ResolveOnConflict[ReqlObject]((id, oldDoc, newDoc) => newDoc)
-      ) =%=[ReqlModificationResult[ReqlObject, UUID]] """[56,[[15,["abc"]],{}],{"conflict":[69,[[2,[0,1,2]],[10,[2]]]]}]"""
+        conflict = ResolveOnConflict[JsonObject, String]((id, oldDoc, newDoc) => newDoc)
+      ) =%=[ReqlModificationResult[JsonObject, String]] """[56,[[15,["abc"]],{}],{"conflict":[69,[[2,[0,1,2]],[10,[2]]]]}]"""
 
       {
-        import rere.ql.shapes.ReqlModel
         import TestDatabase.abc
 
         val q = abc.table().insert(Abc("abc"))
-        val _: ReqlModificationResult[ReqlModel[Abc], String] = q
+        val _: ReqlModificationResult[Abc, String] = q
         q =*= """[56,[[15,[[14,["test"]],"abc"]],{"name":"abc"}]]"""
       }
 
       //many documents
-      r.table[ReqlObject, UUID]("abc").insertMany(
-        r.expr(Seq(r.expr(JsonObject.empty), r.expr(JsonObject.empty))),
-        conflict = ResolveOnConflict[ReqlObject]((id, oldDoc, newDoc) => newDoc)
-      ) =%=[ReqlModificationResult[ReqlObject, UUID]] """[56,[[15,["abc"]],[2,[{},{}]]],{"conflict":[69,[[2,[0,1,2]],[10,[2]]]]}]"""
+      r.table[JsonObject, String]("abc").insertMany(
+        r.expr(Seq(JsonObject.empty, JsonObject.empty)),
+        conflict = ResolveOnConflict((id, oldDoc, newDoc) => newDoc)
+      ) =%=[ReqlModificationResult[JsonObject, String]] """[56,[[15,["abc"]],[2,[{},{}]]],{"conflict":[69,[[2,[0,1,2]],[10,[2]]]]}]"""
 
       //auto
       {
-        import rere.ql.shapes.ReqlModel
         import TestDatabase.abc
 
         // No TypeTag available for rere.ql.queries.all.InsertTableQuery[qual$558.Model]
         val q = abc.table().insertAuto(Abc("abc"))
-        val _: ReqlModificationResult[ReqlModel[Abc], String] = q
+        val _: ReqlModificationResult[Abc, String] = q
         q =*= """[56,[[15,[[14,["test"]],"abc"]],{}]]"""
       }
 
@@ -2872,10 +2905,10 @@ class RasterizationTest extends WordSpec {
 
     "config" in {
       //table
-      r.table("abc").config() =%=[ReqlSelectionOfObject[ReqlTableConfigResult, UUID]] """[174,[[15,["abc"]]]]"""
+      r.table("abc").config() =%=[ReqlSelectionOfObject[TableConfig, UUID]] """[174,[[15,["abc"]]]]"""
 
       //db
-      r.db("test").config() =%=[ReqlSelectionOfObject[ReqlDatabaseConfigResult, UUID]] """[174,[[14,["test"]]]]"""
+      r.db("test").config() =%=[ReqlSelectionOfObject[DatabaseConfig, UUID]] """[174,[[14,["test"]]]]"""
 
       //example from docs
       //TODO: fix it
@@ -2885,7 +2918,7 @@ class RasterizationTest extends WordSpec {
     }
 
     "status" in {
-      r.table("abc").status() =%=[ReqlSelectionOfObject[ReqlTableStatusResult, UUID]] """[175,[[15,["abc"]]]]"""
+      r.table("abc").status() =%=[ReqlSelectionOfObject[TableStatus, UUID]] """[175,[[15,["abc"]]]]"""
     }
 
     "wait" in {
@@ -2998,13 +3031,13 @@ class RasterizationTest extends WordSpec {
     }
 
     "index_create" in {
-      r.table[ReqlObject, UUID]("abc").indexCreate("code") =%=[ReqlIndexCreationResult] """[75,[[15,["abc"]],"code"]]"""
-      r.table[ReqlObject, UUID]("abc").indexCreate("code", SimpleIndex, RangeIndex) =%=[ReqlIndexCreationResult] """[75,[[15,["abc"]],"code"]]"""
-      r.table[ReqlObject, UUID]("abc").indexCreate("code", MultiIndex, GeoIndex) =%=[ReqlIndexCreationResult] """[75,[[15,["abc"]],"code"],{"multi":true,"geo":true}]"""
+      r.table[JsonObject, String]("abc").indexCreate("code") =%=[ReqlIndexCreationResult] """[75,[[15,["abc"]],"code"]]"""
+      r.table[JsonObject, String]("abc").indexCreate("code", SimpleIndex, RangeIndex) =%=[ReqlIndexCreationResult] """[75,[[15,["abc"]],"code"]]"""
+      r.table[JsonObject, String]("abc").indexCreate("code", MultiIndex, GeoIndex) =%=[ReqlIndexCreationResult] """[75,[[15,["abc"]],"code"],{"multi":true,"geo":true}]"""
 
-      r.table[ReqlObject, UUID]("abc").indexCreate("code", _("code_name")) =%=[ReqlIndexCreationResult] """[75,[[15,["abc"]],"code",[69,[[2,[0]],[170,[[10,[0]],"code_name"]]]]]]"""
-      r.table[ReqlObject, UUID]("abc").indexCreate("code", _("code_name"), SimpleIndex, RangeIndex) =%=[ReqlIndexCreationResult] """[75,[[15,["abc"]],"code",[69,[[2,[0]],[170,[[10,[0]],"code_name"]]]]]]"""
-      r.table[ReqlObject, UUID]("abc").indexCreate("code", _("code_name"), MultiIndex, GeoIndex) =%=[ReqlIndexCreationResult] """[75,[[15,["abc"]],"code",[69,[[2,[0]],[170,[[10,[0]],"code_name"]]]]],{"multi":true,"geo":true}]"""
+      r.table[JsonObject, String]("abc").indexCreate("code", _("code_name")) =%=[ReqlIndexCreationResult] """[75,[[15,["abc"]],"code",[69,[[2,[0]],[170,[[10,[0]],"code_name"]]]]]]"""
+      r.table[JsonObject, String]("abc").indexCreate("code", _("code_name"), SimpleIndex, RangeIndex) =%=[ReqlIndexCreationResult] """[75,[[15,["abc"]],"code",[69,[[2,[0]],[170,[[10,[0]],"code_name"]]]]]]"""
+      r.table[JsonObject, String]("abc").indexCreate("code", _("code_name"), MultiIndex, GeoIndex) =%=[ReqlIndexCreationResult] """[75,[[15,["abc"]],"code",[69,[[2,[0]],[170,[[10,[0]],"code_name"]]]]],{"multi":true,"geo":true}]"""
     }
 
     "index_drop" in {
@@ -3081,7 +3114,7 @@ class RasterizationTest extends WordSpec {
       r.do_(() => r.table[ReqlObject, UUID]("abc").skip(10)) =%=[ReqlSelectionOfStream[ReqlObject, UUID]] """[64,[[69,[[2,[]],[70,[[15,["abc"]],10]]]]]]"""
 
       // return selection of object
-      r.do_(() => r.table[ReqlObject, UUID]("abc").get("uuid")) =%=[ReqlSelectionOfObject[ReqlObject, UUID]] """[64,[[69,[[2,[]],[16,[[15,["abc"]],"uuid"]]]]]]"""
+      r.do_(() => jsonTable("abc").get("uuid")) =%=[ReqlSelectionOfObject[JsonObject, String]] """[64,[[69,[[2,[]],[16,[[15,["abc"]],"uuid"]]]]]]"""
 
       // return finite stream
       r.do_(() => r.range(4)) =%=[ReqlFiniteStream[ReqlInteger]] """[64,[[69,[[2,[]],[173,[4]]]]]]"""
@@ -3105,7 +3138,7 @@ class RasterizationTest extends WordSpec {
       r.expr(234).do_(_.ge(123)) =%/%=[ReqlBoolean] """[64,[[69,[[2,[0]],[22,[[10,[0]],123]]]],234]]"""
 
 
-      r.table[ReqlObject, UUID]("tv_shows").get("99c03c40-162c-49a4-a041-1a4b84edfccc").do_ {
+      jsonTable("tv_shows").get("99c03c40-162c-49a4-a041-1a4b84edfccc").do_ {
         show => show("code").asInteger.add(1).asInteger
       } =%=[ReqlInteger] """[64,[[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],1]]]],[16,[[15,["tv_shows"]],"99c03c40-162c-49a4-a041-1a4b84edfccc"]]]]"""
 
@@ -3190,29 +3223,29 @@ class RasterizationTest extends WordSpec {
 
     "for_each" in {
       //table
-      r.table[ReqlObject, UUID]("abc").forEach(
-        x => r.table[ReqlObject, UUID]("bcd").get("uuid").delete()
-      ) =%=[ReqlModificationResult[ReqlObject, UUID]] """[68,[[15,["abc"]],[69,[[2,[0]],[54,[[16,[[15,["bcd"]],"uuid"]]]]]]]]"""
+      abcJsonTable.forEach(
+        x => bcdJsonTable.get("uuid").delete()
+      ) =%=[ReqlModificationResult[JsonObject, String]] """[68,[[15,["abc"]],[69,[[2,[0]],[54,[[16,[[15,["bcd"]],"uuid"]]]]]]]]"""
 
       //tableSlice
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).forEach(
-        x => r.table[ReqlObject, UUID]("bcd").get("uuid").delete()
-      ) =%=[ReqlModificationResult[ReqlObject, UUID]] """[68,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[54,[[16,[[15,["bcd"]],"uuid"]]]]]]]]"""
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).forEach(
+        x => bcdJsonTable.get("uuid").delete()
+      ) =%=[ReqlModificationResult[JsonObject, String]] """[68,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[54,[[16,[[15,["bcd"]],"uuid"]]]]]]]]"""
 
       //selectionOfArray
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).forEach(
-        x => r.table[ReqlObject, UUID]("bcd").get("uuid").delete()
-      ) =%=[ReqlModificationResult[ReqlObject, UUID]] """[68,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[54,[[16,[[15,["bcd"]],"uuid"]]]]]]]]"""
+      abcJsonTable.orderBy(r.asc("code")).forEach(
+        x => bcdJsonTable.get("uuid").delete()
+      ) =%=[ReqlModificationResult[JsonObject, String]] """[68,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[54,[[16,[[15,["bcd"]],"uuid"]]]]]]]]"""
 
       //selectionOfStream
-      r.table[ReqlObject, UUID]("abc").skip(1).forEach(
-        x => r.table[ReqlObject, UUID]("bcd").get("uuid").delete()
-      ) =%=[ReqlModificationResult[ReqlObject, UUID]] """[68,[[70,[[15,["abc"]],1]],[69,[[2,[0]],[54,[[16,[[15,["bcd"]],"uuid"]]]]]]]]"""
+      abcJsonTable.skip(1).forEach(
+        x => bcdJsonTable.get("uuid").delete()
+      ) =%=[ReqlModificationResult[JsonObject, String]] """[68,[[70,[[15,["abc"]],1]],[69,[[2,[0]],[54,[[16,[[15,["bcd"]],"uuid"]]]]]]]]"""
 
       //finite stream
       r.range(4).forEach(
-        x => r.table[ReqlObject, UUID]("bcd").get("uuid").delete()
-      ) =%=[ReqlModificationResult[ReqlObject, UUID]] """[68,[[173,[4]],[69,[[2,[0]],[54,[[16,[[15,["bcd"]],"uuid"]]]]]]]]"""
+        x => bcdJsonTable.get("uuid").delete()
+      ) =%=[ReqlModificationResult[JsonObject, String]] """[68,[[173,[4]],[69,[[2,[0]],[54,[[16,[[15,["bcd"]],"uuid"]]]]]]]]"""
 
       //infinite stream
       //Cannot use an infinite stream with an aggregation function (`reduce`, `count`, etc.)
@@ -3220,8 +3253,8 @@ class RasterizationTest extends WordSpec {
 
       //array
       r.expr(Seq(r.expr(123), r.expr(234))).forEach(
-        x => r.table[ReqlObject, UUID]("bcd").get("uuid").delete()
-      ) =%=[ReqlModificationResult[ReqlObject, UUID]] """[68,[[2,[123,234]],[69,[[2,[0]],[54,[[16,[[15,["bcd"]],"uuid"]]]]]]]]"""
+        x => bcdJsonTable.get("uuid").delete()
+      ) =%=[ReqlModificationResult[JsonObject, String]] """[68,[[2,[123,234]],[69,[[2,[0]],[54,[[16,[[15,["bcd"]],"uuid"]]]]]]]]"""
     }
 
     "func" in {
@@ -3351,8 +3384,8 @@ class RasterizationTest extends WordSpec {
       r.expr(JsonObject.empty).toJSON() =%=[ReqlString] """[172,[{}]]"""
 
       //selectionOfObject
-      r.table("abc").get("uuid").toJsonString() =%=[ReqlString] """[172,[[16,[[15,["abc"]],"uuid"]]]]"""
-      r.table("abc").get("uuid").toJSON() =%=[ReqlString] """[172,[[16,[[15,["abc"]],"uuid"]]]]"""
+      abcJsonTable.get("uuid").toJsonString() =%=[ReqlString] """[172,[[16,[[15,["abc"]],"uuid"]]]]"""
+      abcJsonTable.get("uuid").toJSON() =%=[ReqlString] """[172,[[16,[[15,["abc"]],"uuid"]]]]"""
 
       //binary
       r.binary(ByteString(10, 20, 30, 40)).toJsonString() =%=[ReqlString] """[172,[{"$reql_type$":"BINARY","data":"ChQeKA=="}]]"""
@@ -3541,14 +3574,14 @@ class RasterizationTest extends WordSpec {
       r.literal() =%=[ReqlValue] """[137,[]]"""
       r.literal() =%=[ReqlSpecific] """[137,[]]"""
 
-      r.table[ReqlObject, UUID]("abc").get("uuid").update(Map(
+      abcJsonTable.get("uuid").update(Map(
         "data" -> r.literal(Map(
           "age" -> r.expr(19),
           "job" -> r.expr("Engineer")
         ))
       )) =%=[ReqlObject] """[53,[[16,[[15,["abc"]],"uuid"]],{"data":[137,[{"age":19,"job":"Engineer"}]]}]]"""
 
-      r.table("abc").get("uuid").merge(Map(
+      abcJsonTable.get("uuid").merge(Map(
         "data" -> r.literal()
       )) =%=[ReqlObject] """[35,[[16,[[15,["abc"]],"uuid"]],{"data":[137,[]]}]]"""
     }
@@ -3607,26 +3640,26 @@ class RasterizationTest extends WordSpec {
 
     "sum" in {
       //table
-      """r.table("abc").sum()""".shouldNot(compile)
-      r.table[ReqlObject, UUID]("abc").sum("code") =%=[ReqlFloat] """[145,[[15,["abc"]],"code"]]"""
-      r.table[ReqlObject, UUID]("abc").sum(_("code").asNumber.add(7)) =%=[ReqlFloat] """[145,[[15,["abc"]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      """abcJsonTable.sum()""".shouldNot(compile)
+      abcJsonTable.sum("code") =%=[ReqlFloat] """[145,[[15,["abc"]],"code"]]"""
+      abcJsonTable.sum(_("code").asNumber.add(7)) =%=[ReqlFloat] """[145,[[15,["abc"]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
 
       //tableSlice
-      """r.table("abc").orderBy(OrderedIndex(r.asc("code"))).sum()""".shouldNot(compile)
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).sum("code") =%=[ReqlFloat] """[145,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],"code"]]"""
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).sum(_("code").asNumber.add(7)) =%=[ReqlFloat] """[145,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      """abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).sum()""".shouldNot(compile)
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).sum("code") =%=[ReqlFloat] """[145,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],"code"]]"""
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).sum(_("code").asNumber.add(7)) =%=[ReqlFloat] """[145,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
 
       //selectionOfArray
-      r.table("abc").orderBy(r.asc("code")) shouldBe an[ReqlSelectionOfArray[ReqlObject, UUID]]
-      """r.table("abc").orderBy(r.asc("code")).sum()""".shouldNot(compile)
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).sum("code") =%=[ReqlFloat] """[145,[[41,[[15,["abc"]],[73,["code"]]]],"code"]]"""
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).sum(_("code").asNumber.add(7)) =%=[ReqlFloat] """[145,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.orderBy(r.asc("code")) shouldBe an[ReqlSelectionOfArray[JsonObject, String]]
+      """abcJsonTable.orderBy(r.asc("code")).sum()""".shouldNot(compile)
+      abcJsonTable.orderBy(r.asc("code")).sum("code") =%=[ReqlFloat] """[145,[[41,[[15,["abc"]],[73,["code"]]]],"code"]]"""
+      abcJsonTable.orderBy(r.asc("code")).sum(_("code").asNumber.add(7)) =%=[ReqlFloat] """[145,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
 
       //selectionOfStream
-      r.table("abc").skip(1) shouldBe an[ReqlSelectionOfStream[ReqlObject, UUID]]
-      """r.table("abc").skip(1).sum()""".shouldNot(compile)
-      r.table[ReqlObject, UUID]("abc").skip(1).sum("code") =%=[ReqlFloat] """[145,[[70,[[15,["abc"]],1]],"code"]]"""
-      r.table[ReqlObject, UUID]("abc").skip(1).sum(_("code").asNumber.add(7)) =%=[ReqlFloat] """[145,[[70,[[15,["abc"]],1]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.skip(1) shouldBe an[ReqlSelectionOfStream[ReqlObject, UUID]]
+      """abcJsonTable.skip(1).sum()""".shouldNot(compile)
+      abcJsonTable.skip(1).sum("code") =%=[ReqlFloat] """[145,[[70,[[15,["abc"]],1]],"code"]]"""
+      abcJsonTable.skip(1).sum(_("code").asNumber.add(7)) =%=[ReqlFloat] """[145,[[70,[[15,["abc"]],1]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
 
       //finiteStream
       r.range(4).sum() =%=[ReqlFloat] """[145,[[173,[4]]]]"""
@@ -3649,26 +3682,26 @@ class RasterizationTest extends WordSpec {
 
     "avg" in {
       //table
-      """r.table("abc").avg()""".shouldNot(compile)
-      r.table[ReqlObject, UUID]("abc").avg("code") =%=[ReqlFloat] """[146,[[15,["abc"]],"code"]]"""
-      r.table[ReqlObject, UUID]("abc").avg(_("code").asNumber.add(7)) =%=[ReqlFloat] """[146,[[15,["abc"]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      """abcJsonTable.avg()""".shouldNot(compile)
+      abcJsonTable.avg("code") =%=[ReqlFloat] """[146,[[15,["abc"]],"code"]]"""
+      abcJsonTable.avg(_("code").asNumber.add(7)) =%=[ReqlFloat] """[146,[[15,["abc"]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
 
       //tableSlice
-      """r.table("abc").orderBy(OrderedIndex(r.asc("code"))).avg()""".shouldNot(compile)
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).avg("code") =%=[ReqlFloat] """[146,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],"code"]]"""
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).avg(_("code").asNumber.add(7)) =%=[ReqlFloat] """[146,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      """abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).avg()""".shouldNot(compile)
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).avg("code") =%=[ReqlFloat] """[146,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],"code"]]"""
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).avg(_("code").asNumber.add(7)) =%=[ReqlFloat] """[146,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
 
       //selectionOfArray
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")) shouldBe an[ReqlSelectionOfArray[ReqlObject, UUID]]
-      """r.table("abc").orderBy(r.asc("code")).avg()""".shouldNot(compile)
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).avg("code") =%=[ReqlFloat] """[146,[[41,[[15,["abc"]],[73,["code"]]]],"code"]]"""
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).avg(_("code").asNumber.add(7)) =%=[ReqlFloat] """[146,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.orderBy(r.asc("code")) shouldBe an[ReqlSelectionOfArray[JsonObject, String]]
+      """abcJsonTable.orderBy(r.asc("code")).avg()""".shouldNot(compile)
+      abcJsonTable.orderBy(r.asc("code")).avg("code") =%=[ReqlFloat] """[146,[[41,[[15,["abc"]],[73,["code"]]]],"code"]]"""
+      abcJsonTable.orderBy(r.asc("code")).avg(_("code").asNumber.add(7)) =%=[ReqlFloat] """[146,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
 
       //selectionOfStream
-      r.table[ReqlObject, UUID]("abc").skip(1) shouldBe an[ReqlSelectionOfStream[ReqlObject, UUID]]
-      """r.table("abc").skip(1).avg()""".shouldNot(compile)
-      r.table[ReqlObject, UUID]("abc").skip(1).avg("code") =%=[ReqlFloat] """[146,[[70,[[15,["abc"]],1]],"code"]]"""
-      r.table[ReqlObject, UUID]("abc").skip(1).avg(_("code").asNumber.add(7)) =%=[ReqlFloat] """[146,[[70,[[15,["abc"]],1]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.skip(1) shouldBe an[ReqlSelectionOfStream[JsonObject, String]]
+      """abcJsonTable.skip(1).avg()""".shouldNot(compile)
+      abcJsonTable.skip(1).avg("code") =%=[ReqlFloat] """[146,[[70,[[15,["abc"]],1]],"code"]]"""
+      abcJsonTable.skip(1).avg(_("code").asNumber.add(7)) =%=[ReqlFloat] """[146,[[70,[[15,["abc"]],1]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
 
       //finiteStream
       r.range(4).avg() =%=[ReqlFloat] """[146,[[173,[4]]]]"""
@@ -3691,88 +3724,98 @@ class RasterizationTest extends WordSpec {
 
     "min" in {
       //table
-      r.table[ReqlObject, UUID]("abc").min() =%=[ReqlObject] """[147,[[15,["abc"]]]]"""
-      r.table[ReqlObject, UUID]("abc").min(Index("code")) =%=[ReqlObject] """[147,[[15,["abc"]]],{"index":"code"}]"""
-      r.table[ReqlObject, UUID]("abc").min("code") =%=[ReqlObject] """[147,[[15,["abc"]],"code"]]"""
-      r.table[ReqlObject, UUID]("abc").min(_("code").asNumber.add(7)) =%=[ReqlObject] """[147,[[15,["abc"]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.min() =%=[ReqlModel[JsonObject, String]] """[147,[[15,["abc"]]]]"""
+      abcJsonTable.min(Index("code")) =%=[ReqlModel[JsonObject, String]] """[147,[[15,["abc"]]],{"index":"code"}]"""
+      abcJsonTable.min("code") =%=[ReqlModel[JsonObject, String]] """[147,[[15,["abc"]],"code"]]"""
+      abcJsonTable.min(_("code").asNumber.add(7)) =%=[ReqlModel[JsonObject, String]] """[147,[[15,["abc"]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.min(_("code").asBinary) =%=[ReqlModel[JsonObject, String]] """[147,[[15,["abc"]],[69,[[2,[0]],[170,[[10,[0]],"code"]]]]]]"""
 
       //tableSlice
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).min() =%=[ReqlObject] """[147,[[41,[[15,["abc"]]],{"index":[73,["code"]]}]]]"""
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).min("code") =%=[ReqlObject] """[147,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],"code"]]"""
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).min(_("code").asNumber.add(7)) =%=[ReqlObject] """[147,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).min() =%=[ReqlModel[JsonObject, String]] """[147,[[41,[[15,["abc"]]],{"index":[73,["code"]]}]]]"""
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).min("code") =%=[ReqlModel[JsonObject, String]] """[147,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],"code"]]"""
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).min(_("code").asNumber.add(7)) =%=[ReqlModel[JsonObject, String]] """[147,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).min(_("code").asBinary) =%=[ReqlModel[JsonObject, String]] """[147,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[170,[[10,[0]],"code"]]]]]]"""
 
       //selectionOfArray
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")) shouldBe an[ReqlSelectionOfArray[ReqlObject, UUID]]
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).min() =%=[ReqlObject] """[147,[[41,[[15,["abc"]],[73,["code"]]]]]]"""
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).min("code") =%=[ReqlObject] """[147,[[41,[[15,["abc"]],[73,["code"]]]],"code"]]"""
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).min(_("code").asNumber.add(7)) =%=[ReqlObject] """[147,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.orderBy(r.asc("code")) shouldBe an[ReqlSelectionOfArray[JsonObject, String]]
+      abcJsonTable.orderBy(r.asc("code")).min() =%=[ReqlModel[JsonObject, String]] """[147,[[41,[[15,["abc"]],[73,["code"]]]]]]"""
+      abcJsonTable.orderBy(r.asc("code")).min("code") =%=[ReqlModel[JsonObject, String]] """[147,[[41,[[15,["abc"]],[73,["code"]]]],"code"]]"""
+      abcJsonTable.orderBy(r.asc("code")).min(_("code").asNumber.add(7)) =%=[ReqlModel[JsonObject, String]] """[147,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.orderBy(r.asc("code")).min(_("code").asBinary) =%=[ReqlModel[JsonObject, String]] """[147,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[170,[[10,[0]],"code"]]]]]]"""
 
       //selectionOfStream
-      r.table[ReqlObject, UUID]("abc").skip(1) shouldBe an[ReqlSelectionOfStream[ReqlObject, UUID]]
-      r.table[ReqlObject, UUID]("abc").skip(1).min() =%=[ReqlObject] """[147,[[70,[[15,["abc"]],1]]]]"""
-      r.table[ReqlObject, UUID]("abc").skip(1).min("code") =%=[ReqlObject] """[147,[[70,[[15,["abc"]],1]],"code"]]"""
-      r.table[ReqlObject, UUID]("abc").skip(1).min(_("code").asNumber.add(7)) =%=[ReqlObject] """[147,[[70,[[15,["abc"]],1]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.skip(1) shouldBe an[ReqlSelectionOfStream[JsonObject, String]]
+      abcJsonTable.skip(1).min() =%=[ReqlModel[JsonObject, String]] """[147,[[70,[[15,["abc"]],1]]]]"""
+      abcJsonTable.skip(1).min("code") =%=[ReqlModel[JsonObject, String]] """[147,[[70,[[15,["abc"]],1]],"code"]]"""
+      abcJsonTable.skip(1).min(_("code").asNumber.add(7)) =%=[ReqlModel[JsonObject, String]] """[147,[[70,[[15,["abc"]],1]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.skip(1).min(_("code").asBinary) =%=[ReqlModel[JsonObject, String]] """[147,[[70,[[15,["abc"]],1]],[69,[[2,[0]],[170,[[10,[0]],"code"]]]]]]"""
 
       //finiteStream
-      r.range(4).min() =%=[ReqlDatum] """[147,[[173,[4]]]]"""
-      r.range(4).min("code") =%=[ReqlDatum] """[147,[[173,[4]],"code"]]"""
-      r.range(4).min(_.asNumber.add(7)) =%=[ReqlDatum] """[147,[[173,[4]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
+      r.range(4).min() =%=[ReqlInteger] """[147,[[173,[4]]]]"""
+      //TODO: it should not work
+      r.range(4).min("code") =%=[ReqlInteger] """[147,[[173,[4]],"code"]]"""
+      r.range(4).min(_.asNumber.add(7)) =%=[ReqlInteger] """[147,[[173,[4]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
 
       //infiniteStream
       """r.range().min()""".shouldNot(compile)
 
       //array
       r.expr(Seq(r.expr(1), r.expr(2), r.expr(3))).
-        min() =%=[ReqlDatum] """[147,[[2,[1,2,3]]]]"""
+        min() =%=[ReqlInteger] """[147,[[2,[1,2,3]]]]"""
 
       r.expr(Seq(r.expr(1), r.expr(2), r.expr(3))).
-        min("code") =%=[ReqlDatum] """[147,[[2,[1,2,3]],"code"]]"""
+        min("code") =%=[ReqlInteger] """[147,[[2,[1,2,3]],"code"]]"""
 
       r.expr(Seq(r.expr(1), r.expr(2), r.expr(3))).
-        min(_.asNumber.add(7)) =%=[ReqlDatum] """[147,[[2,[1,2,3]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
+        min(_.asNumber.add(7)) =%=[ReqlInteger] """[147,[[2,[1,2,3]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
     }
 
     "max" in {
       //table
-      r.table[ReqlObject, UUID]("abc").max() =%=[ReqlObject] """[148,[[15,["abc"]]]]"""
-      r.table[ReqlObject, UUID]("abc").max(Index("code")) =%=[ReqlObject] """[148,[[15,["abc"]]],{"index":"code"}]"""
-      r.table[ReqlObject, UUID]("abc").max("code") =%=[ReqlObject] """[148,[[15,["abc"]],"code"]]"""
-      r.table[ReqlObject, UUID]("abc").max(_("code").asNumber.add(7)) =%=[ReqlObject] """[148,[[15,["abc"]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.max() =%=[ReqlModel[JsonObject, String]] """[148,[[15,["abc"]]]]"""
+      abcJsonTable.max(Index("code")) =%=[ReqlModel[JsonObject, String]] """[148,[[15,["abc"]]],{"index":"code"}]"""
+      abcJsonTable.max("code") =%=[ReqlModel[JsonObject, String]] """[148,[[15,["abc"]],"code"]]"""
+      abcJsonTable.max(_("code").asNumber.add(7)) =%=[ReqlModel[JsonObject, String]] """[148,[[15,["abc"]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.max(_("code").asBinary) =%=[ReqlModel[JsonObject, String]] """[148,[[15,["abc"]],[69,[[2,[0]],[170,[[10,[0]],"code"]]]]]]"""
 
       //tableSlice
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).max() =%=[ReqlObject] """[148,[[41,[[15,["abc"]]],{"index":[73,["code"]]}]]]"""
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).max("code") =%=[ReqlObject] """[148,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],"code"]]"""
-      r.table[ReqlObject, UUID]("abc").orderBy(OrderedIndex(r.asc("code"))).max(_("code").asNumber.add(7)) =%=[ReqlObject] """[148,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).max() =%=[ReqlModel[JsonObject, String]] """[148,[[41,[[15,["abc"]]],{"index":[73,["code"]]}]]]"""
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).max("code") =%=[ReqlModel[JsonObject, String]] """[148,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],"code"]]"""
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).max(_("code").asNumber.add(7)) =%=[ReqlModel[JsonObject, String]] """[148,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).max(_("code").asBinary) =%=[ReqlModel[JsonObject, String]] """[148,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[170,[[10,[0]],"code"]]]]]]"""
 
       //selectionOfArray
-      r.table("abc").orderBy(r.asc("code")) shouldBe an[ReqlSelectionOfArray[ReqlObject, UUID]]
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).max() =%=[ReqlObject] """[148,[[41,[[15,["abc"]],[73,["code"]]]]]]"""
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).max("code") =%=[ReqlObject] """[148,[[41,[[15,["abc"]],[73,["code"]]]],"code"]]"""
-      r.table[ReqlObject, UUID]("abc").orderBy(r.asc("code")).max(_("code").asNumber.add(7)) =%=[ReqlObject] """[148,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.orderBy(r.asc("code")) shouldBe an[ReqlSelectionOfArray[JsonObject, String]]
+      abcJsonTable.orderBy(r.asc("code")).max() =%=[ReqlModel[JsonObject, String]] """[148,[[41,[[15,["abc"]],[73,["code"]]]]]]"""
+      abcJsonTable.orderBy(r.asc("code")).max("code") =%=[ReqlModel[JsonObject, String]] """[148,[[41,[[15,["abc"]],[73,["code"]]]],"code"]]"""
+      abcJsonTable.orderBy(r.asc("code")).max(_("code").asNumber.add(7)) =%=[ReqlModel[JsonObject, String]] """[148,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.orderBy(r.asc("code")).max(_("code").asBinary) =%=[ReqlModel[JsonObject, String]] """[148,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[170,[[10,[0]],"code"]]]]]]"""
 
       //selectionOfStream
-      r.table[ReqlObject, UUID]("abc").skip(1) shouldBe an[ReqlSelectionOfStream[ReqlObject, UUID]]
-      r.table[ReqlObject, UUID]("abc").skip(1).max() =%=[ReqlObject] """[148,[[70,[[15,["abc"]],1]]]]"""
-      r.table[ReqlObject, UUID]("abc").skip(1).max("code") =%=[ReqlObject] """[148,[[70,[[15,["abc"]],1]],"code"]]"""
-      r.table[ReqlObject, UUID]("abc").skip(1).max(_("code").asNumber.add(7)) =%=[ReqlObject] """[148,[[70,[[15,["abc"]],1]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.skip(1) shouldBe an[ReqlSelectionOfStream[JsonObject, String]]
+      abcJsonTable.skip(1).max() =%=[ReqlModel[JsonObject, String]] """[148,[[70,[[15,["abc"]],1]]]]"""
+      abcJsonTable.skip(1).max("code") =%=[ReqlModel[JsonObject, String]] """[148,[[70,[[15,["abc"]],1]],"code"]]"""
+      abcJsonTable.skip(1).max(_("code").asNumber.add(7)) =%=[ReqlModel[JsonObject, String]] """[148,[[70,[[15,["abc"]],1]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.skip(1).max(_("code").asBinary) =%=[ReqlModel[JsonObject, String]] """[148,[[70,[[15,["abc"]],1]],[69,[[2,[0]],[170,[[10,[0]],"code"]]]]]]"""
 
       //finiteStream
-      r.range(4).max() =%=[ReqlDatum] """[148,[[173,[4]]]]"""
-      r.range(4).max("code") =%=[ReqlDatum] """[148,[[173,[4]],"code"]]"""
-      r.range(4).max(_.asNumber.add(7)) =%=[ReqlDatum] """[148,[[173,[4]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
+      r.range(4).max() =%=[ReqlInteger] """[148,[[173,[4]]]]"""
+      //TODO: it should not work
+      r.range(4).max("code") =%=[ReqlInteger] """[148,[[173,[4]],"code"]]"""
+      r.range(4).max(_.asNumber.add(7)) =%=[ReqlInteger] """[148,[[173,[4]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
 
       //infiniteStream
       """r.range().max()""".shouldNot(compile)
 
       //array
       r.expr(Seq(r.expr(1), r.expr(2), r.expr(3))).
-        max() =%=[ReqlDatum] """[148,[[2,[1,2,3]]]]"""
+        max() =%=[ReqlInteger] """[148,[[2,[1,2,3]]]]"""
 
       r.expr(Seq(r.expr(1), r.expr(2), r.expr(3))).
-        max("code") =%=[ReqlDatum] """[148,[[2,[1,2,3]],"code"]]"""
+        max("code") =%=[ReqlInteger] """[148,[[2,[1,2,3]],"code"]]"""
 
       r.expr(Seq(r.expr(1), r.expr(2), r.expr(3))).
-        max(_.asNumber.add(7)) =%=[ReqlDatum] """[148,[[2,[1,2,3]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
+        max(_.asNumber.add(7)) =%=[ReqlInteger] """[148,[[2,[1,2,3]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
     }
 
     "split" in {
@@ -3888,25 +3931,25 @@ class RasterizationTest extends WordSpec {
 
 
       //selectionOfObject
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes() =%=[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]]]"""
+      abcJsonTable.get("uuid").changes() =%=[ReqlInfiniteStream[ReqlChangefeedNotification[JsonObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]]]"""
 
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes(NotSquash) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]]]"""
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes(DoSquash) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]],{"squash":true}]"""
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes(SquashDuring(BigDecimal(4.5))) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]],{"squash":4.5}]"""
+      abcJsonTable.get("uuid").changes(NotSquash) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[JsonObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]]]"""
+      abcJsonTable.get("uuid").changes(DoSquash) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[JsonObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]],{"squash":true}]"""
+      abcJsonTable.get("uuid").changes(SquashDuring(BigDecimal(4.5))) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[JsonObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]],{"squash":4.5}]"""
 
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes(changefeedQueueSize = DefaultChangefeedQueueSize) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]]]"""
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes(changefeedQueueSize = ChangefeedQueueSize(10)) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]],{"changefeed_queue_size":10}]"""
+      abcJsonTable.get("uuid").changes(changefeedQueueSize = DefaultChangefeedQueueSize) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[JsonObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]]]"""
+      abcJsonTable.get("uuid").changes(changefeedQueueSize = ChangefeedQueueSize(10)) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[JsonObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]],{"changefeed_queue_size":10}]"""
 
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes(includeInitial = NotIncludeInitial) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]]]"""
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes(includeInitial = IncludeInitial) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]],{"include_initial":true}]"""
+      abcJsonTable.get("uuid").changes(includeInitial = NotIncludeInitial) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[JsonObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]]]"""
+      abcJsonTable.get("uuid").changes(includeInitial = IncludeInitial) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[JsonObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]],{"include_initial":true}]"""
 
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes(includeStates = NotIncludeStates) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]]]"""
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes(includeStates = IncludeStates) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]],{"include_states":true}]"""
+      abcJsonTable.get("uuid").changes(includeStates = NotIncludeStates) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[JsonObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]]]"""
+      abcJsonTable.get("uuid").changes(includeStates = IncludeStates) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[JsonObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]],{"include_states":true}]"""
 
-      """r.table[ReqlObject]("abc").get("uuid").changes(includeOffsets = NotIncludeOffsets)""".shouldNot(compile)
+      """abcJsonTable.get("uuid").changes(includeOffsets = NotIncludeOffsets)""".shouldNot(compile)
 
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes(includeTypes = NotIncludeTypes) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]]]"""
-      r.table[ReqlObject, UUID]("abc").get("uuid").changes(includeTypes = IncludeTypes) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[ReqlObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]],{"include_types":true}]"""
+      abcJsonTable.get("uuid").changes(includeTypes = NotIncludeTypes) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[JsonObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]]]"""
+      abcJsonTable.get("uuid").changes(includeTypes = IncludeTypes) =%=[ReqlInfiniteStream[ReqlChangefeedNotification[JsonObject]]] """[152,[[16,[[15,["abc"]],"uuid"]]],{"include_types":true}]"""
 
 
       //complex case from docs
@@ -4274,17 +4317,17 @@ class RasterizationTest extends WordSpec {
   }
 
   "Shape" should {
-    import rere.ql.shapes.ReqlModel
-
     "work as table" in new ShapesData {
-      TestDatabase.abc.table() shouldBe an[ReqlTable[ReqlObject, String]]
+      import TestDatabase.abc
+
+      abc.table() shouldBe an[ReqlTable[ReqlObject, String]]
 
       import queries.all._
 
-      val abcTable: ReqlTable[ReqlModel[Abc], String] = TestDatabase.abc.table()
-      abcTable.get("uuid") =%/%=[ReqlSelectionOfObject[ReqlObject, String]] """[16,[[15,[[14,["test"]],"abc"]],"uuid"]]"""
+      val abcTable: ReqlTable[Abc, String] = abc.table()
+      abcTable.get("uuid") =%/%=[ReqlSelectionOfObject[Abc, String]] """[16,[[15,[[14,["test"]],"abc"]],"uuid"]]"""
 
-      val sel: ReqlSelectionOfObject[ReqlModel[Abc], String] = TestDatabase.abc.table().get("uuid")
+      val sel: ReqlSelectionOfObject[Abc, String] = TestDatabase.abc.table().get("uuid")
       TestDatabase.abc.table().get("uuid") =%/%=[ReqlSelectionOfObject[ReqlObject, String]] """[16,[[15,[[14,["test"]],"abc"]],"uuid"]]"""
     }
   }

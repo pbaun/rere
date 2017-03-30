@@ -128,9 +128,6 @@ class ConnectionPoolTest extends WordSpec with Matchers with Inside {
       @volatile var lastSeenElement: Long = 0L
       @volatile var onCompleteCalled: Boolean = false
 
-      //TODO: maybe bug in akka - throttle can lose messages if onComplete comes before tail is consumed
-      //TODO: not a akk a bug. it happens when publisher creates ActorMaterializer for itself and after stop it
-      //      kills materializer as child
       val slowSink = Flow[Long].throttle(10, 100.millis, 5, ThrottleMode.Shaping).map({ number =>
         println(s"### onNext $number ${System.currentTimeMillis()}")
         lastSeenElement = number

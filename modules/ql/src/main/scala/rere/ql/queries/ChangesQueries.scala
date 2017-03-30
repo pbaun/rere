@@ -8,11 +8,11 @@ import rere.ql.types._
 trait ChangesQueries {
 
   // changes
-  trait ChangesTableQuery[T <: ReqlDatum] extends ReqlInfiniteStream[T]
-  trait ChangesTableSliceQuery[T <: ReqlDatum] extends ReqlInfiniteStream[T]
-  trait ChangesSelectionOfObjectQuery[T <: ReqlDatum] extends ReqlInfiniteStream[T]
+  trait ChangesTableQuery[T] extends ReqlInfiniteStream[ReqlChangefeedNotification[T]]
+  trait ChangesTableSliceQuery[T] extends ReqlInfiniteStream[ReqlChangefeedNotification[T]]
+  trait ChangesSelectionOfObjectQuery[T] extends ReqlInfiniteStream[ReqlChangefeedNotification[T]]
 
-  implicit class ChangesOnTableOp[T <: ReqlObject, PK](val table: ReqlTable[T, PK]) {
+  implicit class ChangesOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
     def changes(
       squash: SquashOptions = NotSquash,
       changefeedQueueSize: ChangefeedQueueSizeOptions = DefaultChangefeedQueueSize,
@@ -20,7 +20,7 @@ trait ChangesQueries {
       includeStates: IncludeStatesOptions = NotIncludeStates,
       //includeOffsets: IncludeOffsetsOptions = NotIncludeOffsets, //ReqlQueryLogicError: Cannot include offsets for range subs in:
       includeTypes: IncludeTypesOptions = NotIncludeTypes
-    ): ChangesTableQuery[ReqlChangefeedNotification[T]] = new ChangesTableQuery[ReqlChangefeedNotification[T]] {
+    ): ChangesTableQuery[T] = new ChangesTableQuery[T] {
       val command = TermType.CHANGES
       val string = "changes"
       val arguments = table :: Nil
@@ -35,7 +35,7 @@ trait ChangesQueries {
     }
   }
 
-  implicit class ChangesOnTableSliceOp[T <: ReqlObject, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class ChangesOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
     def changes(
       squash: SquashOptions = NotSquash,
       changefeedQueueSize: ChangefeedQueueSizeOptions = DefaultChangefeedQueueSize,
@@ -43,7 +43,7 @@ trait ChangesQueries {
       includeStates: IncludeStatesOptions = NotIncludeStates,
       //includeOffsets: IncludeOffsetsOptions = NotIncludeOffsets, //ReqlQueryLogicError: Cannot include offsets for range subs in:
       includeTypes: IncludeTypesOptions = NotIncludeTypes
-    ): ChangesTableSliceQuery[ReqlChangefeedNotification[T]] = new ChangesTableSliceQuery[ReqlChangefeedNotification[T]] {
+    ): ChangesTableSliceQuery[T] = new ChangesTableSliceQuery[T] {
       val command = TermType.CHANGES
       val string = "changes"
       val arguments = tableSlice :: Nil
@@ -58,7 +58,7 @@ trait ChangesQueries {
     }
   }
 
-  implicit class ChangesOnSelectionOfObjectOp[T <: ReqlObject, PK](val sel: ReqlSelectionOfObject[T, PK]) {
+  implicit class ChangesOnSelectionOfObjectOp[T, PK](val sel: ReqlSelectionOfObject[T, PK]) {
     def changes(
       squash: SquashOptions = NotSquash,
       changefeedQueueSize: ChangefeedQueueSizeOptions = DefaultChangefeedQueueSize,
@@ -66,7 +66,7 @@ trait ChangesQueries {
       includeStates: IncludeStatesOptions = NotIncludeStates,
       //includeOffsets: IncludeOffsetsOptions = NotIncludeOffsets, //ReqlQueryLogicError: Cannot include offsets for range subs in:
       includeTypes: IncludeTypesOptions = NotIncludeTypes
-    ): ChangesSelectionOfObjectQuery[ReqlChangefeedNotification[T]] = new ChangesSelectionOfObjectQuery[ReqlChangefeedNotification[T]] {
+    ): ChangesSelectionOfObjectQuery[T] = new ChangesSelectionOfObjectQuery[T] {
       val command = TermType.CHANGES
       val string = "changes"
       val arguments = sel :: Nil

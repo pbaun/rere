@@ -1,9 +1,9 @@
 package rere.driver
 
 import akka.actor.{ActorSystem, Terminated}
-import org.scalatest.{Matchers, WordSpec}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
+import org.scalatest.{Matchers, WordSpec}
 import rere.driver.pool.{ConnectionPool, ShutdownSuccessfullyDone}
 
 import scala.concurrent.ExecutionContext
@@ -24,11 +24,11 @@ class ManyModelsInsertionTest extends WordSpec with ScalaFutures with Matchers {
       val poolSize = 1
       val pool = ConnectionPool.create(credentials, settings, "pool", poolSize)
 
+      import io.circe.generic.auto._
       import rere.driver.runners.all._
+      import rere.ql.options.all._
       import rere.ql.queries.all._
       import rere.ql.shapes._
-      import rere.ql.options.all._
-      import io.circe.generic.auto._
 
       case class Abc(id: String, name: Option[String])
       object AbcShape extends CirceShape[Abc, String]
@@ -46,7 +46,7 @@ class ManyModelsInsertionTest extends WordSpec with ScalaFutures with Matchers {
         r.expr(Seq(model, model2)),
         durability = Hard,
         returnChanges = DoReturnChanges,
-        conflict = ResolveOnConflict[ReqlModel[Abc]]((x, a, b) => b)
+        conflict = ResolveOnConflict[Abc, String]((x, a, b) => b)
       ).run(pool).future()) { result =>
         result.inserted shouldBe 0
         result.replaced shouldBe 2

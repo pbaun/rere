@@ -110,7 +110,7 @@ trait JoinQueries {
   //TODO: maybe make index argument explicit and remove selector wrapper ??? pass default index is easy, find wrapped - hard
 
   implicit class EqJoinOnInfiniteStreamLikeOp[T0 <: ReqlDatum](val infiniteStreamLike: ReqlInfiniteStreamLike[T0]) {
-    def eqJoin[T1 <: ReqlObject, PK1, Selected <: ReqlDatum](
+    def eqJoin[T1, PK1, Selected <: ReqlDatum](
       selector: ReqlDatumSelector[T0, Selected],
       secondTable: ReqlTable[T1, PK1],
       secondTableIndex: IndexOptions = DefaultIndex,
@@ -124,7 +124,7 @@ trait JoinQueries {
   }
 
   implicit class EqJoinOnFiniteStreamLikeOp[T0 <: ReqlDatum](val finiteStreamLike: ReqlFiniteStreamLike[T0]) {
-    def eqJoin[T1 <: ReqlObject, PK1, Selected <: ReqlDatum](
+    def eqJoin[T1, PK1, Selected <: ReqlDatum](
       selector: ReqlDatumSelector[T0, Selected],
       secondTable: ReqlTable[T1, PK1],
       secondTableIndex: IndexOptions = DefaultIndex,
@@ -138,7 +138,7 @@ trait JoinQueries {
   }
 
   implicit class EqJoinOnArrayLikeOp[T0 <: ReqlDatum](val arrayLike: ReqlFiniteArrayLike[T0]) {
-    def eqJoin[T1 <: ReqlObject, PK1, Selected <: ReqlDatum](
+    def eqJoin[T1, PK1, Selected <: ReqlDatum](
       selector: ReqlDatumSelector[T0, Selected],
       table: ReqlTable[T1, PK1],
       tableIndex: IndexOptions = DefaultIndex,
@@ -161,7 +161,7 @@ trait JoinQueries {
 
   //TODO: special input type LeftRight[T, U]
   implicit class ZipOnInfiniteStreamOp[
-    LeftType <: ReqlDatum, RightType <: ReqlDatum, Zipped <: ReqlDatum
+    LeftType, RightType, Zipped <: ReqlDatum
   ](val infiniteStream: ReqlInfiniteStream[ReqlJoinResult[LeftType, RightType]]) {
     def zip(): ZipInfiniteStreamQuery[Zipped] = new ZipInfiniteStreamQuery[Zipped] {
       val command = TermType.ZIP
@@ -172,7 +172,7 @@ trait JoinQueries {
   }
 
   implicit class ZipOnFiniteStreamOp[
-    LeftType <: ReqlDatum, RightType <: ReqlDatum, Zipped <: ReqlDatum
+    LeftType, RightType, Zipped <: ReqlDatum
   ](val finiteStream: ReqlFiniteStream[ReqlJoinResult[LeftType, RightType]]) {
     def zip(): ZipFiniteStreamQuery[Zipped] = new ZipFiniteStreamQuery[Zipped] {
       val command = TermType.ZIP
@@ -183,7 +183,7 @@ trait JoinQueries {
   }
 
   implicit class ZipOnArrayOp[
-    LeftType <: ReqlDatum, RightType <: ReqlDatum, Zipped <: ReqlDatum
+    LeftType, RightType, Zipped <: ReqlDatum
   ](val array: ReqlArray[ReqlJoinResult[LeftType, RightType]]) {
     def zip(): ZipArrayQuery[Zipped] = new ZipArrayQuery[Zipped] {
       val command = TermType.ZIP
