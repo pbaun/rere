@@ -16,11 +16,14 @@ trait TableQueries {
       name: ReqlString,
       readMode: ReadModeOptions = DefaultReadMode,
       identifierFormat: IdentifierFormatOptions = DefaultIdentifierFormat
+    )(
+      implicit modelShape: ModelShape[T, PK]
     ): TableQuery[T, PK] = new TableQuery[T, PK] {
-      val command = TermType.TABLE
-      val string = "table"
-      val arguments = database :: name :: Nil
-      val options = ComposableOptions.compose(readMode, identifierFormat)
+      def command = TermType.TABLE
+      def string = "table"
+      def arguments = database :: name :: Nil
+      def options = ComposableOptions.compose(readMode, identifierFormat)
+      def shape = modelShape
     }
   }
 
@@ -29,11 +32,14 @@ trait TableQueries {
       name: ReqlString,
       readMode: ReadModeOptions = DefaultReadMode,
       identifierFormat: IdentifierFormatOptions = DefaultIdentifierFormat
+    )(
+      implicit modelShape: ModelShape[T, PK]
     ): TableQuery[T, PK] = new TableQuery[T, PK] {
-      val command = TermType.TABLE
-      val string = "table"
-      val arguments = name :: Nil
-      val options = ComposableOptions.compose(readMode, identifierFormat)
+      def command = TermType.TABLE
+      def string = "table"
+      def arguments = name :: Nil
+      def options = ComposableOptions.compose(readMode, identifierFormat)
+      def shape = modelShape
     }
   }
 
@@ -99,9 +105,9 @@ trait TableQueries {
   trait IndexCreateTableQuery extends ReqlIndexCreationResult
 
   //TODO: function may be binary field from .indexStatus or .indexWait response
-  implicit class IndexCreateOnTableOp[T, PK](val table: ReqlTable[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class IndexCreateOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+    private implicit def modelShape = table.shape
+
     def indexCreate(indexName: ReqlString): IndexCreateTableQuery = new IndexCreateTableQuery {
       val command = TermType.INDEX_CREATE
       val string = "index_create"

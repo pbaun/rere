@@ -3,7 +3,7 @@ package rere.ql.queries
 import rere.ql.options.all._
 import rere.ql.options.{ComposableOptions, Options}
 import rere.ql.ql2.Term.TermType
-import rere.ql.shapes.{ModelShape, ReqlModel}
+import rere.ql.shapes.ReqlModel
 import rere.ql.typeclasses.{ToPredicate, Transmuter}
 import rere.ql.types._
 
@@ -16,8 +16,8 @@ trait AggregationQueries {
   implicit class GroupOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
     //it returns immediately like array
     def group[U <: ReqlDatum](
-      selector: ReqlDatumSelector[T, U]
-    ): GroupTableQuery[U, T] = new GroupTableQuery[U, T] {
+      selector: ReqlDatumSelector[ReqlModel[T, PK], U]
+    ): GroupTableQuery[U, ReqlModel[T, PK]] = new GroupTableQuery[U, ReqlModel[T, PK]] {
       val command = TermType.GROUP
       val string = "group"
       val arguments = table :: selector :: Nil
@@ -25,9 +25,9 @@ trait AggregationQueries {
     }
 
     def group[U <: ReqlDatum](
-      selector0: ReqlDatumSelector[T, U],
-      selector1: ReqlDatumSelector[T, U]
-    ): GroupTableQuery[ReqlArray[U], T] = new GroupTableQuery[ReqlArray[U], T] {
+      selector0: ReqlDatumSelector[ReqlModel[T, PK], U],
+      selector1: ReqlDatumSelector[ReqlModel[T, PK], U]
+    ): GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] = new GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] {
       val command = TermType.GROUP
       val string = "group"
       val arguments = table :: selector0 :: selector1 :: Nil
@@ -44,7 +44,7 @@ trait AggregationQueries {
     //TODO: find way to pass index after selectors - it like db will combine key (selectors: _*, index)
     def group[U <: ReqlDatum](
       index: IndexOptions
-    ): GroupTableQuery[U, T] = new GroupTableQuery[U, T] {
+    ): GroupTableQuery[U, ReqlModel[T, PK]] = new GroupTableQuery[U, ReqlModel[T, PK]] {
       val command = TermType.GROUP
       val string = "group"
       val arguments = table :: Nil
@@ -52,9 +52,9 @@ trait AggregationQueries {
     }
 
     def group[U <: ReqlDatum](
-      selector: ReqlDatumSelector[T, U],
+      selector: ReqlDatumSelector[ReqlModel[T, PK], U],
       index: IndexOptions
-    ): GroupTableQuery[ReqlArray[U], T] = new GroupTableQuery[ReqlArray[U], T] {
+    ): GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] = new GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] {
       val command = TermType.GROUP
       val string = "group"
       val arguments = table :: selector :: Nil
@@ -62,10 +62,10 @@ trait AggregationQueries {
     }
 
     def group[U <: ReqlDatum](
-      selector0: ReqlDatumSelector[T, U],
-      selector1: ReqlDatumSelector[T, U],
+      selector0: ReqlDatumSelector[ReqlModel[T, PK], U],
+      selector1: ReqlDatumSelector[ReqlModel[T, PK], U],
       index: IndexOptions
-    ): GroupTableQuery[ReqlArray[U], T] = new GroupTableQuery[ReqlArray[U], T] {
+    ): GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] = new GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] {
       val command = TermType.GROUP
       val string = "group"
       val arguments = table :: selector0 :: selector1 :: Nil
@@ -80,9 +80,9 @@ trait AggregationQueries {
     }*/
 
     def group[U <: ReqlDatum](
-      selector: ReqlDatumSelector[T, U],
+      selector: ReqlDatumSelector[ReqlModel[T, PK], U],
       multi: GroupMultiplicityOptions
-    ): GroupTableQuery[U, T] = new GroupTableQuery[U, T] {
+    ): GroupTableQuery[U, ReqlModel[T, PK]] = new GroupTableQuery[U, ReqlModel[T, PK]] {
       val command = TermType.GROUP
       val string = "group"
       val arguments = table :: selector :: Nil
@@ -90,10 +90,10 @@ trait AggregationQueries {
     }
 
     def group[U <: ReqlDatum](
-      selector0: ReqlDatumSelector[T, U],
-      selector1: ReqlDatumSelector[T, U],
+      selector0: ReqlDatumSelector[ReqlModel[T, PK], U],
+      selector1: ReqlDatumSelector[ReqlModel[T, PK], U],
       multi: GroupMultiplicityOptions
-    ): GroupTableQuery[ReqlArray[U], T] = new GroupTableQuery[ReqlArray[U], T] {
+    ): GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] = new GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] {
       val command = TermType.GROUP
       val string = "group"
       val arguments = table :: selector0 :: selector1 :: Nil
@@ -110,7 +110,7 @@ trait AggregationQueries {
     def group[U <: ReqlDatum](
       index: IndexOptions,
       multi: GroupMultiplicityOptions
-    ): GroupTableQuery[U, T] = new GroupTableQuery[U, T] {
+    ): GroupTableQuery[U, ReqlModel[T, PK]] = new GroupTableQuery[U, ReqlModel[T, PK]] {
       val command = TermType.GROUP
       val string = "group"
       val arguments = table :: Nil
@@ -118,10 +118,10 @@ trait AggregationQueries {
     }
 
     def group[U <: ReqlDatum](
-      selector: ReqlDatumSelector[T, U],
+      selector: ReqlDatumSelector[ReqlModel[T, PK], U],
       index: IndexOptions,
       multi: GroupMultiplicityOptions
-    ): GroupTableQuery[ReqlArray[U], T] = new GroupTableQuery[ReqlArray[U], T] {
+    ): GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] = new GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] {
       val command = TermType.GROUP
       val string = "group"
       val arguments = table :: selector :: Nil
@@ -129,11 +129,11 @@ trait AggregationQueries {
     }
 
     def group[U <: ReqlDatum](
-      selector0: ReqlDatumSelector[T, U],
-      selector1: ReqlDatumSelector[T, U],
+      selector0: ReqlDatumSelector[ReqlModel[T, PK], U],
+      selector1: ReqlDatumSelector[ReqlModel[T, PK], U],
       index: IndexOptions,
       multi: GroupMultiplicityOptions
-    ): GroupTableQuery[ReqlArray[U], T] = new GroupTableQuery[ReqlArray[U], T] {
+    ): GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] = new GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] {
       val command = TermType.GROUP
       val string = "group"
       val arguments = table :: selector0 :: selector1 :: Nil
@@ -177,9 +177,9 @@ trait AggregationQueries {
   trait ReduceSelectionOfStreamQuery extends ReqlDatum
   trait ReduceArrayQuery extends ReqlDatum
 
-  implicit class ReduceOnTableOp[T, PK](val table: ReqlTable[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class ReduceOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+    private implicit def modelShape = table.shape
+
     def reduce(
       reductionFunction: (ReqlModel[T, PK], ReqlModel[T, PK]) => ReqlModel[T, PK]
     ): ReqlModel[T, PK] = {
@@ -194,9 +194,9 @@ trait AggregationQueries {
     }
   }
 
-  implicit class ReduceOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class ReduceOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+    private implicit def modelShape = tableSlice.shape
+
     def reduce(
       reductionFunction: (ReqlModel[T, PK], ReqlModel[T, PK]) => ReqlModel[T, PK]
     ): ReqlModel[T, PK] = {
@@ -211,9 +211,9 @@ trait AggregationQueries {
     }
   }
 
-  implicit class ReduceOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class ReduceOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+    private implicit def modelShape = sel.shape
+
     def reduce(
       reductionFunction: (ReqlModel[T, PK], ReqlModel[T, PK]) => ReqlModel[T, PK]
     ): ReqlModel[T, PK] = {
@@ -228,9 +228,9 @@ trait AggregationQueries {
     }
   }
 
-  implicit class ReduceOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class ReduceOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+    private implicit def modelShape = sel.shape
+
     def reduce(
       reductionFunction: (ReqlModel[T, PK], ReqlModel[T, PK]) => ReqlModel[T, PK]
     ): ReqlModel[T, PK] = {
@@ -282,9 +282,9 @@ trait AggregationQueries {
   trait FoldToSeqArrayQuery[T <: ReqlDatum] extends ReqlArray[T]
 
   //TODO: find way to make .fold[R]: R not .fold[R]: Datum
-  implicit class FoldOnTableOp[T, PK](val table: ReqlTable[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class FoldOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+    private implicit def modelShape = table.shape
+
     def fold[
       R <: ReqlDatum : Transmuter
     ](
@@ -317,9 +317,9 @@ trait AggregationQueries {
     }
   }
 
-  implicit class FoldOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class FoldOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+    private implicit def modelShape = tableSlice.shape
+
     def fold[
       R <: ReqlDatum : Transmuter
     ](
@@ -351,9 +351,9 @@ trait AggregationQueries {
     }
   }
 
-  implicit class FoldOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class FoldOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+    private implicit def modelShape = sel.shape
+
     def fold[
       R <: ReqlDatum : Transmuter
     ](
@@ -386,9 +386,9 @@ trait AggregationQueries {
     }
   }
 
-  implicit class FoldOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class FoldOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+    private implicit def modelShape = sel.shape
+
     def fold[
       R <: ReqlDatum : Transmuter
     ](
@@ -506,9 +506,9 @@ trait AggregationQueries {
   trait CountObjectQuery extends ReqlInteger
   trait CountGroupedStreamQuery extends ReqlGroupedData
 
-  implicit class CountOnTableOp[T, PK](val table: ReqlTable[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class CountOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+    private implicit def modelShape = table.shape
+
     def count(): CountTableQuery = new CountTableQuery {
       val command = TermType.COUNT
       val string = "count"
@@ -538,9 +538,9 @@ trait AggregationQueries {
     }
   }
 
-  implicit class CountOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class CountOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+    private implicit def modelShape = tableSlice.shape
+
     def count(): CountTableSliceQuery = new CountTableSliceQuery {
       val command = TermType.COUNT
       val string = "count"
@@ -570,9 +570,9 @@ trait AggregationQueries {
     }
   }
 
-  implicit class CountOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class CountOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+    private implicit def modelShape = sel.shape
+
     def count(): CountSelectionOfArrayQuery = new CountSelectionOfArrayQuery {
       val command = TermType.COUNT
       val string = "count"
@@ -602,9 +602,9 @@ trait AggregationQueries {
     }
   }
 
-  implicit class CountOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class CountOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+    private implicit def modelShape = sel.shape
+
     def count(): CountSelectionOfStreamQuery = new CountSelectionOfStreamQuery {
       val command = TermType.COUNT
       val string = "count"
@@ -760,9 +760,9 @@ trait AggregationQueries {
   trait SumFiniteStreamQuery extends ReqlFloat
   trait SumArrayQuery extends ReqlFloat
 
-  implicit class SumOnTableOp[T, PK](val table: ReqlTable[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class SumOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+    private implicit def modelShape = table.shape
+
     def sum(field: ReqlString): SumTableQuery = new SumTableQuery {
       val command = TermType.SUM
       val string = "sum"
@@ -778,9 +778,9 @@ trait AggregationQueries {
     }
   }
 
-  implicit class SumOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class SumOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+    private implicit def modelShape = tableSlice.shape
+
     def sum(field: ReqlString): SubTableSliceQuery = new SubTableSliceQuery {
       val command = TermType.SUM
       val string = "sum"
@@ -796,9 +796,9 @@ trait AggregationQueries {
     }
   }
 
-  implicit class SumOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class SumOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+    private implicit def modelShape = sel.shape
+
     def sum(field: ReqlString): SumSelectionOfArrayQuery = new SumSelectionOfArrayQuery {
       val command = TermType.SUM
       val string = "sum"
@@ -814,9 +814,9 @@ trait AggregationQueries {
     }
   }
 
-  implicit class SumOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class SumOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+    private implicit def modelShape = sel.shape
+
     def sum(field: ReqlString): SumSelectionOfStreamQuery = new SumSelectionOfStreamQuery {
       val command = TermType.SUM
       val string = "sum"
@@ -887,9 +887,9 @@ trait AggregationQueries {
   trait AvgFiniteStreamQuery extends ReqlFloat
   trait AvgArrayQuery extends ReqlFloat
 
-  implicit class AvgOnTableOp[T, PK](val table: ReqlTable[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class AvgOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+    private implicit def modelShape = table.shape
+
     def avg(field: ReqlString): AvgTableQuery = new AvgTableQuery {
       val command = TermType.AVG
       val string = "avg"
@@ -905,9 +905,9 @@ trait AggregationQueries {
     }
   }
 
-  implicit class AvgOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class AvgOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+    private implicit def modelShape = tableSlice.shape
+
     def avg(field: ReqlString): AvgTableSliceQuery = new AvgTableSliceQuery {
       val command = TermType.AVG
       val string = "avg"
@@ -923,9 +923,9 @@ trait AggregationQueries {
     }
   }
 
-  implicit class AvgOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class AvgOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+    private implicit def modelShape = sel.shape
+
     def avg(field: ReqlString): AvgSelectionOfArrayQuery = new AvgSelectionOfArrayQuery {
       val command = TermType.AVG
       val string = "avg"
@@ -941,9 +941,9 @@ trait AggregationQueries {
     }
   }
 
-  implicit class AvgOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class AvgOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+    private implicit def modelShape = sel.shape
+
     def avg(field: ReqlString): AvgSelectionOfStreamQuery = new AvgSelectionOfStreamQuery {
       val command = TermType.AVG
       val string = "avg"
@@ -1014,9 +1014,9 @@ trait AggregationQueries {
   trait MinFiniteStreamQuery extends ReqlDatum
   trait MinArrayQuery extends ReqlDatum
 
-  implicit class MinOnTableOp[T, PK](val table: ReqlTable[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class MinOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+    private implicit def modelShape = table.shape
+
     def min(index: IndexOptions = DefaultIndex): ReqlModel[T, PK] = {
       Transmuter.transmute[ReqlModel[T, PK]](
         new MinTableQuery {
@@ -1051,9 +1051,9 @@ trait AggregationQueries {
     }
   }
 
-  implicit class MinOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class MinOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+    private implicit def modelShape = tableSlice.shape
+
     def min(): ReqlModel[T, PK] = {
       Transmuter.transmute[ReqlModel[T, PK]](
         new MinTableSliceQuery {
@@ -1088,9 +1088,9 @@ trait AggregationQueries {
     }
   }
 
-  implicit class MinOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class MinOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+    private implicit def modelShape = sel.shape
+
     def min(): ReqlModel[T, PK] = {
       Transmuter.transmute[ReqlModel[T, PK]](
         new MinSelectionOfArrayQuery {
@@ -1125,9 +1125,9 @@ trait AggregationQueries {
     }
   }
 
-  implicit class MinOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class MinOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+    private implicit def modelShape = sel.shape
+
     def min(): ReqlModel[T, PK] = {
       Transmuter.transmute[ReqlModel[T, PK]](
         new MinSelectionOfStreamQuery {
@@ -1241,9 +1241,9 @@ trait AggregationQueries {
   trait MaxFiniteStreamQuery extends ReqlDatum
   trait MaxArrayQuery extends ReqlDatum
 
-  implicit class MaxOnTableOp[T, PK](val table: ReqlTable[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class MaxOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+    private implicit def modelShape = table.shape
+
     def max(index: IndexOptions = DefaultIndex): ReqlModel[T, PK] = {
       Transmuter.transmute[ReqlModel[T, PK]](
         new MaxTableQuery {
@@ -1278,9 +1278,9 @@ trait AggregationQueries {
     }
   }
 
-  implicit class MaxOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class MaxOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+    private implicit def modelShape = tableSlice.shape
+
     def max(): ReqlModel[T, PK] = {
       Transmuter.transmute[ReqlModel[T, PK]](
         new MaxTableSliceQuery {
@@ -1315,9 +1315,9 @@ trait AggregationQueries {
     }
   }
 
-  implicit class MaxOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class MaxOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+    private implicit def modelShape = sel.shape
+
     def max(): ReqlModel[T, PK] = {
       Transmuter.transmute[ReqlModel[T, PK]](
         new MaxSelectionOfArrayQuery {
@@ -1352,9 +1352,9 @@ trait AggregationQueries {
     }
   }
 
-  implicit class MaxOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class MaxOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+    private implicit def modelShape = sel.shape
+
     def max(): ReqlModel[T, PK] = {
       Transmuter.transmute[ReqlModel[T, PK]](
         new MaxSelectionOfStreamQuery {

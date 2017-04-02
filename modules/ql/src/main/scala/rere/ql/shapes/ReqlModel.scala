@@ -1,12 +1,10 @@
 package rere.ql.shapes
 
 import io.circe.JsonObject
-import rere.ql.types.ReqlObject
+import rere.ql.types.{ReqlObject, ReqlShapable}
 import rere.ql.values.ReqlObjectModel
 
-trait ReqlModel[T, PK] extends ReqlObject {
-  def shape: ModelShape[T, PK]
-}
+trait ReqlModel[T, PK] extends ReqlShapable[T, PK] with ReqlObject
 
 object ReqlModel {
   implicit def shapableToModel[T, PK](model: T)(

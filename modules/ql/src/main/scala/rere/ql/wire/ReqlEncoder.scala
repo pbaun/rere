@@ -4,7 +4,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 import akka.util.ByteString
-import io.circe.Json
+import io.circe.{Encoder, Json, ObjectEncoder}
 import rere.ql.shapes.ModelShape
 import rere.ql.typeclasses.Transmuter
 import rere.ql.types._
@@ -171,6 +171,36 @@ object ReqlEncoder {
 
       override def encode(value: Model): ReqlObject = {
         modelShape.toReqlObject(value)
+      }
+    }
+  }
+
+  def reqlFromCirce[T](encoder: Encoder[T]): Aux[T, ReqlJson] = {
+    new ReqlEncoder[T] {
+      override type ReqlType = ReqlJson
+
+      override def encode(value: T): ReqlType = {
+        new ReqlJsonQuery(encoder(value))
+      }
+    }
+  }
+
+  def reqlObjectFromCirce[T](encoder: ObjectEncoder[T]): Aux[T, ReqlObject] = {
+    new ReqlEncoder[T] {
+      override type ReqlType = ReqlObject
+
+      override def encode(value: T): ReqlType = {
+        new ReqlJsonObjectQuery(encoder.encodeObject(value))
+      }
+    }
+  }
+
+  def reqlObjectWithoutPrimaryKeyFromCirce[T](encoder: ObjectEncoder[T], primaryKey: Set[String]): Aux[T, ReqlObject] = {
+    new ReqlEncoder[T] {
+      override type ReqlType = ReqlObject
+
+      override def encode(value: T): ReqlType = {
+        new ReqlJsonObjectQuery(encoder.encodeObject(value).filterKeys(!primaryKey.contains(_)))
       }
     }
   }

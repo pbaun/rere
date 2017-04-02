@@ -52,24 +52,44 @@ object Transmuter extends LowPriorityTransmuter {
   //
   // This types can be used as return type of lambda inside .do query
   //
-  implicit def tableTransmuter[T, PK]: Transmuter[ReqlTable[T, PK]] = new Transmuter[ReqlTable[T, PK]] {
-    def transmute(query: ReqlExpr): ReqlTable[T, PK] = new ProxyQuery(query) with ReqlTable[T, PK]
+  implicit def tableTransmuter[T, PK](
+    implicit modelShape: ModelShape[T, PK]
+  ): Transmuter[ReqlTable[T, PK]] = new Transmuter[ReqlTable[T, PK]] {
+    def transmute(query: ReqlExpr): ReqlTable[T, PK] = new ProxyQuery(query) with ReqlTable[T, PK] {
+      override def shape: ModelShape[T, PK] = modelShape
+    }
   }
 
-  implicit def tableSliceTransmuter[T, PK]: Transmuter[ReqlTableSlice[T, PK]] = new Transmuter[ReqlTableSlice[T, PK]] {
-    def transmute(query: ReqlExpr): ReqlTableSlice[T, PK] = new ProxyQuery(query) with ReqlTableSlice[T, PK]
+  implicit def tableSliceTransmuter[T, PK](
+    implicit modelShape: ModelShape[T, PK]
+  ): Transmuter[ReqlTableSlice[T, PK]] = new Transmuter[ReqlTableSlice[T, PK]] {
+    def transmute(query: ReqlExpr): ReqlTableSlice[T, PK] = new ProxyQuery(query) with ReqlTableSlice[T, PK] {
+      override def shape: ModelShape[T, PK] = modelShape
+    }
   }
 
-  implicit def selectionOfArrayTransmuter[T, PK]: Transmuter[ReqlSelectionOfArray[T, PK]] = new Transmuter[ReqlSelectionOfArray[T, PK]] {
-    def transmute(query: ReqlExpr): ReqlSelectionOfArray[T, PK] = new ProxyQuery(query) with ReqlSelectionOfArray[T, PK]
+  implicit def selectionOfArrayTransmuter[T, PK](
+    implicit modelShape: ModelShape[T, PK]
+  ): Transmuter[ReqlSelectionOfArray[T, PK]] = new Transmuter[ReqlSelectionOfArray[T, PK]] {
+    def transmute(query: ReqlExpr): ReqlSelectionOfArray[T, PK] = new ProxyQuery(query) with ReqlSelectionOfArray[T, PK] {
+      override def shape: ModelShape[T, PK] = modelShape
+    }
   }
 
-  implicit def selectionOfStreamTransmuter[T, PK]: Transmuter[ReqlSelectionOfStream[T, PK]] = new Transmuter[ReqlSelectionOfStream[T, PK]] {
-    def transmute(query: ReqlExpr): ReqlSelectionOfStream[T, PK] = new ProxyQuery(query) with ReqlSelectionOfStream[T, PK]
+  implicit def selectionOfStreamTransmuter[T, PK](
+    implicit modelShape: ModelShape[T, PK]
+  ): Transmuter[ReqlSelectionOfStream[T, PK]] = new Transmuter[ReqlSelectionOfStream[T, PK]] {
+    def transmute(query: ReqlExpr): ReqlSelectionOfStream[T, PK] = new ProxyQuery(query) with ReqlSelectionOfStream[T, PK] {
+      override def shape: ModelShape[T, PK] = modelShape
+    }
   }
 
-  implicit def selectionOfObjectTransmuter[T, PK]: Transmuter[ReqlSelectionOfObject[T, PK]] = new Transmuter[ReqlSelectionOfObject[T, PK]] {
-    def transmute(query: ReqlExpr): ReqlSelectionOfObject[T, PK] = new ProxyQuery(query) with ReqlSelectionOfObject[T, PK]
+  implicit def selectionOfObjectTransmuter[T, PK](
+    implicit modelShape: ModelShape[T, PK]
+  ): Transmuter[ReqlSelectionOfObject[T, PK]] = new Transmuter[ReqlSelectionOfObject[T, PK]] {
+    def transmute(query: ReqlExpr): ReqlSelectionOfObject[T, PK] = new ProxyQuery(query) with ReqlSelectionOfObject[T, PK] {
+      override def shape: ModelShape[T, PK] = modelShape
+    }
   }
 
   implicit def finiteStreamTransmuter[T <: ReqlDatum]: Transmuter[ReqlFiniteStream[T]] = new Transmuter[ReqlFiniteStream[T]] {

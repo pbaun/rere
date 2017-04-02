@@ -28,6 +28,13 @@ object ModelShape extends LowPriorityModelShape {
   implicit def shapeAccessor[Model, PK](implicit tableDescriptor: TableDescriptor[Model, PK]): ModelShape[Model, PK] = {
     tableDescriptor.shape
   }
+
+  def decodingResultConverter[T](result: ReqlDecoder.Result[T], json: Json): DecodingResult[T] = {
+    result match {
+      case Right(m) => Right(m)
+      case Left(err) => Left(ShapeDecodingError(err.message, json))
+    }
+  }
 }
 
 trait LowPriorityModelShape {

@@ -59,6 +59,7 @@ trait AdministrationQueries {
       val string = "config"
       val arguments = table :: Nil
       val options = Options.empty
+      def shape = TableConfig.tableConfigShape
     }
   }
 
@@ -68,6 +69,7 @@ trait AdministrationQueries {
       val string = "config"
       val arguments = db :: Nil
       val options = Options.empty
+      def shape = DatabaseConfig.databaseConfigShape
     }
   }
 
@@ -165,6 +167,7 @@ trait AdministrationQueries {
       val string = "status"
       val arguments = table :: Nil
       val options = Options.empty
+      def shape = TableStatus.tableStatusShape
     }
   }
 

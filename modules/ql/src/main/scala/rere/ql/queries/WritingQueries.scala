@@ -3,7 +3,7 @@ package rere.ql.queries
 import rere.ql.options.all._
 import rere.ql.options.{ComposableOptions, Options}
 import rere.ql.ql2.Term.TermType
-import rere.ql.shapes.{ModelShape, ReqlModel}
+import rere.ql.shapes.ReqlModel
 import rere.ql.types._
 
 trait WritingQueries {
@@ -37,9 +37,9 @@ trait WritingQueries {
   /**
     * Insert new element with auto-generated id. Primary key fields will not be sent to the database.
     */
-  implicit class InsertAutoOnTableOp[T, PK](val table: ReqlTable[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class InsertAutoOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+    private implicit def modelShape = table.shape
+
     def insertAuto(
       obj: T,
       durability: DurabilityOptions = DefaultDurability,
@@ -48,7 +48,7 @@ trait WritingQueries {
     ): InsertTableQuery[T, PK] = new InsertTableQuery[T, PK] {
       val command = TermType.INSERT
       val string = "insert"
-      val arguments = table :: shape.toReqlUnidentifiableObject(obj) :: Nil
+      val arguments = table :: modelShape.toReqlUnidentifiableObject(obj) :: Nil
       val options = ComposableOptions.compose(durability, returnChanges, conflict)
     }
   }

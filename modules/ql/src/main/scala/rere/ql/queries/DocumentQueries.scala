@@ -379,6 +379,7 @@ trait DocumentQueries {
       val string = "bracket"
       val arguments = sel :: index :: Nil
       val options = Options.empty
+      def shape = sel.shape
     }
   }
 
@@ -395,6 +396,7 @@ trait DocumentQueries {
       val string = "bracket"
       val arguments = sel :: index :: Nil
       val options = Options.empty
+      def shape = sel.shape
     }
   }
 
@@ -550,6 +552,7 @@ trait DocumentQueries {
       val string = "has_fields"
       val arguments = table :: selectors.toList
       val options = Options.empty
+      def shape = table.shape
     }
 
     def hasFields(args: ReqlArgs): HasFieldsTableQuery[T, PK] = new HasFieldsTableQuery[T, PK] {
@@ -557,6 +560,7 @@ trait DocumentQueries {
       val string = "has_fields"
       val arguments = table :: args :: Nil
       val options = Options.empty
+      def shape = table.shape
     }
   }
 
@@ -566,6 +570,7 @@ trait DocumentQueries {
       val string = "has_fields"
       val arguments = tableSlice :: selectors.toList
       val options = Options.empty
+      def shape = tableSlice.shape
     }
 
     def hasFields(args: ReqlArgs): HasFieldsTableSliceQuery[T, PK] = new HasFieldsTableSliceQuery[T, PK] {
@@ -573,6 +578,7 @@ trait DocumentQueries {
       val string = "has_fields"
       val arguments = tableSlice :: args :: Nil
       val options = Options.empty
+      def shape = tableSlice.shape
     }
   }
 
@@ -582,6 +588,7 @@ trait DocumentQueries {
       val string = "has_fields"
       val arguments = sel :: selectors.toList
       val options = Options.empty
+      def shape = sel.shape
     }
 
     def hasFields(args: ReqlArgs): HasFieldsSelectionOfArrayQuery[T, PK] = new HasFieldsSelectionOfArrayQuery[T, PK] {
@@ -589,6 +596,7 @@ trait DocumentQueries {
       val string = "has_fields"
       val arguments = sel :: args :: Nil
       val options = Options.empty
+      def shape = sel.shape
     }
   }
 
@@ -598,6 +606,7 @@ trait DocumentQueries {
       val string = "has_fields"
       val arguments = sel :: selectors.toList
       val options = Options.empty
+      def shape = sel.shape
     }
 
     def hasFields(args: ReqlArgs): HasFieldsSelectionOfStreamQuery[T, PK] = new HasFieldsSelectionOfStreamQuery[T, PK] {
@@ -605,6 +614,7 @@ trait DocumentQueries {
       val string = "has_fields"
       val arguments = sel :: args :: Nil
       val options = Options.empty
+      def shape = sel.shape
     }
   }
 

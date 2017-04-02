@@ -134,6 +134,7 @@ trait GeospatialQueries {
       val string = "get_intersecting"
       val arguments = table :: geometry :: Nil
       val options = ComposableOptions.compose(geoIndex)
+      def shape = table.shape
     }
   }
 

@@ -389,17 +389,6 @@ object ReqlDecoder {
     reqlFromCirce[ModificationResult[T, PK]](insertionResultDecoder)
   }
 
-  private implicit val databaseConfigDecoder: Decoder[DatabaseConfig] = Decoder.instance(c =>
-    for {
-      id <- c.downField("id").as[UUID]
-      name <- c.downField("name").as[String]
-    } yield DatabaseConfig(id, name)
-  )
-
-  implicit val databaseConfigReqlDecoder: ReqlDecoder[DatabaseConfig] = {
-    reqlFromCirce[DatabaseConfig](databaseConfigDecoder)
-  }
-
   private implicit val databaseCreationResultDecoder: Decoder[DatabaseCreationResult] = Decoder.instance(c =>
     for {
       dbsCreated <- c.downField("dbs_created").as[Long]
@@ -421,40 +410,6 @@ object ReqlDecoder {
 
   implicit val databaseDroppingResultReqlDecoder: ReqlDecoder[DatabaseDroppingResult] = {
     reqlFromCirce[DatabaseDroppingResult](databaseDroppingResultDecoder)
-  }
-
-  private implicit val shardDecoder: Decoder[Shard] = Decoder.instance(c =>
-    for {
-      primaryReplica <- c.downField("primary_replica").as[String]
-      replicas <- c.downField("replicas").as[List[String]]
-      nonvotingReplicas <- c.downField("nonvoting_replicas").as[List[String]]
-    } yield Shard(primaryReplica = primaryReplica, replicas = replicas, nonvotingReplicas = nonvotingReplicas)
-  )
-
-  private implicit val tableConfigDecoder: Decoder[TableConfig] = Decoder.instance(c =>
-    for {
-      id <- c.downField("id").as[UUID]
-      name <- c.downField("name").as[String]
-      db <- c.downField("db").as[String]
-      primaryKey <- c.downField("primary_key").as[String]
-      shards <- c.downField("shards").as[List[Shard]]
-      indexes <- c.downField("indexes").as[List[String]]
-      writeAcks <- c.downField("write_acks").as[String]
-      durability <- c.downField("durability").as[String]
-    } yield TableConfig(
-      id = id,
-      name = name,
-      db = db,
-      primaryKey = primaryKey,
-      shards = shards,
-      indexes = indexes,
-      writeAcks = writeAcks,
-      durability = durability
-    )
-  )
-
-  implicit val tableConfigReqlDecoder: ReqlDecoder[TableConfig] = {
-    reqlFromCirce[TableConfig](tableConfigDecoder)
   }
 
   private implicit val tableCreationResultDecoder: Decoder[TableCreationResult] = Decoder.instance(c =>
@@ -553,44 +508,6 @@ object ReqlDecoder {
 
   implicit val indexStatusReqlDecoder: ReqlDecoder[IndexStatus] = {
     reqlFromCirce[IndexStatus](indexStatusDecoder)
-  }
-
-  private implicit val tableReplicaStatusDecoder: Decoder[TableReplicaStatus] = Decoder.instance(c =>
-    for {
-      server <- c.downField("server").as[String]
-      state <- c.downField("state").as[String]
-    } yield TableReplicaStatus(server, state)
-  )
-
-  private implicit val tableShardStatusDecoder: Decoder[TableShardStatus] = Decoder.instance(c =>
-    for {
-      primaryReplicas <- c.downField("primary_replicas").as[List[String]]
-      replicas <- c.downField("replicas").as[List[TableReplicaStatus]]
-    } yield TableShardStatus(primaryReplicas, replicas)
-  )
-
-  private implicit val tableStatusFlagsDecoder: Decoder[TableStatusFlags] = Decoder.instance(c =>
-    for {
-      readyForOutdatedReads <- c.downField("ready_for_outdated_reads").as[Boolean]
-      readyForReads <- c.downField("ready_for_reads").as[Boolean]
-      readyForWrites <- c.downField("ready_for_writes").as[Boolean]
-      allReplicasReady <- c.downField("all_replicas_ready").as[Boolean]
-    } yield TableStatusFlags(readyForOutdatedReads, readyForReads, readyForWrites, allReplicasReady)
-  )
-
-  private implicit val tableStatusDecoder: Decoder[TableStatus] = Decoder.instance(c =>
-    for {
-      id <- c.downField("id").as[UUID]
-      name <- c.downField("name").as[String]
-      db <- c.downField("db").as[String]
-      status <- c.downField("status").as[TableStatusFlags]
-      shards <- c.downField("shards").as[List[TableShardStatus]]
-      raftLeader <- c.downField("raft_leader").as[String]
-    } yield TableStatus(id, name, db, status, shards, raftLeader)
-  )
-
-  implicit val tableStatusReqlDecoder: ReqlDecoder[TableStatus] = {
-    reqlFromCirce[TableStatus](tableStatusDecoder)
   }
 
   private implicit val rebalancingResultDecoder: Decoder[RebalancingResult] = Decoder.instance(c =>
@@ -911,7 +828,7 @@ object ReqlDecoder {
     * @tparam T - type for which ReqlDecoder will be crafted
     * @return
     */
-  private def reqlFromCirce[T](decoder: Decoder[T]): ReqlDecoder[T] = {
+  def reqlFromCirce[T](decoder: Decoder[T]): ReqlDecoder[T] = {
     new ReqlDecoder[T] {
       override def decode(json: Json): Result[T] = {
         decoder.decodeJson(json) match {

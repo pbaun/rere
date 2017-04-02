@@ -3,7 +3,7 @@ package rere.ql.queries
 import rere.ql.options.all._
 import rere.ql.options.{ComposableOptions, Options}
 import rere.ql.ql2.Term.TermType
-import rere.ql.shapes.{ModelShape, ReqlModel}
+import rere.ql.shapes.ReqlModel
 import rere.ql.typeclasses.{ToFilterPredicate, Transmuter}
 import rere.ql.types._
 
@@ -12,14 +12,15 @@ trait SelectingQueries {
   // get
   trait GetQuery[T, PK] extends ReqlSelectionOfObject[T, PK]
 
-  implicit class GetOp[T, PK](val table: ReqlTable[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class GetOp[T, PK](val table: ReqlTable[T, PK]) {
+    private implicit def modelShape = table.shape
+
     def get(key: PK): GetQuery[T, PK] = new GetQuery[T, PK] {
       val command = TermType.GET
       val string = "get"
-      val arguments = table :: shape.toReqlPrimaryKey(key) :: Nil
+      val arguments = table :: modelShape.toReqlPrimaryKey(key) :: Nil
       val options = Options.empty
+      def shape = modelShape
     }
   }
 
@@ -27,15 +28,16 @@ trait SelectingQueries {
   trait GetAllQuery[T, PK] extends ReqlSelectionOfStream[T, PK]
   //TODO:  An orderBy command that uses a secondary index cannot be chained after getAll. You can only chain it after a table command. However, you can chain orderBy after a between command provided it uses the same index
 
-  implicit class GetAllOp[T, PK](val table: ReqlTable[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class GetAllOp[T, PK](val table: ReqlTable[T, PK]) {
+    private implicit def modelShape = table.shape
+
     //TODO: make index option type safe (RqlIndexExpr???, r.index???)
     def getAll(keys: PK*): GetAllQuery[T, PK] = new GetAllQuery[T, PK] {
       val command = TermType.GET_ALL
       val string = "get_all"
-      val arguments = table :: keys.map(shape.toReqlPrimaryKey).toList
+      val arguments = table :: keys.map(modelShape.toReqlPrimaryKey).toList
       val options = Options.empty
+      def shape = modelShape
     }
 
     def getAll(indexOptions: IndexOptions,
@@ -44,6 +46,7 @@ trait SelectingQueries {
       val string = "get_all"
       val arguments = table :: keys.toList
       val options = indexOptions
+      def shape = modelShape
     }
 
     def getAll(args: ReqlArgs): GetAllQuery[T, PK] = new GetAllQuery[T, PK] {
@@ -51,6 +54,7 @@ trait SelectingQueries {
       val string = "get_all"
       val arguments = table :: args :: Nil
       val options = Options.empty
+      def shape = modelShape
     }
 
     def getAll(indexOptions: IndexOptions,
@@ -59,6 +63,7 @@ trait SelectingQueries {
       val string = "get_all"
       val arguments = table :: args :: Nil
       val options = indexOptions
+      def shape = modelShape
     }
   }
 
@@ -75,6 +80,7 @@ trait SelectingQueries {
       val string = "between"
       val arguments = table :: lowerKey :: upperKey :: Nil
       val options = ComposableOptions.compose(boundsOptions, indexOptions)
+      def shape = table.shape
     }
   }
 
@@ -87,6 +93,7 @@ trait SelectingQueries {
       val string = "between"
       val arguments = tableSlice :: lowerKey :: upperKey :: Nil
       val options = boundsOptions
+      def shape = tableSlice.shape
     }
   }
 
@@ -125,14 +132,15 @@ trait SelectingQueries {
   trait FilterFiniteStreamQuery[T <: ReqlDatum] extends ReqlFiniteStream[T]
   trait FilterArrayQuery[T <: ReqlDatum] extends ReqlArray[T]
 
-  implicit class FilterOnTableOp[T, PK](val table: ReqlTable[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class FilterOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+    private implicit def modelShape = table.shape
+
     def filter(obj: ReqlModel[T, PK]): FilterTableQuery[T, PK] = new FilterTableQuery[T, PK] {
       val command = TermType.FILTER
       val string = "filter"
       val arguments = table :: ToFilterPredicate(obj) :: Nil
       val options = Options.empty
+      def shape = modelShape
     }
 
     def filter(obj: ReqlModel[T, PK],
@@ -141,6 +149,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = table :: ToFilterPredicate(obj) :: Nil
       val options = skip
+      def shape = modelShape
     }
 
     def filter(obj: ReqlModel[T, PK],
@@ -149,6 +158,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = table :: ToFilterPredicate(obj) :: Nil
       val options = noSkip
+      def shape = modelShape
     }
 
     def filter(obj: ReqlModel[T, PK],
@@ -157,6 +167,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = table :: ToFilterPredicate(obj) :: Nil
       val options = rethrowError
+      def shape = modelShape
     }
 
     def filter(function: ReqlModel[T, PK] => ReqlBoolean): FilterTableQuery[T, PK] = new FilterTableQuery[T, PK] {
@@ -164,6 +175,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = table :: ToFilterPredicate(function) :: Nil
       val options = Options.empty
+      def shape = modelShape
     }
 
     def filter(function: ReqlModel[T, PK] => ReqlBoolean,
@@ -172,6 +184,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = table :: ToFilterPredicate(function) :: Nil
       val options = skip
+      def shape = modelShape
     }
 
     def filter(function: ReqlModel[T, PK] => ReqlBoolean,
@@ -180,6 +193,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = table :: ToFilterPredicate(function) :: Nil
       val options = noSkip
+      def shape = modelShape
     }
 
     def filter(function: ReqlModel[T, PK] => ReqlBoolean,
@@ -188,17 +202,19 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = table :: ToFilterPredicate(function) :: Nil
       val options = rethrowError
+      def shape = modelShape
     }
   }
 
-  implicit class FilterOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class FilterOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+    private implicit def modelShape = tableSlice.shape
+
     def filter(obj: ReqlModel[T, PK]): FilterTableSliceQuery[T, PK] = new FilterTableSliceQuery[T, PK] {
       val command = TermType.FILTER
       val string = "filter"
       val arguments = tableSlice :: ToFilterPredicate(obj) :: Nil
       val options = Options.empty
+      def shape = modelShape
     }
 
     def filter(obj: ReqlModel[T, PK],
@@ -207,6 +223,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = tableSlice :: ToFilterPredicate(obj) :: Nil
       val options = skip
+      def shape = modelShape
     }
 
     def filter(obj: ReqlModel[T, PK],
@@ -215,6 +232,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = tableSlice :: ToFilterPredicate(obj) :: Nil
       val options = noSkip
+      def shape = modelShape
     }
 
     def filter(obj: ReqlModel[T, PK],
@@ -223,6 +241,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = tableSlice :: ToFilterPredicate(obj) :: Nil
       val options = rethrowError
+      def shape = modelShape
     }
 
     def filter(function: ReqlModel[T, PK] => ReqlBoolean): FilterTableSliceQuery[T, PK] = new FilterTableSliceQuery[T, PK] {
@@ -230,6 +249,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = tableSlice :: ToFilterPredicate(function) :: Nil
       val options = Options.empty
+      def shape = modelShape
     }
 
     def filter(function: ReqlModel[T, PK] => ReqlBoolean,
@@ -238,6 +258,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = tableSlice :: ToFilterPredicate(function) :: Nil
       val options = skip
+      def shape = modelShape
     }
 
     def filter(function: ReqlModel[T, PK] => ReqlBoolean,
@@ -246,6 +267,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = tableSlice :: ToFilterPredicate(function) :: Nil
       val options = noSkip
+      def shape = modelShape
     }
 
     def filter(function: ReqlModel[T, PK] => ReqlBoolean,
@@ -254,17 +276,19 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = tableSlice :: ToFilterPredicate(function) :: Nil
       val options = rethrowError
+      def shape = modelShape
     }
   }
 
-  implicit class FilterOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class FilterOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+    private implicit def modelShape = sel.shape
+
     def filter(obj: ReqlModel[T, PK]): FilterSelectionOfArrayQuery[T, PK] = new FilterSelectionOfArrayQuery[T, PK] {
       val command = TermType.FILTER
       val string = "filter"
       val arguments = sel :: ToFilterPredicate(obj) :: Nil
       val options = Options.empty
+      def shape = modelShape
     }
 
     def filter(obj: ReqlModel[T, PK],
@@ -273,6 +297,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = sel :: ToFilterPredicate(obj) :: Nil
       val options = skip
+      def shape = modelShape
     }
 
     def filter(obj: ReqlModel[T, PK],
@@ -281,6 +306,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = sel :: ToFilterPredicate(obj) :: Nil
       val options = noSkip
+      def shape = modelShape
     }
 
     def filter(obj: ReqlModel[T, PK],
@@ -289,6 +315,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = sel :: ToFilterPredicate(obj) :: Nil
       val options = rethrowError
+      def shape = modelShape
     }
 
     def filter(function: ReqlModel[T, PK] => ReqlBoolean): FilterSelectionOfArrayQuery[T, PK] = new FilterSelectionOfArrayQuery[T, PK] {
@@ -296,6 +323,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = sel :: ToFilterPredicate(function) :: Nil
       val options = Options.empty
+      def shape = modelShape
     }
 
     def filter(function: ReqlModel[T, PK] => ReqlBoolean,
@@ -304,6 +332,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = sel :: ToFilterPredicate(function) :: Nil
       val options = skip
+      def shape = modelShape
     }
 
     def filter(function: ReqlModel[T, PK] => ReqlBoolean,
@@ -312,6 +341,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = sel :: ToFilterPredicate(function) :: Nil
       val options = noSkip
+      def shape = modelShape
     }
 
     def filter(function: ReqlModel[T, PK] => ReqlBoolean,
@@ -320,17 +350,19 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = sel :: ToFilterPredicate(function) :: Nil
       val options = rethrowError
+      def shape = modelShape
     }
   }
 
-  implicit class FilterOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class FilterOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+    private implicit def modelShape = sel.shape
+
     def filter(obj: ReqlModel[T, PK]): FilterSelectionOfStreamQuery[T, PK] = new FilterSelectionOfStreamQuery[T, PK] {
       val command = TermType.FILTER
       val string = "filter"
       val arguments = sel :: ToFilterPredicate(obj) :: Nil
       val options = Options.empty
+      def shape = modelShape
     }
 
     def filter(obj: ReqlModel[T, PK],
@@ -339,6 +371,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = sel :: ToFilterPredicate(obj) :: Nil
       val options = skip
+      def shape = modelShape
     }
 
     def filter(obj: ReqlModel[T, PK],
@@ -347,6 +380,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = sel :: ToFilterPredicate(obj) :: Nil
       val options = noSkip
+      def shape = modelShape
     }
 
     def filter(obj: ReqlModel[T, PK],
@@ -355,6 +389,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = sel :: ToFilterPredicate(obj) :: Nil
       val options = rethrowError
+      def shape = modelShape
     }
 
     def filter(function: ReqlModel[T, PK] => ReqlBoolean): FilterSelectionOfStreamQuery[T, PK] = new FilterSelectionOfStreamQuery[T, PK] {
@@ -362,6 +397,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = sel :: ToFilterPredicate(function) :: Nil
       val options = Options.empty
+      def shape = modelShape
     }
 
     def filter(function: ReqlModel[T, PK] => ReqlBoolean,
@@ -370,6 +406,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = sel :: ToFilterPredicate(function) :: Nil
       val options = skip
+      def shape = modelShape
     }
 
     def filter(function: ReqlModel[T, PK] => ReqlBoolean,
@@ -378,6 +415,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = sel :: ToFilterPredicate(function) :: Nil
       val options = noSkip
+      def shape = modelShape
     }
 
     def filter(function: ReqlModel[T, PK] => ReqlBoolean,
@@ -386,6 +424,7 @@ trait SelectingQueries {
       val string = "filter"
       val arguments = sel :: ToFilterPredicate(function) :: Nil
       val options = rethrowError
+      def shape = modelShape
     }
   }
 

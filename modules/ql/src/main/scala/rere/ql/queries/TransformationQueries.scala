@@ -447,9 +447,9 @@ trait TransformationQueries {
   trait ConcatMapArrayQuery[T <: ReqlDatum] extends ReqlArray[T]
 
   // function return type written not exactly by spec but it's follows the common logic
-  implicit class ConcatMapOnTableOp[T, PK](val table: ReqlTable[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class ConcatMapOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+    private implicit def modelShape = table.shape
+
     def concatMap[TOut <: ReqlDatum](
       mapFunction: ReqlModel[T, PK] => ReqlFiniteSequence[TOut]
     ): ConcatMapTableQuery[TOut] = new ConcatMapTableQuery[TOut] {
@@ -460,9 +460,9 @@ trait TransformationQueries {
     }
   }
 
-  implicit class ConcatMapOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class ConcatMapOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+    private implicit def modelShape = tableSlice.shape
+
     def concatMap[TOut <: ReqlDatum](
       mapFunction: ReqlModel[T, PK] => ReqlFiniteSequence[TOut]
     ): ConcatMapTableSliceQuery[TOut] = new ConcatMapTableSliceQuery[TOut] {
@@ -473,9 +473,9 @@ trait TransformationQueries {
     }
   }
 
-  implicit class ConcatMapOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class ConcatMapOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+    private implicit def modelShape = sel.shape
+
     def concatMap[TOut <: ReqlDatum](
       mapFunction: ReqlModel[T, PK] => ReqlFiniteSequence[TOut]
     ): ConcatMapSelectionOfArrayQuery[TOut] = new ConcatMapSelectionOfArrayQuery[TOut] {
@@ -486,9 +486,9 @@ trait TransformationQueries {
     }
   }
 
-  implicit class ConcatMapOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class ConcatMapOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+    private implicit def modelShape = sel.shape
+
     def concatMap[TOut <: ReqlDatum](
       mapFunction: ReqlModel[T, PK] => ReqlFiniteSequence[TOut]
     ): ConcatMapSelectionOfStreamQuery[TOut] = new ConcatMapSelectionOfStreamQuery[TOut] {
@@ -548,6 +548,7 @@ trait TransformationQueries {
       val string = "order_by"
       val arguments = table :: Nil
       val options = indexOptions
+      def shape = table.shape
     }
 
     def orderBy(orderings: ReqlOrdering*): OrderByTableWithOrderingsQuery[T, PK] = new OrderByTableWithOrderingsQuery[T, PK] {
@@ -555,6 +556,7 @@ trait TransformationQueries {
       val string = "order_by"
       val arguments = table :: orderings.toList
       val options = Options.empty
+      def shape = table.shape
     }
 
     //not by spec but arguments of .between in order in which db will use them
@@ -564,6 +566,7 @@ trait TransformationQueries {
       val string = "order_by"
       val arguments = table :: orderings.toList
       val options = indexOptions
+      def shape = table.shape
     }
   }
 
@@ -578,6 +581,7 @@ trait TransformationQueries {
       val string = "order_by"
       val arguments = tableSlice :: orderings.toList
       val options = Options.empty
+      def shape = tableSlice.shape
     }
   }
 
@@ -587,6 +591,7 @@ trait TransformationQueries {
       val string = "order_by"
       val arguments = sel :: orderings.toList
       val options = Options.empty
+      def shape = sel.shape
     }
   }
 
@@ -596,6 +601,7 @@ trait TransformationQueries {
       val string = "order_by"
       val arguments = sel :: orderings.toList
       val options = Options.empty
+      def shape = sel.shape
     }
   }
 
@@ -658,6 +664,7 @@ trait TransformationQueries {
       val string = "skip"
       val arguments = table :: n :: Nil
       val options = Options.empty
+      def shape = table.shape
     }
   }
 
@@ -667,6 +674,7 @@ trait TransformationQueries {
       val string = "skip"
       val arguments = tableSlice :: n :: Nil
       val options = Options.empty
+      def shape = tableSlice.shape
     }
   }
 
@@ -676,6 +684,7 @@ trait TransformationQueries {
       val string = "skip"
       val arguments = selection :: n :: Nil
       val options = Options.empty
+      def shape = selection.shape
     }
   }
 
@@ -685,6 +694,7 @@ trait TransformationQueries {
       val string = "skip"
       val arguments = selection :: n :: Nil
       val options = Options.empty
+      def shape = selection.shape
     }
   }
 
@@ -730,6 +740,7 @@ trait TransformationQueries {
       val string = "limit"
       val arguments = table :: n :: Nil
       val options = Options.empty
+      def shape = table.shape
     }
   }
 
@@ -739,6 +750,7 @@ trait TransformationQueries {
       val string = "limit"
       val arguments = tableSlice :: n :: Nil
       val options = Options.empty
+      def shape = tableSlice.shape
     }
   }
 
@@ -748,6 +760,7 @@ trait TransformationQueries {
       val string = "limit"
       val arguments = sel :: n :: Nil
       val options = Options.empty
+      def shape = sel.shape
     }
   }
 
@@ -757,6 +770,7 @@ trait TransformationQueries {
       val string = "limit"
       val arguments = sel :: n :: Nil
       val options = Options.empty
+      def shape = sel.shape
     }
   }
 
@@ -841,6 +855,7 @@ trait TransformationQueries {
       val string = "nth"
       val arguments = table :: index :: Nil
       val options = Options.empty
+      def shape = table.shape
     }
   }
 
@@ -850,6 +865,7 @@ trait TransformationQueries {
       val string = "nth"
       val arguments = tableSlice :: index :: Nil
       val options = Options.empty
+      def shape = tableSlice.shape
     }
   }
 
@@ -859,6 +875,7 @@ trait TransformationQueries {
       val string = "nth"
       val arguments = sel :: index :: Nil
       val options = Options.empty
+      def shape = sel.shape
     }
   }
 
@@ -868,6 +885,7 @@ trait TransformationQueries {
       val string = "nth"
       val arguments = sel :: index :: Nil
       val options = Options.empty
+      def shape = sel.shape
     }
   }
 
@@ -890,9 +908,9 @@ trait TransformationQueries {
   trait OffsetsOfFiniteStreamQuery extends ReqlFiniteStream[ReqlInteger]
   trait OffsetsOfArrayQuery extends ReqlArray[ReqlInteger]
 
-  implicit class OffsetsOfTableOp[T, PK](val table: ReqlTable[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class OffsetsOfTableOp[T, PK](val table: ReqlTable[T, PK]) {
+    private implicit def modelShape = table.shape
+
     def offsetsOf(datum: ReqlModel[T, PK]): OffsetsOfTableQuery = new OffsetsOfTableQuery {
       val command = TermType.OFFSETS_OF
       val string = "offsets_of"
@@ -908,9 +926,9 @@ trait TransformationQueries {
     }
   }
 
-  implicit class OffsetsOfTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class OffsetsOfTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+    private implicit def modelShape = tableSlice.shape
+
     def offsetsOf(datum: ReqlModel[T, PK]): OffsetsOfTableSliceQuery = new OffsetsOfTableSliceQuery {
       val command = TermType.OFFSETS_OF
       val string = "offsets_of"
@@ -926,9 +944,9 @@ trait TransformationQueries {
     }
   }
 
-  implicit class OffsetsOfSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class OffsetsOfSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+    private implicit def modelShape = sel.shape
+
     def offsetsOf(datum: ReqlModel[T, PK]): OffsetsOfSelectionOfArrayQuery = new OffsetsOfSelectionOfArrayQuery {
       val command = TermType.OFFSETS_OF
       val string = "offsets_of"
@@ -944,9 +962,9 @@ trait TransformationQueries {
     }
   }
 
-  implicit class OffsetsOfSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK])(
-    implicit shape: ModelShape[T, PK]
-  ) {
+  implicit class OffsetsOfSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+    private implicit def modelShape = sel.shape
+
     def offsetsOf(datum: ReqlModel[T, PK]): OffsetsOfSelectionOfStreamQuery = new OffsetsOfSelectionOfStreamQuery {
       val command = TermType.OFFSETS_OF
       val string = "offsets_of"
@@ -1232,6 +1250,7 @@ trait TransformationQueries {
       val string = "sample"
       val arguments = table :: size :: Nil
       val options = Options.empty
+      def shape = table.shape
     }
   }
 
@@ -1241,6 +1260,7 @@ trait TransformationQueries {
       val string = "sample"
       val arguments = tableSlice :: size :: Nil
       val options = Options.empty
+      def shape = tableSlice.shape
     }
   }
 
@@ -1250,6 +1270,7 @@ trait TransformationQueries {
       val string = "sample"
       val arguments = sel :: size :: Nil
       val options = Options.empty
+      def shape = sel.shape
     }
   }
 
@@ -1259,6 +1280,7 @@ trait TransformationQueries {
       val string = "sample"
       val arguments = sel :: size :: Nil
       val options = Options.empty
+      def shape = sel.shape
     }
   }
 

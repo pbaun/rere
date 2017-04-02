@@ -36,10 +36,11 @@ class TableDescriptor[ScalaType, PK](
     val database = new DatabaseQuery(values.expr(databaseName))
 
     new ReqlTable[ScalaType, PK] {
-      val command = TermType.TABLE
-      val string = "table"
-      val arguments = database :: values.expr(tableName) :: Nil
-      val options = Options.empty
+      def command = TermType.TABLE
+      def string = "table"
+      def arguments = database :: values.expr(tableName) :: Nil
+      def options = Options.empty
+      def shape = modelShape
     }
   }
 }
