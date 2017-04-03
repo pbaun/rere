@@ -10,7 +10,8 @@ import rere.driver.connection.{Interconnections, LogicalConnection, TCPTransport
 import rere.driver.logger.{Logger, POOL}
 import rere.driver.util.StreamsDebugging
 import rere.driver.{ConnectionSettings, Credentials}
-import rere.sasl.scram.client.SaltedPasswordCache
+import rere.sasl.scram.cache.SaltedPasswordCache
+import rere.sasl.scram.client.SCRAMClient
 import rere.sasl.scram.crypto.ErrorReporter
 import rere.sasl.scram.crypto.entropy.EntropySource
 import rere.sasl.scram.crypto.sha256.ScramSha256AuthMechanismFactory
@@ -57,7 +58,7 @@ trait ConnectionCreator { _: Actor =>
       connection = watchedTcpConnection,
       commander = AuthCommander.getCommanderFlow(
         new AuthCommander(
-          AuthCommander.scramClient(mechanism, entropySource, saltedPasswordCache),
+          SCRAMClient(mechanism, entropySource, saltedPasswordCache),
           credentials.login,
           credentials.password
         )

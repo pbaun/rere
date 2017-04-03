@@ -10,8 +10,7 @@ import rere.driver.logger.{Logger, POOL}
 import rere.driver.pool._
 import rere.driver.workers.{HeartbeatWorker, QueryWorkerProtocol, WorkerContext}
 import rere.driver.{ConnectionSettings, Credentials}
-import rere.sasl.scram.client.SaltedPasswordCache
-import rere.sasl.scram.client.impl.ConcurrentSaltedPasswordCache
+import rere.sasl.scram.cache.SaltedPasswordCache
 import rere.sasl.scram.crypto.entropy.EntropySource
 import rere.sasl.scram.crypto.entropy.impl.SecureEntropySource
 
@@ -53,7 +52,7 @@ class P2CConnectionPoolActor(
   )
 
   private val entropySource: EntropySource = SecureEntropySource
-  private val saltedPasswordCache: SaltedPasswordCache = new ConcurrentSaltedPasswordCache()
+  private val saltedPasswordCache: SaltedPasswordCache = SaltedPasswordCache()
 
   private var connectionIdCounter: Long = 0L
   private var requestCounter: Long = 0L

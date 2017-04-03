@@ -2,7 +2,8 @@ package rere.sasl.scram.client.impl
 
 import rere.sasl.gs2
 import rere.sasl.gs2.ChannelBindingFlag
-import rere.sasl.scram.client.{ClientFirstStep, ClientSecondStep, SaltedPasswordCache}
+import rere.sasl.scram.cache.SaltedPasswordCache
+import rere.sasl.scram.client.{ClientFirstStep, ClientSecondStep}
 import rere.sasl.scram.crypto
 import rere.sasl.scram.crypto.ScramAuthMechanism
 import rere.sasl.scram.crypto.entropy.EntropySource

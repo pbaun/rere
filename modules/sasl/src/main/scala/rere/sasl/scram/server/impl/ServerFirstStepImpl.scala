@@ -4,7 +4,8 @@ import rere.sasl.scram.crypto
 import rere.sasl.scram.crypto.ScramAuthMechanism
 import rere.sasl.scram.crypto.entropy.EntropySource
 import rere.sasl.scram.messages.{ClientFirstMessage, ServerFirstMessage}
-import rere.sasl.scram.server.{SaltedPasswordStorage, ServerFinalStep, ServerFirstStep}
+import rere.sasl.scram.server.{ServerFinalStep, ServerFirstStep}
+import rere.sasl.scram.storage.SaltedPasswordStorage
 import rere.sasl.util.{Base64, EscapedString, PrintableString}
 
 class ServerFirstStepImpl(

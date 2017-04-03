@@ -1,8 +1,8 @@
-package rere.sasl.scram.client.impl
+package rere.sasl.scram.cache.impl
 
 import java.util.concurrent.ConcurrentHashMap
 
-import rere.sasl.scram.client.SaltedPasswordCache
+import rere.sasl.scram.cache.SaltedPasswordCache
 import rere.sasl.util.BinaryString
 
 class ConcurrentSaltedPasswordCache extends SaltedPasswordCache {

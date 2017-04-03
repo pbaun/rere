@@ -1,15 +1,14 @@
-package rere.sasl.scram
+package rere.sasl.scram.rendering
 
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 import rere.sasl.gs2
 import rere.sasl.gs2.ChannelBindingFlag
 import rere.sasl.scram.messages._
-import rere.sasl.scram.rendering._
-import rere.sasl.util.Renderer.renderToString
+import rere.sasl.scram.rendering.SCRAMRenderer.renderToString
 import rere.sasl.util._
 
-class RenderingTest extends WordSpec {
+class SCRAMRenderingTest extends WordSpec {
 
   "escapedStringRendering" should {
     "render EscapedString as is" in {

@@ -1,11 +1,12 @@
 package rere.sasl.scram.client.impl
 
 import rere.sasl.scram._
-import rere.sasl.scram.client.{AuthError, ClientFinalStep, ClientSecondStep, SaltedPasswordCache}
+import rere.sasl.scram.cache.SaltedPasswordCache
+import rere.sasl.scram.client.{AuthError, ClientFinalStep, ClientSecondStep}
 import rere.sasl.scram.crypto.ScramAuthMechanism
 import rere.sasl.scram.messages._
-import rere.sasl.scram.rendering._
-import rere.sasl.util.{Base64, Renderer, UTF8}
+import rere.sasl.scram.rendering.SCRAMRenderer
+import rere.sasl.util.{Base64, UTF8}
 
 class ClientSecondStepImpl(
     clientFirstMessage: ClientFirstMessage,
@@ -40,7 +41,7 @@ class ClientSecondStepImpl(
 
       val clientFinalMessageWithoutProof = ClientFinalMessageWithoutProof(
         Base64.to(UTF8.to(
-          Renderer.renderToString(clientFirstMessage.header)
+          SCRAMRenderer.renderToString(clientFirstMessage.header)
         )),
         serverFirstMessage.serverNonce,
         Nil
@@ -51,7 +52,7 @@ class ClientSecondStepImpl(
         serverFirstMessage,
         clientFinalMessageWithoutProof)
 
-      val renderedAuthMessage = Renderer.renderToString(authMessage)
+      val renderedAuthMessage = SCRAMRenderer.renderToString(authMessage)
 
       val clientSignature = authMechanism.hmac(storedKey, renderedAuthMessage)
 

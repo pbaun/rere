@@ -15,12 +15,8 @@ import rere.driver.util.StreamsDebugging
 import rere.ql.ql2
 import rere.sasl.gs2.ChannelBindingFlag
 import rere.sasl.scram.client._
-import rere.sasl.scram.client.impl.ClientFirstStepImpl
-import rere.sasl.scram.crypto.ScramShaAuthMechanism
-import rere.sasl.scram.crypto.entropy.EntropySource
 import rere.sasl.scram.parsers.SCRAMParser
-import rere.sasl.scram.rendering._
-import rere.sasl.util.Renderer
+import rere.sasl.scram.rendering.SCRAMRenderer
 
 class AuthCommander(
     scramClient: ClientFirstStep,
@@ -153,7 +149,7 @@ class AuthCommander(
                         processingResult match {
                           case Right(nextStepClient) =>
 
-                            val message = FinalClientAuthMessage(Renderer.renderToString(nextStepClient.finalMessage))
+                            val message = FinalClientAuthMessage(SCRAMRenderer.renderToString(nextStepClient.finalMessage))
                             val toSent = ByteString(message.asJson.noSpaces.getBytes(CHARSET))
                             push(toServer, toSent)
 
@@ -239,7 +235,7 @@ class AuthCommander(
               val message = FirstClientAuthMessage(
                 PROTOCOL_SUB_VERSION,
                 AUTHENTICATION_METHOD,
-                Renderer.renderToString(nextClient.firstMessage)
+                SCRAMRenderer.renderToString(nextClient.firstMessage)
               )
 
               builder.putBytes(message.asJson.noSpaces.getBytes(CHARSET))
@@ -281,13 +277,5 @@ object AuthCommander {
             FlowShape.of(commandDecoder.in, commandEncoder.out)
       }
     )
-  }
-
-  def scramClient(
-    mechanism: ScramShaAuthMechanism,
-    entropySource: EntropySource,
-    saltedPasswordCache: SaltedPasswordCache
-  ): ClientFirstStep = {
-    new ClientFirstStepImpl(mechanism, entropySource, saltedPasswordCache)
   }
 }

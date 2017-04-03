@@ -6,13 +6,6 @@ trait Renderer {
   def ~~[T : Rendering](opt: Option[T]): this.type
 }
 
-object Renderer {
-  def renderToString[T : Rendering](obj: T): String = {
-    val renderer = new StringRenderer
-    Rendering[T].render(renderer, obj).get
-  }
-}
-
 trait Rendering[T] {
   def render[R <: Renderer](r: R, obj: T): R
 }

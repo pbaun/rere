@@ -4,7 +4,7 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Matchers, WordSpec}
 import rere.sasl.gs2
 import rere.sasl.gs2.ChannelBindingFlag._
-import rere.sasl.scram.client.SaltedPasswordCache
+import rere.sasl.scram.cache.SaltedPasswordCache
 import rere.sasl.scram.crypto.NoOpErrorReporter
 import rere.sasl.scram.crypto.entropy.impl.ConstantEntropySource
 import rere.sasl.scram.crypto.sha1.ScramSha1AuthMechanismFactory

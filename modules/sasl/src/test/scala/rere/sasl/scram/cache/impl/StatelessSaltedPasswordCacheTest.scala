@@ -1,4 +1,4 @@
-package rere.sasl.scram.client.impl
+package rere.sasl.scram.cache.impl
 
 import org.scalatest.{Matchers, WordSpec}
 

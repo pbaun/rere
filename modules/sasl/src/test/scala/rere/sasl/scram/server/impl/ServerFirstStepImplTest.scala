@@ -8,7 +8,8 @@ import rere.sasl.scram.crypto.NoOpErrorReporter
 import rere.sasl.scram.crypto.entropy.impl.ConstantEntropySource
 import rere.sasl.scram.crypto.sha1.ScramSha1AuthMechanismFactory
 import rere.sasl.scram.messages.{ClientFirstMessage, ClientFirstMessageBare, ServerFirstMessage}
-import rere.sasl.scram.server.{AuthData, SaltedPasswordStorage}
+import rere.sasl.scram.server.AuthData
+import rere.sasl.scram.storage.SaltedPasswordStorage
 import rere.sasl.util.{Base64, Base64String, EscapedString, PrintableString}
 
 class ServerFirstStepImplTest extends WordSpec with Matchers with MockFactory {

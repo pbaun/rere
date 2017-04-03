@@ -1,4 +1,4 @@
-package rere.sasl.scram.server.impl
+package rere.sasl.scram.storage.impl
 
 import org.scalatest.{FlatSpec, Matchers}
 import rere.sasl.scram.crypto.NoOpErrorReporter

@@ -4,9 +4,9 @@ import rere.sasl.gs2.ChannelBindingFlag.NotSupports
 import rere.sasl.scram._
 import rere.sasl.scram.crypto.ScramAuthMechanism
 import rere.sasl.scram.messages._
-import rere.sasl.scram.rendering._
+import rere.sasl.scram.rendering.SCRAMRenderer
 import rere.sasl.scram.server.{AuthData, ServerFinalStep}
-import rere.sasl.util.{Base64, PrintableAndSafe, Renderer, UTF8}
+import rere.sasl.util.{Base64, PrintableAndSafe, UTF8}
 
 class ServerFinalStepImpl(
     clientFirstMessage: ClientFirstMessage,
@@ -22,7 +22,7 @@ class ServerFinalStepImpl(
 
     if (authData.isReal) {
       if (clientFinalMessage.bare.nonce.toString == serverNonce.toString) {
-        val renderedBinding = Renderer.renderToString(clientFirstMessage.header)
+        val renderedBinding = SCRAMRenderer.renderToString(clientFirstMessage.header)
         val codedBinding = Base64.to(UTF8.to(renderedBinding))
 
         if (clientFinalMessage.bare.channelBinding.toString == codedBinding.toString) {
@@ -37,7 +37,7 @@ class ServerFinalStepImpl(
                 serverFirstMessage,
                 clientFinalMessage.bare)
 
-              val renderedAuthMessage = Renderer.renderToString(authMessage)
+              val renderedAuthMessage = SCRAMRenderer.renderToString(authMessage)
               val clientSignature = authMechanism.hmac(authData.storedKey, renderedAuthMessage)
 
               crypto.xor(authData.clientKey, clientSignature) match {

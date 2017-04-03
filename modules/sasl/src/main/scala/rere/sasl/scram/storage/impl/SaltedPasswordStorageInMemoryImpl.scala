@@ -1,11 +1,12 @@
-package rere.sasl.scram.server.impl
+package rere.sasl.scram.storage.impl
 
 import java.util.concurrent.ConcurrentHashMap
 
 import rere.sasl.scram.crypto
 import rere.sasl.scram.crypto.ScramAuthMechanism
 import rere.sasl.scram.crypto.entropy.EntropySource
-import rere.sasl.scram.server.{AuthData, SaltedPasswordStorage}
+import rere.sasl.scram.server.AuthData
+import rere.sasl.scram.storage.SaltedPasswordStorage
 
 class SaltedPasswordStorageInMemoryImpl(
     authMechanism: ScramAuthMechanism,
