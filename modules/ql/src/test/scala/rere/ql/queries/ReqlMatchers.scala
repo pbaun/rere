@@ -22,7 +22,7 @@ trait ReqlMatchers {
     }
   }
 
-  // ... subtypeOf[SuperExpr] ...
+  // ... subtypeOf [SuperExpr] ...
   def subtypeOf[SuperExpr <: ReqlExpr]: ResultOfSuperTypeCapturing[SuperExpr] = {
     new ResultOfSuperTypeCapturing
   }
@@ -53,15 +53,15 @@ class ReqlMatchersTest extends WordSpec with ReqlMatchers {
 
   "type matcher" should {
     "allow strict type match" in {
-      r.expr(123) shouldBe subtypeOf[ReqlInteger]
+      r.expr(123) shouldBe subtypeOf [ReqlInteger]
     }
 
     "allow subtype match" in {
-      r.uuid() shouldBe subtypeOf[ReqlString]
+      r.uuid() shouldBe subtypeOf [ReqlString]
     }
 
     "not allow type mismatch in compile time" in {
-      """r.uuid() shouldBe subtypeOf[ReqlInteger]""" shouldNot compile
+      """r.uuid() shouldBe subtypeOf [ReqlInteger]""" shouldNot compile
     }
   }
 
@@ -79,20 +79,20 @@ class ReqlMatchersTest extends WordSpec with ReqlMatchers {
 
   "type matcher and serialized form matcher together" should {
     "allow strict type and serialized form match" in {
-      r.expr(123) shouldBe subtypeOf[ReqlInteger] and serializedTo("""123""")
+      r.expr(123) shouldBe subtypeOf [ReqlInteger] and serializedTo("""123""")
     }
 
     "allow subtype match and strict serialized form match" in {
-      r.uuid() shouldBe subtypeOf[ReqlString] and serializedTo("[169,[]]")
+      r.uuid() shouldBe subtypeOf [ReqlString] and serializedTo("[169,[]]")
     }
 
     "not allow type mismatch in compile time" in {
-      """r.uuid() shouldBe subtypeOf[ReqlInteger] and serializedTo("[169,[]]")""" shouldNot compile
+      """r.uuid() shouldBe subtypeOf [ReqlInteger] and serializedTo("[169,[]]")""" shouldNot compile
     }
 
     "not allow serialized form mismatch in runtime" in {
       the [TestFailedException] thrownBy {
-        r.uuid() shouldBe subtypeOf[ReqlString] and serializedTo("[169,[1]]")
+        r.uuid() shouldBe subtypeOf [ReqlString] and serializedTo("[169,[1]]")
       } should have message """"[169,[[]]]" was not equal to "[169,[[1]]]""""
     }
   }
