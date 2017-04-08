@@ -3902,13 +3902,6 @@ class RasterizationTest extends WordSpec {
       ))) =%=[ReqlArgs] """[154,[[2,["code","status"]]]]"""
     }
 
-    "binary" in {
-      r.binary(ByteString(10, 20, 30, 40)) shouldBe an[ReqlBinary]
-      r.binary(ByteString(10, 20, 30, 40)) shouldBe an[ReqlPseudo]
-      r.binary(ByteString(10, 20, 30, 40)) shouldBe an[ReqlDatum]
-      r.binary(ByteString(10, 20, 30, 40)) =%=[ReqlBinary] """{"$reql_type$":"BINARY","data":"ChQeKA=="}"""
-    }
-
     "geojson" in {
       r.geojson(JsonObject.fromMap(Map(
         "type" -> Json.fromString("Point"),
