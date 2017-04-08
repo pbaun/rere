@@ -13,5 +13,10 @@ object building {
       val renderer = new ByteStringRenderer(StandardCharsets.UTF_8)
       query.trampolinedRasterizer.rasterize(renderer).run.get
     }
+
+    def buildRecursive(): ByteString = {
+      val renderer = new ByteStringRenderer(StandardCharsets.UTF_8)
+      query.recursiveRasterizer.rasterize(renderer).get
+    }
   }
 }

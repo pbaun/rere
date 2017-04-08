@@ -43,8 +43,14 @@ trait ReqlMatchers {
     def checkSerializedForm(expr: ReqlExpr): Assertion = {
       import rasterization.building._
       expr.build().utf8String shouldBe expectedSerializedForm
+      expr.buildRecursive().utf8String shouldBe expectedSerializedForm
     }
   }
+
+  /**
+    * Helper for forcing implicit conversion to ReqlExpr
+    */
+  def forceConversion[T, Expr <: ReqlExpr](value: T)(implicit ev: T => Expr): Expr = value
 }
 
 class ReqlMatchersTest extends WordSpec with ReqlMatchers {
