@@ -215,4 +215,143 @@ class MathQueriesTest extends WordSpec with ReqlMatchers with Matchers {
       }
     }
   }
+
+  "sub operator" should {
+    "be accessible on r and" should {
+      "not allow to call it without arguments" in {
+        "r.sub()" shouldNot compile
+        "r.expr(123).sub()" should compile
+      }
+
+      "allow to subtract integers" in {
+        r.sub(123) shouldBe subtypeOf [ReqlInteger] and serializedTo("[25,[123]]")
+        r.sub(123, 234) shouldBe subtypeOf [ReqlInteger] and serializedTo("[25,[123,234]]")
+        r.sub(123, 234, 345) shouldBe subtypeOf [ReqlInteger] and serializedTo("[25,[123,234,345]]")
+      }
+
+      "allow to subtract floats" in {
+        r.sub(BigDecimal(123.123)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[123.123]]")
+
+        r.sub(BigDecimal(123.123), BigDecimal(234.234)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[123.123,234.234]]")
+
+        r.sub(BigDecimal(123.123), BigDecimal(234.234), BigDecimal(345.345)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[123.123,234.234,345.345]]")
+      }
+
+      "allow to subtract integers and floats" in {
+        r.sub(123, BigDecimal(234.234)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[123,234.234]]")
+
+        r.sub(123, BigDecimal(234.234), BigDecimal(345.345)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[123,234.234,345.345]]")
+
+        r.sub(123, BigDecimal(234.234), 345) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[123,234.234,345]]")
+
+        r.sub(123, 234, BigDecimal(345.345)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[123,234,345.345]]")
+
+        r.sub(BigDecimal(123.123), 234) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[123.123,234]]")
+
+        r.sub(BigDecimal(123.123), 234, 345) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[123.123,234,345]]")
+
+        r.sub(BigDecimal(123.123), 234, BigDecimal(345.345)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[123.123,234,345.345]]")
+
+        r.sub(BigDecimal(123.123), BigDecimal(234.234), 345) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[123.123,234.234,345]]")
+      }
+
+      "allow to subtract numbers from time" in {
+        r.sub(r.now()) shouldBe subtypeOf [ReqlTime] and serializedTo("[25,[[103,[]]]]")
+        r.sub(r.now(), 1) shouldBe subtypeOf [ReqlTime] and serializedTo("[25,[[103,[]],1]]")
+        r.sub(r.now(), 1, 2) shouldBe subtypeOf [ReqlTime] and serializedTo("[25,[[103,[]],1,2]]")
+      }
+
+      "allow subtract time from time" in {
+        r.sub(r.now(), r.now()) shouldBe subtypeOf [ReqlFloat] and serializedTo("[25,[[103,[]],[103,[]]]]")
+        "r.sub(r.now(), r.now(), r.now())" shouldNot compile
+      }
+
+      "support chaining" in {
+        r.sub(123).sub(234) shouldBe subtypeOf [ReqlInteger] and serializedTo("[25,[[25,[123]],234]]")
+        r.sub(r.sub(123)) shouldBe subtypeOf [ReqlInteger] and serializedTo("[25,[[25,[123]]]]")
+        r.expr(123).sub(r.sub(234, 345)) shouldBe subtypeOf [ReqlInteger] and serializedTo("[25,[123,[25,[234,345]]]]")
+      }
+    }
+
+    "be accessible on ReqlInteger and" should {
+      "allow to subtract integers" in {
+        r.expr(123).sub() shouldBe subtypeOf [ReqlInteger] and serializedTo("[25,[123]]")
+        r.expr(123).sub(234) shouldBe subtypeOf [ReqlInteger] and serializedTo("[25,[123,234]]")
+        r.expr(123).sub(234, 345) shouldBe subtypeOf [ReqlInteger] and serializedTo("[25,[123,234,345]]")
+      }
+
+      "allow to subtract floats" in {
+        r.expr(123).sub(BigDecimal(234.234)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[123,234.234]]")
+
+        r.expr(123).sub(BigDecimal(234.234), BigDecimal(345.345)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[123,234.234,345.345]]")
+      }
+
+      "allow to subtract integers and floats" in {
+        r.expr(123).sub(BigDecimal(234.234), 345) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[123,234.234,345]]")
+
+        r.expr(123).sub(234, BigDecimal(345.345)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[123,234,345.345]]")
+      }
+    }
+
+    "be accessible on ReqlFloat and" should {
+      "allow to subtract floats" in {
+        r.expr(BigDecimal(123.123)).sub() shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[123.123]]")
+
+        r.expr(BigDecimal(123.123)).sub(BigDecimal(234.234)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[123.123,234.234]]")
+
+        r.expr(BigDecimal(123.123)).sub(BigDecimal(234.234), BigDecimal(345.345)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[123.123,234.234,345.345]]")
+      }
+
+      "allow to subtract integers" in {
+        r.expr(BigDecimal(123.123)).sub(234) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[123.123,234]]")
+
+        r.expr(BigDecimal(123.123)).sub(234, 345) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[123.123,234,345]]")
+      }
+
+      "allow to subtract floats and integers" in {
+        r.expr(BigDecimal(123.123)).sub(234, BigDecimal(345.345)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[123.123,234,345.345]]")
+
+        r.expr(BigDecimal(123.123)).sub(BigDecimal(234.234), 345) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[123.123,234.234,345]]")
+      }
+    }
+
+    "be accessible on ReqlTime and" should {
+      "allow to subtract numbers from time" in {
+        r.now().sub() shouldBe subtypeOf [ReqlTime] and serializedTo("[25,[[103,[]]]]")
+        r.now().sub(1) shouldBe subtypeOf [ReqlTime] and serializedTo("[25,[[103,[]],1]]")
+        r.now().sub(1, 2) shouldBe subtypeOf [ReqlTime] and serializedTo("[25,[[103,[]],1,2]]")
+      }
+
+      "allow subtract time from time" in {
+        r.now().sub(r.now()) shouldBe subtypeOf [ReqlFloat] and serializedTo("[25,[[103,[]],[103,[]]]]")
+      }
+
+      "not allow subtract time and numbers from time" in {
+        "r.now().sub(r.now(), 1)" shouldNot compile
+        r.now().sub(r.now()).sub(1, 2) shouldBe subtypeOf [ReqlFloat] and serializedTo("[25,[[25,[[103,[]],[103,[]]]],1,2]]")
+      }
+    }
+  }
 }
