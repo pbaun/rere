@@ -379,86 +379,6 @@ class RasterizationTest extends WordSpec {
       ))) =%=[ReqlSelectionOfStream[JsonObject, String]] """[78,[[15,["abc"]],[154,[[2,["Alice","Bob"]]]]],{"index":"code"}]"""
     }
 
-    "eq" in {
-      r.eq_(Seq(r.expr(123), r.expr(234), r.expr(345))) =%=[ReqlBoolean] "[17,[123,234,345]]"
-
-      r.expr(123).eq_(r.expr(234)) =%=[ReqlBoolean] "[17,[123,234]]"
-
-      r.expr(123).eq_(Seq(r.expr(234), r.expr(345))) =%=[ReqlBoolean] "[17,[123,234,345]]"
-
-      r.expr("a").eq_(Seq(r.expr("b"), r.expr("c"))) =%=[ReqlBoolean] """[17,["a","b","c"]]"""
-    }
-
-    "ne" in {
-      r.ne_(Seq(r.expr(123), r.expr(234), r.expr(345))) =%=[ReqlBoolean] "[18,[123,234,345]]"
-
-      r.expr(123).ne_(r.expr(234)) =%=[ReqlBoolean] "[18,[123,234]]"
-
-      r.expr(123).ne_(Seq(r.expr(234), r.expr(345))) =%=[ReqlBoolean] "[18,[123,234,345]]"
-
-      r.expr("a").ne_(Seq(r.expr("b"), r.expr("c"))) =%=[ReqlBoolean] """[18,["a","b","c"]]"""
-    }
-
-    "lt" in {
-      r.lt(Seq(123, r.expr(234), 345)) =%=[ReqlBoolean] "[19,[123,234,345]]"
-
-      r.expr(123).lt(r.expr(234)) =%=[ReqlBoolean] "[19,[123,234]]"
-
-      r.expr(123).lt(Seq(r.expr(234), r.expr(345))) =%=[ReqlBoolean] "[19,[123,234,345]]"
-
-      r.expr("a").lt(Seq(r.expr("b"), r.expr("c"))) =%=[ReqlBoolean] """[19,["a","b","c"]]"""
-    }
-
-    "le" in {
-      r.le(Seq(123, r.expr(234), 345)) =%=[ReqlBoolean] "[20,[123,234,345]]"
-
-      r.expr(123).le(r.expr(234)) =%=[ReqlBoolean] "[20,[123,234]]"
-
-      r.expr(123).le(Seq(r.expr(234), r.expr(345))) =%=[ReqlBoolean] "[20,[123,234,345]]"
-
-      r.expr("a").le(Seq(r.expr("b"), r.expr("c"))) =%=[ReqlBoolean] """[20,["a","b","c"]]"""
-    }
-
-    "gt" in {
-      r.gt(Seq(123, r.expr(234), 345)) =%=[ReqlBoolean] "[21,[123,234,345]]"
-
-      r.expr(123).gt(r.expr(234)) =%=[ReqlBoolean] "[21,[123,234]]"
-
-      r.expr(123).gt(Seq(r.expr(234), r.expr(345))) =%=[ReqlBoolean] "[21,[123,234,345]]"
-
-      r.expr("a").gt(Seq(r.expr("b"), r.expr("c"))) =%=[ReqlBoolean] """[21,["a","b","c"]]"""
-    }
-
-    "ge" in {
-      r.ge(Seq(123, r.expr(234), 345)) =%=[ReqlBoolean] "[22,[123,234,345]]"
-
-      r.expr(123).ge(r.expr(234)) =%=[ReqlBoolean] "[22,[123,234]]"
-
-      r.expr(123).ge(Seq(r.expr(234), r.expr(345))) =%=[ReqlBoolean] "[22,[123,234,345]]"
-
-      r.expr("a").ge(Seq(r.expr("b"), r.expr("c"))) =%=[ReqlBoolean] """[22,["a","b","c"]]"""
-    }
-
-    "not" in {
-      r.not(false) =%=[ReqlBoolean] "[23,[false]]"
-      r.not(true) =%=[ReqlBoolean] "[23,[true]]"
-
-      r.expr(false).not() =%=[ReqlBoolean] "[23,[false]]"
-      r.expr(true).not() =%=[ReqlBoolean] "[23,[true]]"
-
-      r.not(false).not() =%=[ReqlBoolean] "[23,[[23,[false]]]]"
-      r.expr(false).not().not() =%=[ReqlBoolean] "[23,[[23,[false]]]]"
-
-      r.expr(123).gt(234).not() =%=[ReqlBoolean] "[23,[[21,[123,234]]]]"
-
-      r.eq_(Seq(
-        r.expr(123).le(234),
-        r.ge(Seq(123, 234)).not()
-      )) =%=[ReqlBoolean] "[17,[[20,[123,234]],[23,[[22,[123,234]]]]]]"
-
-      r.not(r.gt(Seq(123, 234))) =%=[ReqlBoolean] "[23,[[21,[123,234]]]]"
-    }
-
     "add" in {
       "r.add()".shouldNot(compile)
       "r.expr(123).add()".should(compile)
@@ -895,7 +815,7 @@ class RasterizationTest extends WordSpec {
       r.expr(Seq(r.expr(123), r.expr(234))).offsetsOf(_ => true) =%=[ReqlArray[ReqlInteger]] """[87,[[2,[123,234]],[69,[[2,[0]],true]]]]"""
 
       //complex predicate
-      r.table[JsonObject, String]("abc").offsetsOf(_("name").eq_("value")) =%=[ReqlFiniteStream[ReqlInteger]] """[87,[[15,["abc"]],[69,[[2,[0]],[17,[[170,[[10,[0]],"name"]],"value"]]]]]]"""
+      r.table[JsonObject, String]("abc").offsetsOf(_("name").asString.eq_("value")) =%=[ReqlFiniteStream[ReqlInteger]] """[87,[[15,["abc"]],[69,[[2,[0]],[17,[[170,[[10,[0]],"name"]],"value"]]]]]]"""
     }
 
     "contains" in {
@@ -905,11 +825,11 @@ class RasterizationTest extends WordSpec {
         r.pred(JsonObject.fromMap(Map("code" -> Json.fromInt(234))): ReqlModel[JsonObject, String])
       ) =%=[ReqlBoolean] """[93,[[15,["abc"]],{"code":123},{"code":234}]]"""
 
-      abcJsonTable.contains(r.pred(_.asObject("name").eq_("value"))) =%=[ReqlBoolean] """[93,[[15,["abc"]],[69,[[2,[0]],[17,[[170,[[10,[0]],"name"]],"value"]]]]]]"""
+      abcJsonTable.contains(r.pred(_.asObject("name").asString.eq_("value"))) =%=[ReqlBoolean] """[93,[[15,["abc"]],[69,[[2,[0]],[17,[[170,[[10,[0]],"name"]],"value"]]]]]]"""
 
       abcJsonTable.contains(
         r.pred(JsonObject.fromMap(Map("code" -> Json.fromInt(123))): ReqlModel[JsonObject, String]),
-        r.pred(_.asObject("name").eq_("value")),
+        r.pred(_.asObject("name").asString.eq_("value")),
         r.pred(JsonObject.fromMap(Map("code" -> Json.fromInt(234))): ReqlModel[JsonObject, String])
       ) =%=[ReqlBoolean] """[93,[[15,["abc"]],{"code":123},[69,[[2,[0]],[17,[[170,[[10,[0]],"name"]],"value"]]]],{"code":234}]]"""
 
@@ -1499,7 +1419,7 @@ class RasterizationTest extends WordSpec {
         "code" -> Json.fromInt(123)
       )), RethrowError) =%=[ReqlSelectionOfStream[JsonObject, String]] """[39,[[15,["abc"]],{"code":123}],{"default":[12,[]]}]"""
 
-      abcJsonTable.filter(_.asObject.getField("code").eq_(5)) =%=[ReqlSelectionOfStream[JsonObject, String]] """[39,[[15,["abc"]],[69,[[2,[0]],[17,[[31,[[10,[0]],"code"]],5]]]]]]"""
+      abcJsonTable.filter(_.asObject.getField("code").asInteger.eq_(5)) =%=[ReqlSelectionOfStream[JsonObject, String]] """[39,[[15,["abc"]],[69,[[2,[0]],[17,[[31,[[10,[0]],"code"]],5]]]]]]"""
 
       //tableSlice
       abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).filter(JsonObject.fromMap(Map(
@@ -1750,8 +1670,8 @@ class RasterizationTest extends WordSpec {
       //TODO: fixit?
       //r.table("abc").count(r.table("abc").get("uuid")) =%=[ReqlInteger] """[43,[[15,["abc"]],[16,[[15,["abc"]],"uuid"]]]]"""
       //r.table("abc").count(r.now()) =%=[ReqlInteger] """[43,[[15,["abc"]],[103,[]]]]"""
-      r.table[JsonObject, String]("abc").count(_.getField("code").gt(5)) =%=[ReqlInteger] """[43,[[15,["abc"]],[69,[[2,[0]],[21,[[31,[[10,[0]],"code"]],5]]]]]]"""
-      r.table[JsonObject, String]("abc").count(_("code").ge(123)) =%=[ReqlInteger] """[43,[[15,["abc"]],[69,[[2,[0]],[22,[[170,[[10,[0]],"code"]],123]]]]]]"""
+      r.table[JsonObject, String]("abc").count(_.getField("code").asInteger.gt(5)) =%=[ReqlInteger] """[43,[[15,["abc"]],[69,[[2,[0]],[21,[[31,[[10,[0]],"code"]],5]]]]]]"""
+      r.table[JsonObject, String]("abc").count(_("code").asInteger.ge(123)) =%=[ReqlInteger] """[43,[[15,["abc"]],[69,[[2,[0]],[22,[[170,[[10,[0]],"code"]],123]]]]]]"""
       r.table[JsonObject, String]("abc").count(JsonObject.empty) =%=[ReqlInteger] """[43,[[15,["abc"]],{}]]"""
       r.table[JsonObject, String]("abc").apply[ReqlInteger]("code").count(r.expr(123)) =*= """[43,[[170,[[15,["abc"]],"code"]],123]]"""
 
@@ -1760,21 +1680,21 @@ class RasterizationTest extends WordSpec {
       r.table[JsonObject, String]("abc").orderBy(OrderedIndex(r.asc("code"))) shouldBe an[ReqlTableSlice[ReqlObject, UUID]]
       r.table[JsonObject, String]("abc").orderBy(OrderedIndex(r.asc("code"))).count() =%=[ReqlInteger] """[43,[[41,[[15,["abc"]]],{"index":[73,["code"]]}]]]"""
       r.table[JsonObject, String]("abc").orderBy(OrderedIndex(r.asc("code"))).count(JsonObject.empty) =%=[ReqlInteger] """[43,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],{}]]"""
-      r.table[JsonObject, String]("abc").orderBy(OrderedIndex(r.asc("code"))).count(_.getField("code").gt(5)) =%=[ReqlInteger] """[43,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[21,[[31,[[10,[0]],"code"]],5]]]]]]"""
+      r.table[JsonObject, String]("abc").orderBy(OrderedIndex(r.asc("code"))).count(_.getField("code").asInteger.gt(5)) =%=[ReqlInteger] """[43,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[21,[[31,[[10,[0]],"code"]],5]]]]]]"""
 
 
       //selectionOfArray
       r.table[JsonObject, String]("abc").orderBy(r.asc("code")) shouldBe an[ReqlSelectionOfArray[ReqlObject, UUID]]
       r.table[JsonObject, String]("abc").orderBy(r.asc("code")).count() =%=[ReqlInteger] """[43,[[41,[[15,["abc"]],[73,["code"]]]]]]"""
       r.table[JsonObject, String]("abc").orderBy(r.asc("code")).count(JsonObject.empty) =%=[ReqlInteger] """[43,[[41,[[15,["abc"]],[73,["code"]]]],{}]]"""
-      r.table[JsonObject, String]("abc").orderBy(r.asc("code")).count(_.getField("code").gt(5)) =%=[ReqlInteger] """[43,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[21,[[31,[[10,[0]],"code"]],5]]]]]]"""
+      r.table[JsonObject, String]("abc").orderBy(r.asc("code")).count(_.getField("code").asInteger.gt(5)) =%=[ReqlInteger] """[43,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[21,[[31,[[10,[0]],"code"]],5]]]]]]"""
 
 
       //selectionOfStream
       r.table[JsonObject, String]("abc").skip(10) shouldBe an[ReqlSelectionOfStream[ReqlObject, UUID]]
       r.table[JsonObject, String]("abc").skip(10).count() =%=[ReqlInteger] """[43,[[70,[[15,["abc"]],10]]]]"""
       r.table[JsonObject, String]("abc").skip(10).count(JsonObject.empty) =%=[ReqlInteger] """[43,[[70,[[15,["abc"]],10]],{}]]"""
-      r.table[JsonObject, String]("abc").skip(10).count(_.getField("code").gt(5)) =%=[ReqlInteger] """[43,[[70,[[15,["abc"]],10]],[69,[[2,[0]],[21,[[31,[[10,[0]],"code"]],5]]]]]]"""
+      r.table[JsonObject, String]("abc").skip(10).count(_.getField("code").asInteger.gt(5)) =%=[ReqlInteger] """[43,[[70,[[15,["abc"]],10]],[69,[[2,[0]],[21,[[31,[[10,[0]],"code"]],5]]]]]]"""
 
 
       //infinite stream
@@ -1802,7 +1722,7 @@ class RasterizationTest extends WordSpec {
       r.expr(Seq(r.expr(JsonObject.empty), r.expr(JsonObject.empty), r.expr(JsonObject.empty)))
         .count(JsonObject.empty) =%=[ReqlInteger] """[43,[[2,[{},{},{}]],{}]]"""
       r.expr(Seq(r.expr(JsonObject.empty), r.expr(JsonObject.empty), r.expr(JsonObject.empty)))
-        .count(_.getField("code").gt(5)) =%=[ReqlInteger] """[43,[[2,[{},{},{}]],[69,[[2,[0]],[21,[[31,[[10,[0]],"code"]],5]]]]]]"""
+        .count(_.getField("code").asInteger.gt(5)) =%=[ReqlInteger] """[43,[[2,[{},{},{}]],[69,[[2,[0]],[21,[[31,[[10,[0]],"code"]],5]]]]]]"""
       r.expr(Seq(r.expr(JsonObject.empty), r.expr(JsonObject.empty), r.expr(JsonObject.empty)))
         .count(r.expr(JsonObject.empty)) =%=[ReqlInteger] """[43,[[2,[{},{},{}]],{}]]"""
 
@@ -3111,42 +3031,6 @@ class RasterizationTest extends WordSpec {
           r.expr("small")
         }
       } =%=[ReqlString] """[65,[[21,[123,200]],"huge",[21,[123,100]],"big","small"]]"""
-    }
-
-    "or" in {
-      // on r
-      r.or() =%=[ReqlBoolean] """[66,[]]"""
-
-      r.or(r.expr(true)) =%=[ReqlBoolean] """[66,[true]]"""
-
-      r.or(r.expr(true), r.expr(123).gt(5)) =%=[ReqlBoolean] """[66,[true,[21,[123,5]]]]"""
-
-      r.or(r.expr(true), r.expr(123).gt(5), r.expr(false)) =%=[ReqlBoolean] """[66,[true,[21,[123,5]],false]]"""
-
-      // on bool
-      r.expr(true).or() =%=[ReqlBoolean] """[66,[true]]"""
-
-      r.expr(true).or(r.expr(123).gt(5)) =%=[ReqlBoolean] """[66,[true,[21,[123,5]]]]"""
-
-      r.expr(true).or(r.expr(123).gt(5), r.expr(false)) =%=[ReqlBoolean] """[66,[true,[21,[123,5]],false]]"""
-    }
-
-    "and" in {
-      // on r
-      r.and() =%=[ReqlBoolean] """[67,[]]"""
-
-      r.and(r.expr(true)) =%=[ReqlBoolean] """[67,[true]]"""
-
-      r.and(r.expr(true), r.expr(123).gt(5)) =%=[ReqlBoolean] """[67,[true,[21,[123,5]]]]"""
-
-      r.and(r.expr(true), r.expr(123).gt(5), r.expr(false)) =%=[ReqlBoolean] """[67,[true,[21,[123,5]],false]]"""
-
-      // on bool
-      r.expr(true).and() =%=[ReqlBoolean] """[67,[true]]"""
-
-      r.expr(true).and(r.expr(123).gt(5)) =%=[ReqlBoolean] """[67,[true,[21,[123,5]]]]"""
-
-      r.expr(true).and(r.expr(123).gt(5), r.expr(false)) =%=[ReqlBoolean] """[67,[true,[21,[123,5]],false]]"""
     }
 
     "for_each" in {

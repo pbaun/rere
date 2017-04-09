@@ -7,6 +7,8 @@ package object queries {
 
   object binary extends BinaryQueries
 
+  object logic extends LogicQueries
+
   object control extends ControlQueries
 
   object database extends DatabaseQueries

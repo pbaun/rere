@@ -27,7 +27,7 @@ trait AllQueries
   with ChangesQueries {
 
   //TODO: move it somewhere (TopLevelQueries?)
-  implicit class ExprOp(val r: ReqlR) extends ValueQueries
+  implicit class ExprOp(r: ReqlR) extends ValueQueries
 
   //TODO: it's extension, not part of official api
   implicit class PredicateOp(val r: ReqlR) {

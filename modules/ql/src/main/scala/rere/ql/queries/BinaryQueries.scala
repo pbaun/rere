@@ -6,7 +6,7 @@ import rere.ql.values.ReqlBinaryQuery
 
 trait BinaryQueries {
 
-  implicit class BinaryOp(val r: ReqlR) {
+  implicit class BinaryOp(r: ReqlR) {
     def binary(binary: ByteString): ReqlBinary = new ReqlBinaryQuery(binary)
   }
 
