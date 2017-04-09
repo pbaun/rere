@@ -379,36 +379,6 @@ class RasterizationTest extends WordSpec {
       ))) =%=[ReqlSelectionOfStream[JsonObject, String]] """[78,[[15,["abc"]],[154,[[2,["Alice","Bob"]]]]],{"index":"code"}]"""
     }
 
-    "mul" in {
-      //number
-      //integer
-      r.expr(123).mul() =%=[ReqlInteger] "[26,[123]]"
-      r.expr(123).mul(234) =%=[ReqlInteger] "[26,[123,234]]"
-      r.expr(123).mul(234, 345) =%=[ReqlInteger] "[26,[123,234,345]]"
-
-      //float
-      r.expr(BigDecimal(123.123)).mul() =%=[ReqlFloat] "[26,[123.123]]"
-      r.expr(BigDecimal(123.123)).mul(BigDecimal(234.234)) =%=[ReqlFloat] "[26,[123.123,234.234]]"
-      r.expr(BigDecimal(123.123)).mul(BigDecimal(234.234), BigDecimal(345.345)) =%=[ReqlFloat] "[26,[123.123,234.234,345.345]]"
-
-      //mixed
-      r.expr(123).mul(BigDecimal(234.234)) =%=[ReqlFloat] "[26,[123,234.234]]"
-      r.expr(123).mul(BigDecimal(234.234), BigDecimal(345.345)) =%=[ReqlFloat] "[26,[123,234.234,345.345]]"
-      r.expr(123).mul(BigDecimal(234.234), 345) =%=[ReqlFloat] "[26,[123,234.234,345]]"
-      r.expr(123).mul(234, BigDecimal(345.345)) =%=[ReqlFloat] "[26,[123,234,345.345]]"
-      r.expr(BigDecimal(123.123)).mul(234) =%=[ReqlFloat] "[26,[123.123,234]]"
-      r.expr(BigDecimal(123.123)).mul(234, 345) =%=[ReqlFloat] "[26,[123.123,234,345]]"
-      r.expr(BigDecimal(123.123)).mul(234, BigDecimal(345.345)) =%=[ReqlFloat] "[26,[123.123,234,345.345]]"
-      r.expr(BigDecimal(123.123)).mul(BigDecimal(234.234), 345) =%=[ReqlFloat] "[26,[123.123,234.234,345]]"
-
-      //array
-      r.expr(Seq(r.expr(123), r.expr(234), r.expr(345))).mul() =%=[ReqlArray[ReqlInteger]] "[26,[[2,[123,234,345]]]]"
-      r.expr(Seq(r.expr(123), r.expr(234), r.expr(345))).mul(6) =%=[ReqlArray[ReqlInteger]] "[26,[[2,[123,234,345]],6]]"
-      r.expr(Seq(r.expr(123), r.expr(234), r.expr(345))).mul(6, 7) =%=[ReqlArray[ReqlInteger]] "[26,[[2,[123,234,345]],6,7]]"
-
-      "r.expr(Seq(r.expr(123), r.expr(234), r.expr(345))).mul(BigDecimal(2.5))".shouldNot(compile)
-    }
-
     "div" in {
       //integer
       r.expr(123).div() =%=[ReqlFloat] "[27,[123]]"

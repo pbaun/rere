@@ -272,7 +272,7 @@ class MathQueriesTest extends WordSpec with ReqlMatchers with Matchers {
         r.sub(r.now(), 1, 2) shouldBe subtypeOf [ReqlTime] and serializedTo("[25,[[103,[]],1,2]]")
       }
 
-      "allow subtract time from time" in {
+      "allow to subtract time from time" in {
         r.sub(r.now(), r.now()) shouldBe subtypeOf [ReqlFloat] and serializedTo("[25,[[103,[]],[103,[]]]]")
         "r.sub(r.now(), r.now(), r.now())" shouldNot compile
       }
@@ -344,13 +344,79 @@ class MathQueriesTest extends WordSpec with ReqlMatchers with Matchers {
         r.now().sub(1, 2) shouldBe subtypeOf [ReqlTime] and serializedTo("[25,[[103,[]],1,2]]")
       }
 
-      "allow subtract time from time" in {
+      "allow to subtract time from time" in {
         r.now().sub(r.now()) shouldBe subtypeOf [ReqlFloat] and serializedTo("[25,[[103,[]],[103,[]]]]")
       }
 
-      "not allow subtract time and numbers from time" in {
+      "not allow to subtract time and numbers from time" in {
         "r.now().sub(r.now(), 1)" shouldNot compile
         r.now().sub(r.now()).sub(1, 2) shouldBe subtypeOf [ReqlFloat] and serializedTo("[25,[[25,[[103,[]],[103,[]]]],1,2]]")
+      }
+    }
+  }
+
+  "mul operator" should {
+    "be accessible on ReqlInteger and" should {
+      "allow to multiply integer by integers" in {
+        r.expr(123).mul() shouldBe subtypeOf [ReqlInteger] and serializedTo("[26,[123]]")
+        r.expr(123).mul(234) shouldBe subtypeOf [ReqlInteger] and serializedTo("[26,[123,234]]")
+        r.expr(123).mul(234, 345) shouldBe subtypeOf [ReqlInteger] and serializedTo("[26,[123,234,345]]")
+      }
+
+      "allow to multiply integer by floats" in {
+        r.expr(123).mul(BigDecimal(234.234)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[26,[123,234.234]]")
+
+        r.expr(123).mul(BigDecimal(234.234), BigDecimal(345.345)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[26,[123,234.234,345.345]]")
+
+        r.expr(123).mul(BigDecimal(234.234), 345) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[26,[123,234.234,345]]")
+
+        r.expr(123).mul(234, BigDecimal(345.345)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[26,[123,234,345.345]]")
+      }
+    }
+
+    "be accessible on ReqlFloat and" should {
+      "allow to multiply float by floats" in {
+        r.expr(BigDecimal(123.123)).mul() shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[26,[123.123]]")
+
+        r.expr(BigDecimal(123.123)).mul(BigDecimal(234.234)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[26,[123.123,234.234]]")
+
+        r.expr(BigDecimal(123.123)).mul(BigDecimal(234.234), BigDecimal(345.345)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[26,[123.123,234.234,345.345]]")
+      }
+
+      "allow to multiply float by integers" in {
+        r.expr(BigDecimal(123.123)).mul(234) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[26,[123.123,234]]")
+
+        r.expr(BigDecimal(123.123)).mul(234, 345) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[26,[123.123,234,345]]")
+
+        r.expr(BigDecimal(123.123)).mul(234, BigDecimal(345.345)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[26,[123.123,234,345.345]]")
+
+        r.expr(BigDecimal(123.123)).mul(BigDecimal(234.234), 345) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[26,[123.123,234.234,345]]")
+      }
+    }
+
+    "be accessible on ReqlArray and" should {
+      "allow to multiply array by integers" in {
+        r.expr(Seq(r.expr(123), r.expr(234), r.expr(345))).mul() shouldBe
+          subtypeOf [ReqlArray[ReqlInteger]] and serializedTo("[26,[[2,[123,234,345]]]]")
+
+        r.expr(Seq(r.expr(123), r.expr(234), r.expr(345))).mul(6) shouldBe
+          subtypeOf [ReqlArray[ReqlInteger]] and serializedTo("[26,[[2,[123,234,345]],6]]")
+
+        r.expr(Seq(r.expr(123), r.expr(234), r.expr(345))).mul(6, 7) shouldBe
+          subtypeOf [ReqlArray[ReqlInteger]] and serializedTo("[26,[[2,[123,234,345]],6,7]]")
+
+        "r.expr(Seq(r.expr(123), r.expr(234), r.expr(345))).mul(BigDecimal(2.5))" shouldNot compile
       }
     }
   }
