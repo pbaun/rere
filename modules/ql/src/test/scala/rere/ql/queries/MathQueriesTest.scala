@@ -139,12 +139,12 @@ class MathQueriesTest extends WordSpec with ReqlMatchers with Matchers {
           subtypeOf [ReqlFloat] and serializedTo("[24,[123,234.234]]")
 
         r.expr(123).add(BigDecimal(234.234), BigDecimal(345.345)) shouldBe
-          subtypeOf[ReqlFloat] and serializedTo("[24,[123,234.234,345.345]]")
+          subtypeOf [ReqlFloat] and serializedTo("[24,[123,234.234,345.345]]")
       }
 
       "allow to add integers and floats" in {
         r.expr(123).add(BigDecimal(234.234), 345) shouldBe
-          subtypeOf[ReqlFloat] and serializedTo("[24,[123,234.234,345]]")
+          subtypeOf [ReqlFloat] and serializedTo("[24,[123,234.234,345]]")
 
         r.expr(123).add(234, BigDecimal(345.345)) shouldBe
           subtypeOf [ReqlFloat] and serializedTo("[24,[123,234,345.345]]")
@@ -417,6 +417,59 @@ class MathQueriesTest extends WordSpec with ReqlMatchers with Matchers {
           subtypeOf [ReqlArray[ReqlInteger]] and serializedTo("[26,[[2,[123,234,345]],6,7]]")
 
         "r.expr(Seq(r.expr(123), r.expr(234), r.expr(345))).mul(BigDecimal(2.5))" shouldNot compile
+      }
+    }
+  }
+
+  "div operator" should {
+    "be accessible on ReqlNumber and" should {
+      "allow to divide integer by integers" in {
+        r.expr(123).div() shouldBe subtypeOf [ReqlFloat] and serializedTo("[27,[123]]")
+        r.expr(123).div(234) shouldBe subtypeOf [ReqlFloat] and serializedTo("[27,[123,234]]")
+        r.expr(123).div(234, 345) shouldBe subtypeOf [ReqlFloat] and serializedTo("[27,[123,234,345]]")
+      }
+
+      "allow to divide integer by floats" in {
+        r.expr(123).div(BigDecimal(234.234)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[27,[123,234.234]]")
+
+        r.expr(123).div(BigDecimal(234.234), BigDecimal(345.345)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[27,[123,234.234,345.345]]") 
+      }
+
+      "allow to divide integer by integers and floats" in {
+        r.expr(123).div(BigDecimal(234.234), 345) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[27,[123,234.234,345]]")
+
+        r.expr(123).div(234, BigDecimal(345.345)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[27,[123,234,345.345]]")
+      }
+
+      "allow to divide float by floats" in {
+        r.expr(BigDecimal(123.123)).div() shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[27,[123.123]]")
+
+        r.expr(BigDecimal(123.123)).div(BigDecimal(234.234)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[27,[123.123,234.234]]")
+
+        r.expr(BigDecimal(123.123)).div(BigDecimal(234.234), BigDecimal(345.345)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[27,[123.123,234.234,345.345]]")
+      }
+
+      "allow to divide float by integers" in {
+        r.expr(BigDecimal(123.123)).div(234) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[27,[123.123,234]]")
+
+        r.expr(BigDecimal(123.123)).div(234, 345) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[27,[123.123,234,345]]") 
+      }
+
+      "allow to divide float by floats and integers" in {
+        r.expr(BigDecimal(123.123)).div(234, BigDecimal(345.345)) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[27,[123.123,234,345.345]]")
+
+        r.expr(BigDecimal(123.123)).div(BigDecimal(234.234), 345) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[27,[123.123,234.234,345]]")
       }
     }
   }

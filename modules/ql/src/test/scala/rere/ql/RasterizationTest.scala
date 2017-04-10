@@ -379,28 +379,6 @@ class RasterizationTest extends WordSpec {
       ))) =%=[ReqlSelectionOfStream[JsonObject, String]] """[78,[[15,["abc"]],[154,[[2,["Alice","Bob"]]]]],{"index":"code"}]"""
     }
 
-    "div" in {
-      //integer
-      r.expr(123).div() =%=[ReqlFloat] "[27,[123]]"
-      r.expr(123).div(234) =%=[ReqlFloat] "[27,[123,234]]"
-      r.expr(123).div(234, 345) =%=[ReqlFloat] "[27,[123,234,345]]"
-
-      //float
-      r.expr(BigDecimal(123.123)).div() =%=[ReqlFloat] "[27,[123.123]]"
-      r.expr(BigDecimal(123.123)).div(BigDecimal(234.234)) =%=[ReqlFloat] "[27,[123.123,234.234]]"
-      r.expr(BigDecimal(123.123)).div(BigDecimal(234.234), BigDecimal(345.345)) =%=[ReqlFloat] "[27,[123.123,234.234,345.345]]"
-
-      //mixed
-      r.expr(123).div(BigDecimal(234.234)) =%=[ReqlFloat] "[27,[123,234.234]]"
-      r.expr(123).div(BigDecimal(234.234), BigDecimal(345.345)) =%=[ReqlFloat] "[27,[123,234.234,345.345]]"
-      r.expr(123).div(BigDecimal(234.234), 345) =%=[ReqlFloat] "[27,[123,234.234,345]]"
-      r.expr(123).div(234, BigDecimal(345.345)) =%=[ReqlFloat] "[27,[123,234,345.345]]"
-      r.expr(BigDecimal(123.123)).div(234) =%=[ReqlFloat] "[27,[123.123,234]]"
-      r.expr(BigDecimal(123.123)).div(234, 345) =%=[ReqlFloat] "[27,[123.123,234,345]]"
-      r.expr(BigDecimal(123.123)).div(234, BigDecimal(345.345)) =%=[ReqlFloat] "[27,[123.123,234,345.345]]"
-      r.expr(BigDecimal(123.123)).div(BigDecimal(234.234), 345) =%=[ReqlFloat] "[27,[123.123,234.234,345]]"
-    }
-
     "mod" in {
       "r.expr(123).mod()".shouldNot(compile)
       r.expr(123).mod(7) =%=[ReqlInteger] "[28,[123,7]]"
