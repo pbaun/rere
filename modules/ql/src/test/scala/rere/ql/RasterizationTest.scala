@@ -379,14 +379,6 @@ class RasterizationTest extends WordSpec {
       ))) =%=[ReqlSelectionOfStream[JsonObject, String]] """[78,[[15,["abc"]],[154,[[2,["Alice","Bob"]]]]],{"index":"code"}]"""
     }
 
-    "mod" in {
-      "r.expr(123).mod()".shouldNot(compile)
-      r.expr(123).mod(7) =%=[ReqlInteger] "[28,[123,7]]"
-      "r.expr(123).mod(7, 4)".shouldNot(compile)
-      "r.expr(123).mod(4.3)".shouldNot(compile)
-      "r.expr(123.2).mod(4)".shouldNot(compile)
-    }
-
     "floor" in {
       r.floor(123) =%=[ReqlInteger] "[183,[123]]"
       r.expr(123).floor() =%=[ReqlInteger] "[183,[123]]"

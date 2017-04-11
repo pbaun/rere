@@ -94,7 +94,8 @@ class MathQueriesTest extends WordSpec with ReqlMatchers with Matchers {
       "support chaining" in {
         r.add(123).add(234) shouldBe subtypeOf [ReqlInteger] and serializedTo("[24,[[24,[123]],234]]")
         r.add(r.add(123)) shouldBe subtypeOf [ReqlInteger] and serializedTo("[24,[[24,[123]]]]")
-        r.expr(123).add(r.add(234, 345)) shouldBe subtypeOf [ReqlInteger] and serializedTo("[24,[123,[24,[234,345]]]]")
+        r.expr(123).add(r.add(234, 345)) shouldBe
+          subtypeOf [ReqlInteger] and serializedTo("[24,[123,[24,[234,345]]]]")
 
 
         r.expr("abc").add(r.add("bcd", "cde")) shouldBe
@@ -123,7 +124,8 @@ class MathQueriesTest extends WordSpec with ReqlMatchers with Matchers {
         "r.add(r.now()).add(r.now())" shouldNot compile
         r.add(r.now()).add(123) shouldBe subtypeOf [ReqlTime] and serializedTo("""[24,[[24,[[103,[]]]],123]]""")
         r.add(r.add(r.now())) shouldBe subtypeOf [ReqlTime] and serializedTo("""[24,[[24,[[103,[]]]]]]""")
-        r.now().add(r.add(123, 234)) shouldBe subtypeOf [ReqlTime] and serializedTo("""[24,[[103,[]],[24,[123,234]]]]""")
+        r.now().add(r.add(123, 234)) shouldBe
+          subtypeOf [ReqlTime] and serializedTo("""[24,[[103,[]],[24,[123,234]]]]""")
       }
     }
 
@@ -184,7 +186,8 @@ class MathQueriesTest extends WordSpec with ReqlMatchers with Matchers {
       "allow to add strings" in {
         r.expr("abc").add() shouldBe subtypeOf [ReqlString] and serializedTo("""[24,["abc"]]""")
         r.expr("abc").add("bcd") shouldBe subtypeOf [ReqlString] and serializedTo("""[24,["abc","bcd"]]""")
-        r.expr("abc").add("bcd", "cde") shouldBe subtypeOf [ReqlString] and serializedTo("""[24,["abc","bcd","cde"]]""")
+        r.expr("abc").add("bcd", "cde") shouldBe
+          subtypeOf [ReqlString] and serializedTo("""[24,["abc","bcd","cde"]]""")
       }
     }
 
@@ -280,7 +283,8 @@ class MathQueriesTest extends WordSpec with ReqlMatchers with Matchers {
       "support chaining" in {
         r.sub(123).sub(234) shouldBe subtypeOf [ReqlInteger] and serializedTo("[25,[[25,[123]],234]]")
         r.sub(r.sub(123)) shouldBe subtypeOf [ReqlInteger] and serializedTo("[25,[[25,[123]]]]")
-        r.expr(123).sub(r.sub(234, 345)) shouldBe subtypeOf [ReqlInteger] and serializedTo("[25,[123,[25,[234,345]]]]")
+        r.expr(123).sub(r.sub(234, 345)) shouldBe
+          subtypeOf [ReqlInteger] and serializedTo("[25,[123,[25,[234,345]]]]")
       }
     }
 
@@ -350,7 +354,8 @@ class MathQueriesTest extends WordSpec with ReqlMatchers with Matchers {
 
       "not allow to subtract time and numbers from time" in {
         "r.now().sub(r.now(), 1)" shouldNot compile
-        r.now().sub(r.now()).sub(1, 2) shouldBe subtypeOf [ReqlFloat] and serializedTo("[25,[[25,[[103,[]],[103,[]]]],1,2]]")
+        r.now().sub(r.now()).sub(1, 2) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("[25,[[25,[[103,[]],[103,[]]]],1,2]]")
       }
     }
   }
@@ -434,7 +439,7 @@ class MathQueriesTest extends WordSpec with ReqlMatchers with Matchers {
           subtypeOf [ReqlFloat] and serializedTo("[27,[123,234.234]]")
 
         r.expr(123).div(BigDecimal(234.234), BigDecimal(345.345)) shouldBe
-          subtypeOf [ReqlFloat] and serializedTo("[27,[123,234.234,345.345]]") 
+          subtypeOf [ReqlFloat] and serializedTo("[27,[123,234.234,345.345]]")
       }
 
       "allow to divide integer by integers and floats" in {
@@ -461,7 +466,7 @@ class MathQueriesTest extends WordSpec with ReqlMatchers with Matchers {
           subtypeOf [ReqlFloat] and serializedTo("[27,[123.123,234]]")
 
         r.expr(BigDecimal(123.123)).div(234, 345) shouldBe
-          subtypeOf [ReqlFloat] and serializedTo("[27,[123.123,234,345]]") 
+          subtypeOf [ReqlFloat] and serializedTo("[27,[123.123,234,345]]")
       }
 
       "allow to divide float by floats and integers" in {
@@ -471,6 +476,30 @@ class MathQueriesTest extends WordSpec with ReqlMatchers with Matchers {
         r.expr(BigDecimal(123.123)).div(BigDecimal(234.234), 345) shouldBe
           subtypeOf [ReqlFloat] and serializedTo("[27,[123.123,234.234,345]]")
       }
+    }
+  }
+
+  "mod operator" should {
+    "be accessible on ReqlInteger and" should {
+      "not allow to call it without arguments" in {
+        "r.expr(123).mod()" shouldNot compile
+      }
+
+      "allow to compute reminder after division of integer by integer" in {
+        r.expr(123).mod(7) shouldBe subtypeOf [ReqlInteger] and serializedTo("[28,[123,7]]")
+      }
+
+      "not allow to call it with multiple arguments" in {
+        "r.expr(123).mod(7, 4)" shouldNot compile
+      }
+
+      "not allow to divide integer by float" in {
+        "r.expr(123).mod(4.3)" shouldNot compile
+      }
+    }
+
+    "be not accessible on ReqlFloat" in {
+      "r.expr(123.2).mod(4)" shouldNot compile
     }
   }
 }
