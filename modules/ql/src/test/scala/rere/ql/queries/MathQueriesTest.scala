@@ -574,4 +574,40 @@ class MathQueriesTest extends WordSpec with ReqlMatchers with Matchers {
       }
     }
   }
+
+  "round operator" should {
+    "be accessible on r and" should {
+      "not allow to call it without arguments" in {
+        "r.round()" shouldNot compile
+      }
+
+      "allow to call it with integer" in {
+        r.round(123) shouldBe subtypeOf [ReqlInteger] and serializedTo("[185,[123]]")
+      }
+
+      "allow to call it with float" in {
+        r.round(BigDecimal(12.345)) shouldBe subtypeOf [ReqlInteger] and serializedTo("[185,[12.345]]")
+      }
+    }
+
+    "be accessible on ReqlInteger and" should {
+      "not allow to call it with arguments" in {
+        "r.expr(123).round(234)" shouldNot compile
+      }
+
+      "allow to call it without arguments" in {
+        r.expr(123).round() shouldBe subtypeOf [ReqlInteger] and serializedTo("[185,[123]]")
+      }
+    }
+
+    "be accessible on ReqlFloat and" should {
+      "not allow to call it with arguments" in {
+        "r.expr(123.456).round(234.567)" shouldNot compile
+      }
+
+      "allow to call it without arguments" in {
+        r.expr(BigDecimal(-12.345)).round() shouldBe subtypeOf [ReqlInteger] and serializedTo("[185,[-12.345]]")
+      }
+    }
+  }
 }
