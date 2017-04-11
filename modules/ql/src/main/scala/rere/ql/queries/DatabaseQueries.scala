@@ -14,7 +14,7 @@ trait DatabaseQueries {
     val options = Options.empty
   }
 
-  implicit class DatabaseOp(val r: ReqlR) {
+  implicit class DatabaseOp(r: ReqlR) {
     def db(dbName: ReqlString): DatabaseQuery = new DatabaseQuery(dbName)
   }
 
@@ -26,7 +26,7 @@ trait DatabaseQueries {
     val options = Options.empty
   }
 
-  implicit class DbCreateOnROp(val r: ReqlR) {
+  implicit class DbCreateOnROp(r: ReqlR) {
     def dbCreate(dbName: ReqlString): DbCreateRQuery = new DbCreateRQuery(dbName)
   }
 
@@ -38,7 +38,7 @@ trait DatabaseQueries {
     val options = Options.empty
   }
 
-  implicit class DbDropOnROp(val r: ReqlR) {
+  implicit class DbDropOnROp(r: ReqlR) {
     def dbDrop(dbName: ReqlString): DbDropRQuery = new DbDropRQuery(dbName)
   }
 
@@ -50,7 +50,7 @@ trait DatabaseQueries {
     val options = Options.empty
   }
 
-  implicit class DbListOnROp(val r: ReqlR) {
+  implicit class DbListOnROp(r: ReqlR) {
     def dbList(): DbListRQuery = new DbListRQuery
   }
 

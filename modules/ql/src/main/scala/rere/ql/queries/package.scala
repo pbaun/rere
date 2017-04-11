@@ -11,6 +11,8 @@ package object queries {
 
   object math extends MathQueries
 
+  object db extends DatabaseQueries
+
   object control extends ControlQueries
 
   object database extends DatabaseQueries

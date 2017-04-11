@@ -307,10 +307,6 @@ class RasterizationTest extends WordSpec {
       r.row("code") =*= """[170,[[13,[]],"code"]]"""
     }*/
 
-    "db" in {
-      r.db("test") =%=[ReqlDatabase] """[14,["test"]]"""
-    }
-
     "table" in {
       //on db
       r.db("heroes").table("marvel") =%=[ReqlTable[JsonObject, String]] """[15,[[14,["heroes"]],"marvel"]]"""
@@ -2430,22 +2426,6 @@ class RasterizationTest extends WordSpec {
         q =*= """[56,[[15,[[14,["test"]],"abc"]],{}]]"""
       }
 
-    }
-
-    "db_create" in {
-      r.dbCreate("superheroes") =%=[ReqlDatabaseCreationResult] """[57,["superheroes"]]"""
-
-      r.dbCreate(r.expr("super").add("heroes")) =%=[ReqlDatabaseCreationResult] """[57,[[24,["super","heroes"]]]]"""
-    }
-
-    "db_drop" in {
-      r.dbDrop("superheroes") =%=[ReqlObject] """[58,["superheroes"]]"""
-
-      r.dbDrop(r.expr("super").add("heroes")) =%=[ReqlDatabaseDroppingResult] """[58,[[24,["super","heroes"]]]]"""
-    }
-
-    "db_list" in {
-      r.dbList() =%=[ReqlArray[ReqlString]] """[59,[]]"""
     }
 
     "table_create" in {
