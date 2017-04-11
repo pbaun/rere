@@ -502,4 +502,40 @@ class MathQueriesTest extends WordSpec with ReqlMatchers with Matchers {
       "r.expr(123.2).mod(4)" shouldNot compile
     }
   }
+
+  "floor operator" should {
+    "be accessible on r on" should {
+      "not allow to call in without arguments" in {
+        "r.floor()" shouldNot compile
+      }
+
+      "allow to call it with integer" in {
+        r.floor(123) shouldBe subtypeOf [ReqlInteger] and serializedTo("[183,[123]]")
+      }
+
+      "allow to call it with float" in {
+        r.floor(123.456) shouldBe subtypeOf [ReqlInteger] and serializedTo("[183,[123.456]]")
+      }
+    }
+
+    "be accessible on ReqlInteger and" should {
+      "not allow to call it with arguments" in {
+        "r.expr(123).floor(234)" shouldNot compile
+      }
+
+      "allow to call it without arguments" in {
+        r.expr(123).floor() shouldBe subtypeOf [ReqlInteger] and serializedTo("[183,[123]]")
+      }
+    }
+
+    "be accessible on ReqlFloat and" should {
+      "not allow to call it with arguments" in {
+        "r.expr(123.456).floor(234.567)" shouldNot compile
+      }
+
+      "allow to call it without arguments" in {
+        r.expr(123.456).floor() shouldBe subtypeOf [ReqlInteger] and serializedTo("[183,[123.456]]")
+      }
+    }
+  }
 }
