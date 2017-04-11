@@ -504,8 +504,8 @@ class MathQueriesTest extends WordSpec with ReqlMatchers with Matchers {
   }
 
   "floor operator" should {
-    "be accessible on r on" should {
-      "not allow to call in without arguments" in {
+    "be accessible on r and" should {
+      "not allow to call it without arguments" in {
         "r.floor()" shouldNot compile
       }
 
@@ -535,6 +535,42 @@ class MathQueriesTest extends WordSpec with ReqlMatchers with Matchers {
 
       "allow to call it without arguments" in {
         r.expr(123.456).floor() shouldBe subtypeOf [ReqlInteger] and serializedTo("[183,[123.456]]")
+      }
+    }
+  }
+
+  "ceil operator" should {
+    "be accessible on r and" should {
+      "not allow to call it without arguments" in {
+        "r.ceil()" shouldNot compile
+      }
+
+      "allow to call it with integer" in {
+        r.ceil(123) shouldBe subtypeOf [ReqlInteger] and serializedTo("[184,[123]]")
+      }
+
+      "allow to call it with float" in {
+        r.ceil(123.456) shouldBe subtypeOf [ReqlInteger] and serializedTo("[184,[123.456]]")
+      }
+    }
+
+    "be accessible on ReqlInteger and" should {
+      "not allow to call it with arguments" in {
+        "r.expr(123).ceil(234)" shouldNot compile
+      }
+
+      "allow to call it without arguments" in {
+        r.expr(123).ceil() shouldBe subtypeOf [ReqlInteger] and serializedTo("[184,[123]]")
+      }
+    }
+
+    "be accessible on ReqlFloat and" should {
+      "not allow to call it with arguments" in {
+        "r.expr(123.456).ceil(234.567)" shouldNot compile
+      }
+
+      "allow to call it without arguments" in {
+        r.expr(123.456).ceil() shouldBe subtypeOf [ReqlInteger] and serializedTo("[184,[123.456]]")
       }
     }
   }
