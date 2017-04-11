@@ -310,12 +310,6 @@ trait MathQueries {
       val options = randomOptions
     }
 
-    /*def random(upperBound: ReqlFloat,
-               randomOptions: FloatValues.type): RandomFloatOnRQuery = new RandomFloatOnRQuery {
-      val arguments = upperBound :: Nil
-      val options = randomOptions
-    }*/
-
     def random(lowerBound: ReqlInteger,
                upperBound: ReqlInteger): RandomIntegerOnRQuery = new RandomIntegerOnRQuery {
       val arguments = lowerBound :: upperBound :: Nil
@@ -335,13 +329,6 @@ trait MathQueries {
       val arguments = lowerBound :: upperBound :: Nil
       val options = randomOptions
     }
-
-    /*def random(lowerBound: ReqlFloat,
-               upperBound: ReqlFloat,
-               randomOptions: FloatValues.type): RandomFloatOnRQuery = new RandomFloatOnRQuery {
-      val arguments = lowerBound :: upperBound :: Nil
-      val options = randomOptions
-    }*/
   }
 
 }

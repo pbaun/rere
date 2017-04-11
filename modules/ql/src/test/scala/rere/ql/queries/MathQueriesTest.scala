@@ -610,4 +610,64 @@ class MathQueriesTest extends WordSpec with ReqlMatchers with Matchers {
       }
     }
   }
+
+  "random operator" should {
+    import rere.ql.options.all._
+
+    "be accessible on r and" should {
+      "allow to call it without arguments" in {
+        r.random() shouldBe subtypeOf [ReqlFloat] and serializedTo("[151,[]]")
+      }
+
+      "allow to call it with integer upper bound" in {
+        r.random(5) shouldBe subtypeOf [ReqlInteger] and serializedTo("[151,[5]]")
+      }
+
+      "not allow to call it with float upper bound" in {
+        "r.random(BigDecimal(2.7))" shouldNot compile
+      }
+
+      "allow to generate integer values with integer upper bound" in {
+        r.random(5, IntegerValues) shouldBe subtypeOf [ReqlInteger] and serializedTo("[151,[5]]")
+      }
+
+      "not allow to generate integer values with float upper bound" in {
+        "r.random(BigDecimal(2.7), IntegerValues)" shouldNot compile
+      }
+
+      "allow to generate float values with integer upper bound" in {
+        r.random(5, FloatValues) shouldBe subtypeOf [ReqlFloat] and serializedTo("""[151,[5],{"float":true}]""")
+      }
+
+      "allow to generate float values with float upper bound" in {
+        r.random(BigDecimal(2.7), FloatValues) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("""[151,[2.7],{"float":true}]""")
+      }
+
+      "allow to call it with integer lower and upper bound" in {
+        r.random(2, 5) shouldBe subtypeOf [ReqlInteger] and serializedTo("[151,[2,5]]")
+      }
+
+      "not allow to call it with float lower and upper bound" in {
+        "r.random(BigDecimal(2.7), BigDecimal(5.5))" shouldNot compile
+      }
+
+      "allow to generate integer values with integer lower and upper bound" in {
+        r.random(2, 5, IntegerValues) shouldBe subtypeOf [ReqlInteger] and serializedTo("[151,[2,5]]")
+      }
+
+      "not allow to generate integer values with float lower and upper bound" in {
+        "r.random(BigDecimal(2.7), BigDecimal(5.5), IntegerValues)" shouldNot compile
+      }
+
+      "allow to generate float values with integer lower and upper bound" in {
+        r.random(2, 5, FloatValues) shouldBe subtypeOf [ReqlFloat] and serializedTo("""[151,[2,5],{"float":true}]""")
+      }
+
+      "allow to generate float values with float lower and upper bound" in {
+        r.random(BigDecimal(2.7), BigDecimal(5.5), FloatValues) shouldBe
+          subtypeOf [ReqlFloat] and serializedTo("""[151,[2.7,5.5],{"float":true}]""")
+      }
+    }
+  }
 }

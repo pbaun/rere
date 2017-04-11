@@ -3392,26 +3392,6 @@ class RasterizationTest extends WordSpec {
       //r.table("abc").group("code").count().ungroup() =%=[ReqlArray[ReqlDatum]] """[150,[[43,[[144,[[15,["abc"]],"code"]]]]]]"""
     }
 
-    "random" in {
-      r.random() =%=[ReqlFloat] "[151,[]]"
-
-      r.random(5) =%=[ReqlInteger] "[151,[5]]"
-      "r.random(BigDecimal(2.7))".shouldNot(compile)
-
-      r.random(5, IntegerValues) =%=[ReqlInteger] "[151,[5]]"
-      r.random(5, FloatValues) =%=[ReqlFloat] """[151,[5],{"float":true}]"""
-      r.random(BigDecimal(2.7), FloatValues) =%=[ReqlFloat] """[151,[2.7],{"float":true}]"""
-      "r.random(BigDecimal(2.7), IntegerValues)".shouldNot(compile)
-
-      r.random(2, 5) =%=[ReqlInteger] "[151,[2,5]]"
-      "r.random(BigDecimal(2.7), BigDecimal(5.5))".shouldNot(compile)
-
-      r.random(2, 5, IntegerValues) =%=[ReqlInteger] "[151,[2,5]]"
-      r.random(2, 5, FloatValues) =%=[ReqlFloat] """[151,[2,5],{"float":true}]"""
-      r.random(BigDecimal(2.7), BigDecimal(5.5), FloatValues) =%=[ReqlFloat] """[151,[2.7,5.5],{"float":true}]"""
-      "r.random(BigDecimal(2.7), BigDecimal(5.5), IntegerValues)".shouldNot(compile)
-    }
-
     "changes" in {
       //table
       abcJsonTable.changes() =%=[ReqlInfiniteStream[ReqlChangefeedNotification[JsonObject]]] """[152,[[15,["abc"]]]]"""
