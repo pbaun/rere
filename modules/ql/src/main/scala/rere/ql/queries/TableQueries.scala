@@ -11,7 +11,7 @@ trait TableQueries {
   // table
   trait TableQuery[T, PK] extends ReqlTable[T, PK]
 
-  implicit class TableOnDbOp(val database: ReqlDatabase) {
+  implicit class TableOnDbOp(database: ReqlDatabase) {
     def table[T, PK](
       name: ReqlString,
       readMode: ReadModeOptions = DefaultReadMode,
@@ -27,7 +27,7 @@ trait TableQueries {
     }
   }
 
-  implicit class TableOnROp(val r: ReqlR) {
+  implicit class TableOnROp(r: ReqlR) {
     def table[T, PK](
       name: ReqlString,
       readMode: ReadModeOptions = DefaultReadMode,
@@ -47,7 +47,7 @@ trait TableQueries {
   trait TableCreateDbQuery extends ReqlTableCreationResult
   trait TableCreateRQuery extends ReqlTableCreationResult
 
-  implicit class TableCreateOnDbOp(val db: ReqlDatabase) {
+  implicit class TableCreateOnDbOp(db: ReqlDatabase) {
     def tableCreate(
       tableName: ReqlString,
       primaryKey: PrimaryKeyOptions = DefaultPrimaryKey,
@@ -62,7 +62,7 @@ trait TableQueries {
     }
   }
 
-  implicit class TableCreateOnROp(val r: ReqlR) {
+  implicit class TableCreateOnROp(r: ReqlR) {
     def tableCreate(
       tableName: ReqlString,
       primaryKey: PrimaryKeyOptions = DefaultPrimaryKey,
@@ -80,7 +80,7 @@ trait TableQueries {
   // table_drop
   trait TableDropDbQuery extends ReqlTableDroppingResult
 
-  implicit class TableDropOnDbOp(val db: ReqlDatabase) {
+  implicit class TableDropOnDbOp(db: ReqlDatabase) {
     def tableDrop(tableName: ReqlString): TableDropDbQuery = new TableDropDbQuery {
       val command = TermType.TABLE_DROP
       val string = "table_drop"
@@ -92,7 +92,7 @@ trait TableQueries {
   // table_list
   trait TableListDbQuery extends ReqlArray[ReqlString]
 
-  implicit class TableListOnDbOp(val db: ReqlDatabase) {
+  implicit class TableListOnDbOp(db: ReqlDatabase) {
     def tableList(): TableListDbQuery = new TableListDbQuery {
       val command = TermType.TABLE_LIST
       val string = "table_list"
@@ -105,7 +105,7 @@ trait TableQueries {
   trait IndexCreateTableQuery extends ReqlIndexCreationResult
 
   //TODO: function may be binary field from .indexStatus or .indexWait response
-  implicit class IndexCreateOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class IndexCreateOnTableOp[T, PK](table: ReqlTable[T, PK]) {
     private implicit def modelShape = table.shape
 
     def indexCreate(indexName: ReqlString): IndexCreateTableQuery = new IndexCreateTableQuery {
@@ -146,7 +146,7 @@ trait TableQueries {
   // index_drop
   trait IndexDropTableQuery extends ReqlIndexDroppingResult
 
-  implicit class IndexDropOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class IndexDropOnTableOp[T, PK](table: ReqlTable[T, PK]) {
     def indexDrop(indexName: ReqlString): IndexDropTableQuery = new IndexDropTableQuery {
       val command = TermType.INDEX_DROP
       val string = "index_drop"
@@ -158,7 +158,7 @@ trait TableQueries {
   // index_list
   trait IndexListTableQuery extends ReqlArray[ReqlString]
 
-  implicit class IndexListOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class IndexListOnTableOp[T, PK](table: ReqlTable[T, PK]) {
     def indexList(): IndexListTableQuery = new IndexListTableQuery {
       val command = TermType.INDEX_LIST
       val string = "index_list"
@@ -171,7 +171,7 @@ trait TableQueries {
   trait IndexStatusTableQuery extends ReqlArray[ReqlIndexStatusResult]
   //TODO: 'function' field of object can be used in .indexCreate (see TODO comment on .indexCreate implementation)
 
-  implicit class IndexStatusOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class IndexStatusOnTableOp[T, PK](table: ReqlTable[T, PK]) {
     def indexStatus(): IndexStatusTableQuery = new IndexStatusTableQuery {
       val command = TermType.INDEX_STATUS
       val string = "index_status"
@@ -191,7 +191,7 @@ trait TableQueries {
   trait IndexWaitTableQuery extends ReqlArray[ReqlIndexStatusResult]
   //TODO: 'function' field of object can be used in .indexCreate
 
-  implicit class IndexWaitOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class IndexWaitOnTableOp[T, PK](table: ReqlTable[T, PK]) {
     def indexWait(): IndexWaitTableQuery = new IndexWaitTableQuery {
       val command = TermType.INDEX_WAIT
       val string = "index_wait"
@@ -211,7 +211,7 @@ trait TableQueries {
   trait IndexRenameTableQuery extends ReqlIndexRenamingResult
   //TODO: maybe reuse Index type for old and new names?
 
-  implicit class IndexRenameOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class IndexRenameOnTableOp[T, PK](table: ReqlTable[T, PK]) {
     def indexRename(
       oldIndexName: ReqlString,
       newIndexName: ReqlString,

@@ -2,7 +2,7 @@ package rere.ql.shapes
 
 import rere.ql.options.Options
 import rere.ql.ql2.Term.TermType
-import rere.ql.queries.database.DatabaseQuery
+import rere.ql.queries.db.DatabaseQuery
 import rere.ql.queries.values
 import rere.ql.types.{ReqlDatabase, ReqlTable}
 

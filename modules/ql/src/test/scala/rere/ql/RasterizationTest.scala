@@ -307,36 +307,6 @@ class RasterizationTest extends WordSpec {
       r.row("code") =*= """[170,[[13,[]],"code"]]"""
     }*/
 
-    "table" in {
-      //on db
-      r.db("heroes").table("marvel") =%=[ReqlTable[JsonObject, String]] """[15,[[14,["heroes"]],"marvel"]]"""
-
-      r.db("heroes").table("marvel", DefaultReadMode) =%=[ReqlTable[JsonObject, String]] """[15,[[14,["heroes"]],"marvel"]]"""
-      r.db("heroes").table("marvel", Single) =%=[ReqlTable[JsonObject, String]] """[15,[[14,["heroes"]],"marvel"],{"read_mode":"single"}]"""
-      r.db("heroes").table("marvel", Majority) =%=[ReqlTable[JsonObject, String]] """[15,[[14,["heroes"]],"marvel"],{"read_mode":"majority"}]"""
-      r.db("heroes").table("marvel", Outdated) =%=[ReqlTable[JsonObject, String]] """[15,[[14,["heroes"]],"marvel"],{"read_mode":"outdated"}]"""
-
-      r.db("heroes").table("marvel", identifierFormat = DefaultIdentifierFormat) =%=[ReqlTable[JsonObject, String]] """[15,[[14,["heroes"]],"marvel"]]"""
-      r.db("heroes").table("marvel", identifierFormat = NameIdentifier) =%=[ReqlTable[JsonObject, String]] """[15,[[14,["heroes"]],"marvel"],{"identifier_format":"name"}]"""
-      r.db("heroes").table("marvel", identifierFormat = UuidIdentifier) =%=[ReqlTable[JsonObject, String]] """[15,[[14,["heroes"]],"marvel"],{"identifier_format":"uuid"}]"""
-
-      r.db("heroes").table("marvel", Majority, UuidIdentifier) =%=[ReqlTable[JsonObject, String]] """[15,[[14,["heroes"]],"marvel"],{"read_mode":"majority","identifier_format":"uuid"}]"""
-
-      //on r
-      r.table("marvel") =%=[ReqlTable[JsonObject, String]] """[15,["marvel"]]"""
-
-      r.table("marvel", DefaultReadMode) =%=[ReqlTable[JsonObject, String]] """[15,["marvel"]]"""
-      r.table("marvel", Single) =%=[ReqlTable[JsonObject, String]] """[15,["marvel"],{"read_mode":"single"}]"""
-      r.table("marvel", Majority) =%=[ReqlTable[JsonObject, String]] """[15,["marvel"],{"read_mode":"majority"}]"""
-      r.table("marvel", Outdated) =%=[ReqlTable[JsonObject, String]] """[15,["marvel"],{"read_mode":"outdated"}]"""
-
-      r.table("marvel", identifierFormat = DefaultIdentifierFormat) =%=[ReqlTable[JsonObject, String]] """[15,["marvel"]]"""
-      r.table("marvel", identifierFormat = NameIdentifier) =%=[ReqlTable[JsonObject, String]] """[15,["marvel"],{"identifier_format":"name"}]"""
-      r.table("marvel", identifierFormat = UuidIdentifier) =%=[ReqlTable[JsonObject, String]] """[15,["marvel"],{"identifier_format":"uuid"}]"""
-
-      r.table("marvel", Majority, UuidIdentifier) =%=[ReqlTable[JsonObject, String]] """[15,["marvel"],{"read_mode":"majority","identifier_format":"uuid"}]"""
-    }
-
     "get" in new ShapesData {
       jsonTable("posts").get("a9849eef-7176-4411-935b-79a6e3c56a74") =%=[ReqlSelectionOfObject[JsonObject, String]] """[16,[[15,["posts"]],"a9849eef-7176-4411-935b-79a6e3c56a74"]]"""
 
@@ -2428,47 +2398,6 @@ class RasterizationTest extends WordSpec {
 
     }
 
-    "table_create" in {
-      //on db
-      r.db("test").tableCreate("abc") =%=[ReqlTableCreationResult] """[60,[[14,["test"]],"abc"]]"""
-
-      r.db("test").tableCreate(
-        "abc",
-        PrimaryKey("name"),
-        Soft,
-        Shards(3),
-        Replicas(1)
-      ) =%=[ReqlTableCreationResult] """[60,[[14,["test"]],"abc"],{"primary_key":"name","durability":"soft","shards":3,"replicas":1}]"""
-
-      r.db("test").tableCreate(
-        "abc",
-        PrimaryKey("code"),
-        Hard,
-        Shards(7),
-        ReplicasByTags(ServerTag("spb"), ServerTag("spb") -> 3, ServerTag("msk") -> 2)
-      ) =%=[ReqlTableCreationResult] """[60,[[14,["test"]],"abc"],{"primary_key":"code","durability":"hard","shards":7,"replicas":{"spb":3,"msk":2},"primary_replica_tag":"spb"}]"""
-
-      //on r
-      r.tableCreate("abc") =%=[ReqlTableCreationResult] """[60,["abc"]]"""
-
-      r.tableCreate(
-        "abc",
-        PrimaryKey("code"),
-        Hard,
-        Shards(7),
-        ReplicasByTags(ServerTag("spb"), ServerTag("spb") -> 3, ServerTag("msk") -> 2)
-      ) =%=[ReqlTableCreationResult] """[60,["abc"],{"primary_key":"code","durability":"hard","shards":7,"replicas":{"spb":3,"msk":2},"primary_replica_tag":"spb"}]"""
-    }
-
-    "table_drop" in {
-      r.db("test").tableDrop("abc") =%=[ReqlTableDroppingResult] """[61,[[14,["test"]],"abc"]]"""
-      r.db("test").tableDrop(r.expr("abc").add("def")) =%=[ReqlTableDroppingResult] """[61,[[14,["test"]],[24,["abc","def"]]]]"""
-    }
-
-    "table_list" in {
-      r.db("test").tableList() =%=[ReqlArray[ReqlString]] """[62,[[14,["test"]]]]"""
-    }
-
     "config" in {
       //table
       r.table("abc").config() =%=[ReqlSelectionOfObject[TableConfig, UUID]] """[174,[[15,["abc"]]]]"""
@@ -2594,50 +2523,6 @@ class RasterizationTest extends WordSpec {
         "user",
         UserPermissions(Some(true), Some(false), None, Some(false))
       ) =%=[ReqlGrantingResult] """[188,[[15,["abc"]],"user",{"read":true,"write":false,"config":false}]]"""
-    }
-
-    "index_create" in {
-      r.table[JsonObject, String]("abc").indexCreate("code") =%=[ReqlIndexCreationResult] """[75,[[15,["abc"]],"code"]]"""
-      r.table[JsonObject, String]("abc").indexCreate("code", SimpleIndex, RangeIndex) =%=[ReqlIndexCreationResult] """[75,[[15,["abc"]],"code"]]"""
-      r.table[JsonObject, String]("abc").indexCreate("code", MultiIndex, GeoIndex) =%=[ReqlIndexCreationResult] """[75,[[15,["abc"]],"code"],{"multi":true,"geo":true}]"""
-
-      r.table[JsonObject, String]("abc").indexCreate("code", _("code_name")) =%=[ReqlIndexCreationResult] """[75,[[15,["abc"]],"code",[69,[[2,[0]],[170,[[10,[0]],"code_name"]]]]]]"""
-      r.table[JsonObject, String]("abc").indexCreate("code", _("code_name"), SimpleIndex, RangeIndex) =%=[ReqlIndexCreationResult] """[75,[[15,["abc"]],"code",[69,[[2,[0]],[170,[[10,[0]],"code_name"]]]]]]"""
-      r.table[JsonObject, String]("abc").indexCreate("code", _("code_name"), MultiIndex, GeoIndex) =%=[ReqlIndexCreationResult] """[75,[[15,["abc"]],"code",[69,[[2,[0]],[170,[[10,[0]],"code_name"]]]]],{"multi":true,"geo":true}]"""
-    }
-
-    "index_drop" in {
-      r.table("abc").indexDrop("code") =%=[ReqlIndexDroppingResult] """[76,[[15,["abc"]],"code"]]"""
-    }
-
-    "index_list" in {
-      r.table("abc").indexList() =%=[ReqlArray[ReqlString]] """[77,[[15,["abc"]]]]"""
-    }
-
-    "index_status" in {
-      //without arguments - return status of all indices
-      r.table("abc").indexStatus() =%=[ReqlArray[ReqlIndexStatusResult]] """[139,[[15,["abc"]]]]"""
-
-      //with arguments - return status of only listed indices
-      r.table("abc").indexStatus("code") =%=[ReqlArray[ReqlIndexStatusResult]] """[139,[[15,["abc"]],"code"]]"""
-      r.table("abc").indexStatus("code", "code1") =%=[ReqlArray[ReqlIndexStatusResult]] """[139,[[15,["abc"]],"code","code1"]]"""
-    }
-
-    "index_wait" in {
-      //without arguments - return status of all indices
-      r.table("abc").indexWait() =%=[ReqlArray[ReqlIndexStatusResult]] """[140,[[15,["abc"]]]]"""
-
-      //with arguments - return status of only listed indices
-      r.table("abc").indexWait("code") =%=[ReqlArray[ReqlIndexStatusResult]] """[140,[[15,["abc"]],"code"]]"""
-      r.table("abc").indexWait("code", "code1") =%=[ReqlArray[ReqlIndexStatusResult]] """[140,[[15,["abc"]],"code","code1"]]"""
-    }
-
-    "index_rename" in {
-      r.table("abc").indexRename("code", "type") =%=[ReqlIndexRenamingResult] """[156,[[15,["abc"]],"code","type"]]"""
-
-      r.table("abc").indexRename("code", "type", NotOverwrite) =%=[ReqlIndexRenamingResult] """[156,[[15,["abc"]],"code","type"]]"""
-
-      r.table("abc").indexRename("code", "type", Overwrite) =%=[ReqlIndexRenamingResult] """[156,[[15,["abc"]],"code","type"],{"overwrite":true}]"""
     }
 
     "do" in {

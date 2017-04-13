@@ -13,7 +13,9 @@ package object queries {
 
   object db extends DatabaseQueries
 
-  object control extends ControlQueries
+  object table extends TableQueries
 
-  object database extends DatabaseQueries
+  object document extends DocumentQueries
+
+  object control extends ControlQueries
 }
