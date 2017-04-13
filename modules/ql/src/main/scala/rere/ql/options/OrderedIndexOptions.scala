@@ -9,7 +9,7 @@ trait OrderedIndexOptions {
   case class OrderedIndex(ordering: ReqlNameOrdering) extends OrderedIndexOptions {
     def isEmpty = false
     def view = "index" -> ordering :: Nil
-    def innerQuery = query
+    def expr = exprFromView
   }
 
 }

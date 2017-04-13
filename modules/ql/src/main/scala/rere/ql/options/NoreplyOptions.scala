@@ -9,19 +9,19 @@ trait NoreplyOptions {
   case object DefaultNoreply extends NoreplyOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object Noreply extends NoreplyOptions {
     def isEmpty = false
     def view = "noreply" -> values.expr(true) :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object Reply extends NoreplyOptions {
     def isEmpty = false
     def view = "noreply" -> values.expr(false) :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
 }

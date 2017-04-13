@@ -10,13 +10,13 @@ trait DefaultOptions {
   case object Skip extends DefaultOptions {
     def isEmpty = true
     def view = Nil      // "default" -> false
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object NoSkip extends DefaultOptions {
     def isEmpty = false
     def view = "default" -> values.expr(true) :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   // special version of r.error without message
@@ -30,6 +30,6 @@ trait DefaultOptions {
   case object RethrowError extends DefaultOptions {
     def isEmpty = false
     def view = "default" -> rethrowError :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 }

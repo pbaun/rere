@@ -9,13 +9,13 @@ trait OverwriteOptions {
   case object NotOverwrite extends OverwriteOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object Overwrite extends OverwriteOptions {
     def isEmpty = false
     def view = "overwrite" -> values.expr(true) :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
 }

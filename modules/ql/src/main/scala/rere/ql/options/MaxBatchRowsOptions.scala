@@ -9,13 +9,13 @@ trait MaxBatchRowsOptions {
   case object DefaultMaxBatchRows extends MaxBatchRowsOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case class MaxBatchRows(n: Long) extends MaxBatchRowsOptions {
     def isEmpty = false
     def view = "max_batch_rows" -> values.expr(n) :: Nil
-    val innerQuery = query
+    def expr = exprFromView
   }
 
 }

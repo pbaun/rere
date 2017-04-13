@@ -9,19 +9,19 @@ trait CircleFillOptions {
   case object DefaultCircleFill extends CircleFillOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object FillCircle extends CircleFillOptions {
     def isEmpty = false
     def view = "fill" -> values.expr(true) :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object NotFillCircle extends CircleFillOptions {
     def isEmpty = false
     def view = "fill" -> values.expr(false) :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
 }

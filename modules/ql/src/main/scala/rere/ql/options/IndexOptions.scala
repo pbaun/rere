@@ -9,12 +9,12 @@ trait IndexOptions {
   case object DefaultIndex extends IndexOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case class Index(index: String) extends IndexOptions {
     def isEmpty = false
     def view = "index" -> values.expr(index) :: Nil
-    def innerQuery = query
+    def expr = exprFromView
   }
 }

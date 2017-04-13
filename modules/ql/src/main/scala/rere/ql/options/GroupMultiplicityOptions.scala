@@ -9,13 +9,13 @@ trait GroupMultiplicityOptions {
   case object DefaultGroupMultiplicity extends GroupMultiplicityOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object MultiGroup extends GroupMultiplicityOptions {
     def isEmpty = false
     def view = "multi" -> values.expr(true) :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
 }

@@ -7,13 +7,13 @@ trait HttpDataOptions { _: Classes =>
   case object WithoutHttpData extends HttpDataOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case class WithHttpData(data: HttpData) extends HttpDataOptions {
     def isEmpty = false
     def view = "data" -> data.toExpr :: Nil
-    def innerQuery = query
+    def expr = exprFromView
   }
 
 }

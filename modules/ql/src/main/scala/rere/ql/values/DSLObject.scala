@@ -16,8 +16,6 @@ trait DSLObject extends ReqlObject {
   def arguments = Nil
   def options = Options.empty
 
-  def isEmpty = pairs.isEmpty
-
   override def recursiveRasterizer: recursive.Rasterizer = {
     new recursive.ListOfDSLPairsRasterizer(pairs)
   }

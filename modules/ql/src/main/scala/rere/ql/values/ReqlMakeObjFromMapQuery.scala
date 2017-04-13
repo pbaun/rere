@@ -11,8 +11,6 @@ class ReqlMakeObjFromMapQuery(reqlObj: Map[String, ReqlDatum]) extends ReqlObjec
   def arguments = Nil
   def options = Options.empty
 
-  def isEmpty = reqlObj.isEmpty
-
   override def recursiveRasterizer: recursive.Rasterizer = {
     new recursive.ObjRasterizer(reqlObj)
   }

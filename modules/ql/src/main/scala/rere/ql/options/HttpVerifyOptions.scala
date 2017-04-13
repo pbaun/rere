@@ -10,25 +10,25 @@ trait HttpVerifyOptions {
   case object WithDefaultHttpVerify extends HttpVerifyOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object DoVerify extends HttpVerifyOptions {
     def isEmpty = false
     def view = "verify" -> values.expr(true) :: Nil
-    def innerQuery = query
+    val expr = exprFromView
   }
 
   case object DoNotVerify extends HttpVerifyOptions {
     def isEmpty = false
     def view = "verify" -> values.expr(false) :: Nil
-    def innerQuery = query
+    val expr = exprFromView
   }
 
   case class WithHttpVerify(verify: ReqlBoolean) extends HttpVerifyOptions {
     def isEmpty = false
     def view = "verify" -> verify :: Nil
-    def innerQuery = query
+    def expr = exprFromView
   }
 
 }

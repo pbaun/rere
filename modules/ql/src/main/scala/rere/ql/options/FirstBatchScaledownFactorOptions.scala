@@ -9,13 +9,13 @@ trait FirstBatchScaledownFactorOptions {
   case object DefaultFirstBatchScaledownFactor extends FirstBatchScaledownFactorOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case class FirstBatchScaledownFactor(factor: Long) extends FirstBatchScaledownFactorOptions {
     def isEmpty = false
     def view = "first_batch_scaledown_factor" -> values.expr(factor) :: Nil
-    val innerQuery = query
+    def expr = exprFromView
   }
 
 }

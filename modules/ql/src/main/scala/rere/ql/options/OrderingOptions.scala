@@ -9,13 +9,13 @@ trait OrderingOptions {
   case object NotOrdered extends OrderingOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object Ordered extends OrderingOptions {
     def isEmpty = false
     def view = "ordered" -> values.expr(true) :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
 }

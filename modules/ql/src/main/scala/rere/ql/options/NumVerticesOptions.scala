@@ -9,13 +9,13 @@ trait NumVerticesOptions {
   case object DefaultNumVertices extends NumVerticesOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case class NumVertices(n: Integer) extends NumVerticesOptions {
     def isEmpty = false
     def view = "num_vertices" -> values.expr(n) :: Nil
-    val innerQuery = query
+    def expr = exprFromView
   }
 
 }

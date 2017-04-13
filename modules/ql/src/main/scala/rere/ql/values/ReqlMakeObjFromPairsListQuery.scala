@@ -11,8 +11,6 @@ class ReqlMakeObjFromPairsListQuery(pairs: List[(String, ReqlDatum)]) extends Re
   def arguments = Nil
   def options = Options.empty
 
-  def isEmpty = pairs.isEmpty
-
   override def recursiveRasterizer: recursive.Rasterizer = {
     new recursive.ListOfPairsRasterizer(pairs)
   }

@@ -10,13 +10,13 @@ trait ReplicasOptions { this: Classes =>
   case object SingleReplica extends ReplicasOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case class Replicas(amount: Int) extends ReplicasOptions {
     def isEmpty = false
     def view = "replicas" -> values.expr(amount) :: Nil
-    def innerQuery = query
+    def expr = exprFromView
 
     def allVoting(): VotingReplicasOptions = {
       NonVotingReplicas(this.view, Nil)
@@ -33,7 +33,7 @@ trait ReplicasOptions { this: Classes =>
       "primary_replica_tag" -> values.expr(primary.tag) ::
       Nil
     }
-    def innerQuery = query
+    def expr = exprFromView
 
     def nonvoting(tags: ServerTag*): VotingReplicasOptions = {
       NonVotingReplicas(this.view, tags)
@@ -55,7 +55,7 @@ trait ReplicasOptions { this: Classes =>
         "nonvoting_replica_tags" -> values.expr(replicaTags) :: replicasConfigView //order already broken
       } else replicasConfigView
     }
-    def innerQuery = query
+    def expr = exprFromView
   }
 
 }

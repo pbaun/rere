@@ -9,13 +9,13 @@ trait DryRunOptions {
   case object RealRun extends DryRunOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object DryRun extends DryRunOptions {
     def isEmpty = false
     def view = "dry_run" -> values.expr(true) :: Nil
-    def innerQuery = query
+    val expr = exprFromView
   }
 
 }

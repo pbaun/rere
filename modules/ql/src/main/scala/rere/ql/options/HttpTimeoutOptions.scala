@@ -9,13 +9,13 @@ trait HttpTimeoutOptions {
   case object WithDefaultHttpTimeout extends HttpTimeoutOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case class WithHttpTimeout(seconds: ReqlNumber) extends HttpTimeoutOptions {
     def isEmpty = false
     def view = "timeout" -> seconds :: Nil
-    def innerQuery = query
+    def expr = exprFromView
   }
 
 }

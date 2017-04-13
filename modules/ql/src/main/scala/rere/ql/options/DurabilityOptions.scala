@@ -10,19 +10,19 @@ trait DurabilityOptions {
   case object DefaultDurability extends DurabilityOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object Hard extends DurabilityOptions {
     def isEmpty = false
     def view = "durability" -> values.expr("hard") :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object Soft extends DurabilityOptions {
     def isEmpty = false
     def view = "durability" -> values.expr("soft") :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
 }

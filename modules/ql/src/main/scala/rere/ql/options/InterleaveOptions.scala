@@ -9,20 +9,20 @@ trait InterleaveOptions {
   case object Mix extends InterleaveOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object PreventMixing extends InterleaveOptions {
     def isEmpty = false
     def view = "interleave" -> values.expr(false) :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   //TODO: MergeSort with function
   case class MergeSort(fieldName: String) extends InterleaveOptions {
     def isEmpty = false
     def view = "interleave" -> values.expr(fieldName) :: Nil
-    def innerQuery = query
+    def expr = exprFromView
   }
 
 }

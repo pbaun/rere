@@ -11,19 +11,19 @@ trait ConflictOptions {
   case class ErrorOnConflict[T, PK]() extends ConflictOptions[T, PK] {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case class ReplaceOnConflict[T, PK]() extends ConflictOptions[T, PK] {
     def isEmpty = false
     def view = "conflict" -> values.expr("replace") :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case class UpdateOnConflict[T, PK]() extends ConflictOptions[T, PK] {
     def isEmpty = false
     def view = "conflict" -> values.expr("update") :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   //TODO: id type
@@ -34,7 +34,7 @@ trait ConflictOptions {
   ) extends ConflictOptions[T, PK] {
     def isEmpty = false
     def view = "conflict" -> Func.wrap3(resolver) :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
 }

@@ -10,7 +10,7 @@ trait HttpAuthOptions {
   case object WithoutHttpAuth extends HttpAuthOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case class DefaultAuth(user: ReqlString, pass: ReqlString) extends HttpAuthOptions {
@@ -19,7 +19,7 @@ trait HttpAuthOptions {
       "user" -> user,
       "pass" -> pass
     )) :: Nil
-    def innerQuery = query
+    def expr = exprFromView
   }
 
   case class BasicAuth(user: ReqlString, pass: ReqlString) extends HttpAuthOptions {
@@ -29,7 +29,7 @@ trait HttpAuthOptions {
       "user" -> user,
       "pass" -> pass
     )) :: Nil
-    def innerQuery = query
+    def expr = exprFromView
   }
 
   case class DigestAuth(user: ReqlString, pass: ReqlString) extends HttpAuthOptions {
@@ -39,7 +39,7 @@ trait HttpAuthOptions {
       "user" -> user,
       "pass" -> pass
     )) :: Nil
-    def innerQuery = query
+    def expr = exprFromView
   }
 
   case class WithHttpAuth(authType: ReqlString, user: ReqlString, pass: ReqlString) extends HttpAuthOptions {
@@ -49,7 +49,7 @@ trait HttpAuthOptions {
       "user" -> user,
       "pass" -> pass
     )) :: Nil
-    def innerQuery = query
+    def expr = exprFromView
   }
 
 }

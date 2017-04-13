@@ -10,7 +10,7 @@ trait HttpParamsOptions { _: Classes =>
   case object WithoutHttpParams extends HttpParamsOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case class HttpParams(params: Seq[HttpQueryParam]) extends HttpParamsOptions {
@@ -21,7 +21,7 @@ trait HttpParamsOptions { _: Classes =>
       })
       "params" -> paramsObject :: Nil
     }
-    def innerQuery = query
+    def expr = exprFromView
   }
 
 }

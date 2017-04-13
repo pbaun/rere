@@ -9,13 +9,13 @@ trait PrimaryKeyOptions {
   case object DefaultPrimaryKey extends PrimaryKeyOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case class PrimaryKey(primaryKey: String) extends PrimaryKeyOptions {
     def isEmpty = false
     def view = "primary_key" -> values.expr(primaryKey) :: Nil
-    def innerQuery = query
+    def expr = exprFromView
   }
 
 }

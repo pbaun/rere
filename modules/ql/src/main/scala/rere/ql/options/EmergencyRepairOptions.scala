@@ -9,13 +9,13 @@ trait EmergencyRepairOptions {
   case object UnsafeRollback extends EmergencyRepairOptions {
     def isEmpty = false
     def view = "emergency_repair" -> values.expr("unsafe_rollback") :: Nil
-    def innerQuery = query
+    val expr = exprFromView
   }
 
   case object UnsafeRollbackOrErase extends EmergencyRepairOptions {
     def isEmpty = false
     def view = "emergency_repair" -> values.expr("unsafe_rollback_or_erase") :: Nil
-    def innerQuery = query
+    val expr = exprFromView
   }
 
 }

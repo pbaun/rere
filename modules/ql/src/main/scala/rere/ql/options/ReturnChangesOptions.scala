@@ -9,19 +9,19 @@ trait ReturnChangesOptions {
   case object DoNotReturnChanges extends ReturnChangesOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object DoReturnChanges extends ReturnChangesOptions {
     def isEmpty = false
     def view = "return_changes" -> values.expr(true) :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object AlwaysReturnChanges extends ReturnChangesOptions {
     def isEmpty = false
     def view = "return_changes" -> values.expr("always") :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
 }

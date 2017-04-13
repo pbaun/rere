@@ -9,13 +9,13 @@ trait RandomOptions {
   case object IntegerValues extends RandomOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object FloatValues extends RandomOptions {
     def isEmpty = false
     def view = "float" -> values.expr(true) :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
 }

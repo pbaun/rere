@@ -9,13 +9,13 @@ trait HttpAttemptsOptions {
   case object WithDefaultHttpAttempts extends HttpAttemptsOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case class WithHttpAttempts(attempts: ReqlInteger) extends HttpAttemptsOptions {
     def isEmpty = false
     def view = "attempts" -> attempts :: Nil
-    def innerQuery = query
+    def expr = exprFromView
   }
 
 }

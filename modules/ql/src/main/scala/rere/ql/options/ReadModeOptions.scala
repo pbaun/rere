@@ -9,25 +9,25 @@ trait ReadModeOptions {
   case object DefaultReadMode extends ReadModeOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object Single extends ReadModeOptions {
     def isEmpty = false
     def view = "read_mode" -> values.expr("single") :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object Majority extends ReadModeOptions {
     def isEmpty = false
     def view = "read_mode" -> values.expr("majority") :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object Outdated extends ReadModeOptions {
     def isEmpty = false
     def view = "read_mode" -> values.expr("outdated") :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
 }

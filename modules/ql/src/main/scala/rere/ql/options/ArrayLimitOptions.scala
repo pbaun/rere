@@ -9,13 +9,13 @@ trait ArrayLimitOptions {
   case object DefaultArrayLimit extends ArrayLimitOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case class ArrayLimit(limit: Long) extends ArrayLimitOptions {
     def isEmpty = false
     def view = "array_limit" -> values.expr(limit) :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
 }

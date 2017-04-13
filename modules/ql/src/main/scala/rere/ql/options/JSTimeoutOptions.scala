@@ -9,13 +9,13 @@ trait JSTimeoutOptions {
   case object WithDefaultJSTimeout extends JSTimeoutOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case class WithJSTimeout(seconds: ReqlNumber) extends JSTimeoutOptions {
     def isEmpty = false
     def view = "timeout" -> seconds :: Nil
-    def innerQuery = query
+    def expr = exprFromView
   }
 
 }

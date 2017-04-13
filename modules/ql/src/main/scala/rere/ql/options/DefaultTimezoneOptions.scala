@@ -9,13 +9,13 @@ trait DefaultTimezoneOptions {
   case object WithoutTimezone extends DefaultTimezoneOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case class DefaultTimezone(offset: ReqlString) extends DefaultTimezoneOptions {
     def isEmpty = false
     def view = "default_timezone" -> offset :: Nil
-    val innerQuery = query
+    def expr = exprFromView
   }
 
 }

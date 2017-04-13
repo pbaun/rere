@@ -23,11 +23,11 @@ trait BoundsOptions {
   case object DefaultBounds extends BoundsOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case class Bounds(leftBound: BoundType, rightBound: BoundType) extends BoundsOptions {
-    def isEmpty = innerQuery.isEmpty
+    def isEmpty = (leftBound == DefaultBound) && (rightBound == DefaultBound)
     def view: List[(String, ReqlValue)] = {
       val leftView = leftBound match {
         case DefaultBound => Nil
@@ -41,7 +41,7 @@ trait BoundsOptions {
 
       leftView ::: rightView
     }
-    def innerQuery = query
+    def expr = exprFromView
   }
 
 }

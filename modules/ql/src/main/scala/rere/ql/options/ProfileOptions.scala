@@ -9,19 +9,19 @@ trait ProfileOptions {
   case object DefaultProfile extends ProfileOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object DoProfile extends ProfileOptions {
     def isEmpty = false
     def view = "profile" -> values.expr(true) :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object DontProfile extends ProfileOptions {
     def isEmpty = false
     def view = "profile" -> values.expr(false) :: Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
 }

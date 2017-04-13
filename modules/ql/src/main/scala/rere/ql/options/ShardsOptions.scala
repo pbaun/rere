@@ -9,13 +9,13 @@ trait ShardsOptions {
   case object SingleShard extends ShardsOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case class Shards(amount: Int) extends ShardsOptions {
     def isEmpty = false
     def view = "shards" -> values.expr(amount) :: Nil
-    def innerQuery = query
+    def expr = exprFromView
   }
 
 }

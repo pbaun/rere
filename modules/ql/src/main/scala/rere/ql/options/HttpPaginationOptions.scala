@@ -7,13 +7,13 @@ trait HttpPaginationOptions { _: Classes =>
   case object WithoutHttpPagination extends HttpPaginationOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case class WithHttpPagination(page: PaginationNextPageStrategy, pageLimit: PaginationPageLimit) extends HttpPaginationOptions {
     def isEmpty = false
     def view = "page" -> page.toExpr :: "page_limit" -> pageLimit.toExpr :: Nil
-    def innerQuery = query
+    def expr = exprFromView
   }
 
 }

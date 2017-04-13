@@ -9,13 +9,13 @@ trait IndexTypeOptions {
   case object SimpleIndex extends IndexMultiplicityOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object MultiIndex extends IndexMultiplicityOptions {
     def isEmpty = false
     def view = "multi" -> values.expr(true) :: Nil
-    def innerQuery = query
+    val expr = exprFromView
   }
 
   sealed trait IndexNatureOptions extends ComposableOptions
@@ -23,13 +23,13 @@ trait IndexTypeOptions {
   case object RangeIndex extends IndexNatureOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case object GeoIndex extends IndexNatureOptions {
     def isEmpty = false
     def view = "geo" -> values.expr(true) :: Nil
-    def innerQuery = query
+    val expr = exprFromView
   }
 
 }

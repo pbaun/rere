@@ -21,7 +21,7 @@ trait EmitOptions {
 
     def isEmpty = false
     def view = "emit" -> Func.wrap3(emitFunction) :: Nil
-    def innerQuery = query
+    def expr = exprFromView
   }
 
   // usually compiler can't infer this types and they should be specified explicitly
@@ -36,7 +36,7 @@ trait EmitOptions {
 
     def isEmpty = false
     def view = "emit" -> Func.wrap3(emitFunction) :: "final_emit" -> Func.wrap1(finalEmit) :: Nil
-    def innerQuery = query
+    def expr = exprFromView
   }
 
 }

@@ -9,13 +9,13 @@ trait MaxBatchBytesOptions {
   case object DefaultMaxBatchBytes extends MaxBatchBytesOptions {
     def isEmpty = true
     def view = Nil
-    val innerQuery = query
+    val expr = exprFromView
   }
 
   case class MaxBatchBytes(bytes: Long) extends MaxBatchBytesOptions {
     def isEmpty = false
     def view = "max_batch_bytes" -> values.expr(bytes) :: Nil
-    val innerQuery = query
+    def expr = exprFromView
   }
 
 }
