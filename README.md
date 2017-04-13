@@ -1,6 +1,7 @@
 # rere
 
 [![Build status](https://travis-ci.org/pbaun/rere.svg?branch=master)](https://travis-ci.org/pbaun/rere)
+[![Coverage status](https://codecov.io/gh/pbaun/rere/branch/master/graph/badge.svg?branch=master)](https://codecov.io/gh/pbaun/rere?branch=master)
 
 Reactive [RethinkDB][rethinkdb] driver for Scala
 
