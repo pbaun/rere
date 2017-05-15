@@ -9,7 +9,6 @@ lazy val compilerOptions = Seq(
   "-language:implicitConversions",
   "-unchecked",
   "-Xfatal-warnings",
-  "-Xlint",
   "-Yno-adapted-args",
   "-Ywarn-dead-code",
   "-Ywarn-numeric-widen",
@@ -21,7 +20,8 @@ lazy val baseSettings = Seq(
   scalacOptions := compilerOptions ++ (
     // Some imports are used only on scala 2.11; on 2.12 they are not used
     CrossVersion.partialVersion(scalaVersion.value) match {
-      case Some((2, p)) if p == 11 => Seq("-Ywarn-unused-import")
+      case Some((2, p)) if p == 12 => Seq("-Xlint:-unused,_")               // https://github.com/scala/scala/pull/5402
+      case Some((2, p)) if p == 11 => Seq("-Xlint", "-Ywarn-unused-import")
       case _ => Nil
     }
   ),
