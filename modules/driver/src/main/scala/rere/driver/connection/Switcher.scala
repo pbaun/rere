@@ -1,9 +1,10 @@
 package rere.driver.connection
 
+import akka.event.LoggingAdapter
 import akka.stream._
+import akka.stream.scaladsl.{Flow, GraphDSL}
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.util.ByteString
-import rere.driver.util.StreamsDebugging
 
 import scala.annotation.unchecked.uncheckedVariance
 import scala.collection.immutable
@@ -34,7 +35,9 @@ class BidiMergeShape[-In1, -In2, +Out1, -In3, +Out2, +Out3](
   def reversed: Shape = copyFromPorts(inlets.reverse, outlets.reverse)
 }
 
-class Switcher extends GraphStage[BidiMergeShape[ByteString, ByteString, ByteString, ByteString, ByteString, ByteString]] {
+class Switcher(
+    logger: LoggingAdapter
+  ) extends GraphStage[BidiMergeShape[ByteString, ByteString, ByteString, ByteString, ByteString, ByteString]] {
 
   val authToServer = Inlet[ByteString]("Switcher.authToServer")
   val dataToServer = Inlet[ByteString]("Switcher.dataToServer")
@@ -49,13 +52,11 @@ class Switcher extends GraphStage[BidiMergeShape[ByteString, ByteString, ByteStr
   override def createLogic(att: Attributes): GraphStageLogic =
     new GraphStageLogic(shape) {
 
-      def log(x: Any) = StreamsDebugging.log(x)
-
       var authCompleted = false
 
       setHandler(authToServer, new InHandler {
         override def onPush(): Unit = {
-          log("onPush authToServer")
+          logger.debug("onPush authToServer")
           if (!authCompleted) {
             push(toServer, grab(authToServer))
           } else {
@@ -64,21 +65,21 @@ class Switcher extends GraphStage[BidiMergeShape[ByteString, ByteString, ByteStr
         }
 
         override def onUpstreamFinish(): Unit = {
-          log("onFinish authToServer")
+          logger.debug("onFinish authToServer")
           complete(authFromServer)
 
           if (isAvailable(toServer)) {
-            log("+dataToServer+")
+            logger.debug("+dataToServer+")
             pull(dataToServer)
           } else {
-            log("-dataToServer-")
+            logger.debug("-dataToServer-")
           }
 
           if (isAvailable(dataFromServer)) {
-            log("+fromServer+")
+            logger.debug("+fromServer+")
             pull(fromServer)
           } else {
-            log("-fromServer-")
+            logger.debug("-fromServer-")
           }
 
           authCompleted = true
@@ -87,7 +88,7 @@ class Switcher extends GraphStage[BidiMergeShape[ByteString, ByteString, ByteStr
 
       setHandler(dataToServer, new InHandler {
         override def onPush(): Unit = {
-          log("onPush dataToServer")
+          logger.debug("onPush dataToServer")
           if (authCompleted) {
             push(toServer, grab(dataToServer))
           } else {
@@ -96,14 +97,14 @@ class Switcher extends GraphStage[BidiMergeShape[ByteString, ByteString, ByteStr
         }
 
         override def onUpstreamFinish(): Unit = {
-          log("onFinish dataToServer")
+          logger.debug("onFinish dataToServer")
           complete(toServer)
         }
       })
 
       setHandler(toServer, new OutHandler {
         override def onPull(): Unit = {
-          log("onPull toServer")
+          logger.debug("onPull toServer")
           if (!authCompleted) {
             pull(authToServer)
           } else {
@@ -114,7 +115,7 @@ class Switcher extends GraphStage[BidiMergeShape[ByteString, ByteString, ByteStr
 
       setHandler(fromServer, new InHandler {
         override def onPush(): Unit = {
-          log("onPush fromServer")
+          logger.debug("onPush fromServer")
           if (!authCompleted) {
             push(authFromServer, grab(fromServer))
           } else {
@@ -125,7 +126,7 @@ class Switcher extends GraphStage[BidiMergeShape[ByteString, ByteString, ByteStr
 
       setHandler(authFromServer, new OutHandler {
         override def onPull(): Unit = {
-          log("onPull authFromServer")
+          logger.debug("onPull authFromServer")
           if (!authCompleted) {
             pull(fromServer)
           }
@@ -134,7 +135,7 @@ class Switcher extends GraphStage[BidiMergeShape[ByteString, ByteString, ByteStr
 
       setHandler(dataFromServer, new OutHandler {
         override def onPull(): Unit = {
-          log("onPull dataFromServer")
+          logger.debug("onPull dataFromServer")
           if (authCompleted) {
             pull(fromServer)
           }
@@ -144,3 +145,26 @@ class Switcher extends GraphStage[BidiMergeShape[ByteString, ByteString, ByteStr
 
 }
 
+object Switcher {
+  def toDataFlow[M1, M2](
+    connection: Flow[ByteString, ByteString, M1],
+    commander: Flow[ByteString, ByteString, M2],
+    switcherLogger: LoggingAdapter
+  ): Flow[ByteString, ByteString, M1] = {
+    Flow.fromGraph(GraphDSL.create(
+      connection, commander, new Switcher(switcherLogger)) {
+      (connectionM, commanderM, switcherM) => connectionM
+    } { implicit builder =>
+      (connection, commander, switcher) =>
+
+        import GraphDSL.Implicits._
+
+        commander.out ~> switcher.in1
+        switcher.out1 ~> connection.in
+        switcher.in3  <~ connection.out
+        commander.in  <~ switcher.out2
+
+        FlowShape.of(switcher.in2, switcher.out3)
+    })
+  }
+}

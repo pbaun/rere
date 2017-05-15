@@ -1,16 +1,31 @@
 package rere.driver.pool
 
+import akka.Done
 import akka.actor.ActorSystem
-import rere.driver.logger.impl.VerboseLogger
-import rere.driver.pool.impl.{P2CConnectionPool, P2CConnectionPoolActor}
+import akka.stream.scaladsl.Sink
+import rere.driver.pool.impl.StreamPool
 import rere.driver.{ConnectionSettings, Credentials}
+import rere.ql.options.Options
+import rere.ql.types.ReqlExpr
+import rere.ql.wire.ReqlDecoder
 
 import scala.concurrent.Future
-import scala.concurrent.duration._
 
 trait ConnectionPool {
-  def send(message: ConnectionPoolIncomingMessages): Unit
-  def shutdown(): Future[ConnectionPoolShutdownResult]
+  def runAtom[Expr <: ReqlExpr, Out](
+    expr: Expr,
+    runOptions: Options,
+    reqlDecoder: ReqlDecoder[Out]
+  ): Future[Out]
+
+  def runStream[Expr <: ReqlExpr, Out, OutMat](
+    expr: Expr,
+    runOptions: Options,
+    reqlDecoder: ReqlDecoder[Out],
+    outSink: Sink[Out, OutMat]
+  ): OutMat
+
+  def shutdown(): Future[Done]
 }
 
 object ConnectionPool {
@@ -18,18 +33,10 @@ object ConnectionPool {
     credentials: Credentials,
     connectionSettings: ConnectionSettings,
     poolName: String,
-    poolSize: Int,
-    reconnectTimeout: FiniteDuration = 1.second
-  )(
+    poolSize: Int)(
     implicit system: ActorSystem
   ): ConnectionPool = {
-    val logger = new VerboseLogger()
-    val connectionPoolActorRef = system.actorOf(
-      P2CConnectionPoolActor.props(
-        credentials, connectionSettings, poolSize, reconnectTimeout, logger
-      ),
-      poolName
-    )
-    new P2CConnectionPool(connectionPoolActorRef, logger)
+    val defaultPoolSettings = ConnectionPoolSettings(poolName, poolSize)
+    new StreamPool(credentials, connectionSettings, defaultPoolSettings, system)
   }
 }

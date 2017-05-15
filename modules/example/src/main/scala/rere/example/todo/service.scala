@@ -15,8 +15,7 @@ class TaskService(pool: ConnectionPool)(implicit executor: ExecutionContext) {
   import rere.ql.queries.all._
 
   def list(): Future[Seq[Task]] = {
-    val (seq, _) = tasks.table().run(pool).drainTo(Sink.seq[Task])
-    seq.flatMap(identity)
+    tasks.table().run(pool).drainTo(Sink.seq[Task])
   }
 
   def create(task: Task): Future[Option[UUID]] = {
@@ -31,9 +30,8 @@ class TaskService(pool: ConnectionPool)(implicit executor: ExecutionContext) {
     }
   }
 
-  def subscribeToChanges[Mat](sink: Sink[ChangefeedNotification[Task], Mat]): Future[Mat] = {
-    val (mat, _) = tasks.table().changes().run(pool).drainTo(sink)
-    mat
+  def subscribeToChanges[Mat](sink: Sink[ChangefeedNotification[Task], Mat]): Mat = {
+    tasks.table().changes().run(pool).drainTo(sink)
   }
 
 }

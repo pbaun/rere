@@ -4,6 +4,7 @@ import java.nio.ByteOrder
 import java.nio.charset.Charset
 
 import akka.NotUsed
+import akka.event.LoggingAdapter
 import akka.stream.scaladsl.{Flow, Framing, GraphDSL}
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
@@ -11,7 +12,6 @@ import akka.util.ByteString
 import cats.syntax.either._
 import io.circe.syntax._
 import rere.driver.exceptions.{ReqlAuthError, ReqlDriverError}
-import rere.driver.util.StreamsDebugging
 import rere.ql.ql2
 import rere.sasl.gs2.ChannelBindingFlag
 import rere.sasl.scram.client._
@@ -21,7 +21,8 @@ import rere.sasl.scram.rendering.SCRAMRenderer
 class AuthCommander(
     scramClient: ClientFirstStep,
     login: String,
-    password: String)
+    password: String,
+    logger: LoggingAdapter)
   extends GraphStage[FlowShape[ByteString, ByteString]] {
 
   val fromServer = Inlet[ByteString]("Commander.fromServer")
@@ -83,7 +84,7 @@ class AuthCommander(
       setHandler(fromServer, new InHandler {
         private def handleServerSentError(msg: String, nextHandler: String => Unit): Unit = {
           val successOrErrorXor = decode[GeneralServerMessage](msg)
-          StreamsDebugging.log(successOrErrorXor)
+          logger.debug("Server sent error: {}", successOrErrorXor)
 
           successOrErrorXor match {
             case Right(successOrError) =>
@@ -102,7 +103,7 @@ class AuthCommander(
         }
 
         override def onPush(): Unit = {
-          StreamsDebugging.log(s"onPush [$stage]")
+          logger.debug("onPush [{}]", stage)
           //answers from server
           //push(toServer, grab(fromServer))
           stage match {
@@ -136,15 +137,15 @@ class AuthCommander(
               handleServerSentError(grab(fromServer).utf8String, { msgString =>
                 decode[FirstServerAuthMessage](msgString) match {
                   case Right(authMessage) =>
-                    StreamsDebugging.log(authMessage)
+                    logger.debug("Auth message: {}", authMessage)
 
                     val parser = new SCRAMParser(authMessage.authentication)
                     Either.fromTry(parser.`server-first-message`.run()) match {
                       case Right(serverFirstMessage) =>
 
-                        StreamsDebugging.log("before processing")
+                        logger.debug("before processing")
                         val processingResult = secondStepClient.process(serverFirstMessage)
-                        StreamsDebugging.log("after processing")
+                        logger.debug("after processing")
 
                         processingResult match {
                           case Right(nextStepClient) =>
@@ -179,19 +180,19 @@ class AuthCommander(
               handleServerSentError(grab(fromServer).utf8String, { msgString =>
                 decode[FinalServerAuthMessage](msgString) match {
                   case Right(authMessage) =>
-                    StreamsDebugging.log(authMessage)
+                    logger.debug("Auth message: {}", authMessage)
 
                     val parser = new SCRAMParser(authMessage.authentication)
                     Either.fromTry(parser.`server-final-message`.run()) match {
                       case Right(serverFinalMessage) =>
 
-                        StreamsDebugging.log("before processing")
+                        logger.debug("before processing")
                         val processingResult = finalStepClient.process(serverFinalMessage)
-                        StreamsDebugging.log("after processing")
+                        logger.debug("after processing")
 
                         processingResult match {
                           case Right(authStatus) =>
-                            StreamsDebugging.log(s"Auth done: $authStatus")
+                            logger.debug(s"Auth done: {}", authStatus)
                             complete(toServer)
 
                           case Left(authError) =>
@@ -216,14 +217,14 @@ class AuthCommander(
         }
 
         override def onUpstreamFinish(): Unit = {
-          StreamsDebugging.log("auth from server finish")
-          completeStage()
+          logger.debug("auth from server finish")
+          super.onUpstreamFinish()
         }
       })
 
       setHandler(toServer, new OutHandler {
         override def onPull(): Unit = {
-          StreamsDebugging.log(s"onPull [$stage]")
+          logger.debug("onPull [{}]", stage)
 
           stage match {
             case INITIAL =>

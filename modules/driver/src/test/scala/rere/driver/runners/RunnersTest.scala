@@ -2,15 +2,14 @@ package rere.driver.runners
 
 import java.time.ZonedDateTime
 
-import akka.Done
 import akka.stream.scaladsl.Sink
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FlatSpec, Inside, Matchers}
-import rere.driver.pool.{AcquireConnection, ConnectionPool, ConnectionPoolIncomingMessages}
-import rere.driver.protocol.{Atom, Stream}
-import rere.driver.runners.ready.{FiniteStreamReadyToGo, InfiniteStreamReadyToGo, SingleValueReadyToGo}
+import rere.driver.pool.ConnectionPool
+import rere.driver.runners.ready._
 import rere.ql.data.{ChangefeedNotification, ModificationResult}
 import rere.ql.shapes.{CirceShape, DatabaseShape}
+import rere.ql.types.{ReqlChangefeedNotification, ReqlFiniteStream, ReqlInfiniteStream, ReqlInteger}
 
 import scala.concurrent.Future
 
@@ -46,14 +45,13 @@ class RunnersTest extends FlatSpec with Matchers with MockFactory with Inside {
     import rere.ql.queries.all._
 
     val pool = stub[ConnectionPool]
-    val f: Future[ZonedDateTime] = r.now().run(pool).future()
+    val q = r.now()
+    val f: Future[ZonedDateTime] = q.run(pool).future()
 
-    pool.send _ verify where { msg: ConnectionPoolIncomingMessages =>
-      inside(msg) {
-        case AcquireConnection(responseType, _, _) =>
-          responseType shouldBe Atom
-          true
-      }
+    pool.runAtom _ verify where { case (expr, options, decoder) =>
+      expr shouldBe q
+      options.isEmpty shouldBe true
+      true
     }
   }
 
@@ -72,14 +70,13 @@ class RunnersTest extends FlatSpec with Matchers with MockFactory with Inside {
     import rere.ql.queries.all._
 
     val pool = stub[ConnectionPool]
-    val f: Future[JsonObject] = r.table[JsonObject, String]("abc").get("uuid").run(pool).future()
+    val q = r.table[JsonObject, String]("abc").get("uuid")
+    val f: Future[JsonObject] = q.run(pool).future()
 
-    pool.send _ verify where { msg: ConnectionPoolIncomingMessages =>
-      inside(msg) {
-        case AcquireConnection(responseType, _, _) =>
-          responseType shouldBe Atom
-          true
-      }
+    pool.runAtom _ verify where { case (expr, options, decoder) =>
+      expr shouldBe q
+      options.isEmpty shouldBe true
+      true
     }
   }
 
@@ -101,14 +98,13 @@ class RunnersTest extends FlatSpec with Matchers with MockFactory with Inside {
 
     implicit val abcShape = AbcShape
 
-    val f: Future[Abc] = TestDatabase.abc.table().get("uuid").run(pool).future()
+    val q = TestDatabase.abc.table().get("uuid")
+    val f: Future[Abc] = q.run(pool).future()
 
-    pool.send _ verify where { msg: ConnectionPoolIncomingMessages =>
-      inside(msg) {
-        case AcquireConnection(responseType, _, _) =>
-          responseType shouldBe Atom
-          true
-      }
+    pool.runAtom _ verify where { case (expr, options, decoder) =>
+      expr shouldBe q
+      options.isEmpty shouldBe true
+      true
     }
   }
 
@@ -127,16 +123,17 @@ class RunnersTest extends FlatSpec with Matchers with MockFactory with Inside {
     val pool = stub[ConnectionPool]
 
     val sink = Sink.seq[Long]
-    val (futureMat: Future[Future[Seq[Long]]], futureDone: Future[Done]) =
-      r.range(0, 1000).run(pool).drainTo(sink)
+    val q = r.range(0, 1000)
+    val futureMat: Future[Seq[Long]] = q.run(pool).drainTo(sink)
 
-    pool.send _ verify where { msg: ConnectionPoolIncomingMessages =>
-      inside(msg) {
-        case AcquireConnection(responseType, _, _) =>
-          responseType shouldBe Stream
+    pool.runStream[ReqlFiniteStream[ReqlInteger], Long, Future[Seq[Long]]] _ verify
+      where {
+        case (expr, options, decoder, runSink) =>
+          expr shouldBe q
+          options.isEmpty shouldBe true
+          runSink shouldBe sink
           true
       }
-    }
   }
 
   it should "not actually run infinite stream selection query after .run call" in {
@@ -154,16 +151,17 @@ class RunnersTest extends FlatSpec with Matchers with MockFactory with Inside {
     val pool = stub[ConnectionPool]
 
     val sink = Sink.seq[Long]
-    val (futureMat: Future[Future[Seq[Long]]], futureDone: Future[Done]) =
-      r.range().run(pool).drainTo(sink)
+    val q = r.range()
+    val futureMat: Future[Seq[Long]] = q.run(pool).drainTo(sink)
 
-    pool.send _ verify where { msg: ConnectionPoolIncomingMessages =>
-      inside(msg) {
-        case AcquireConnection(responseType, _, _) =>
-          responseType shouldBe Stream
+    pool.runStream[ReqlInfiniteStream[ReqlInteger], Long, Future[Seq[Long]]] _ verify
+      where {
+        case (expr, options, decoder, runSink) =>
+          expr shouldBe q
+          options.isEmpty shouldBe true
+          runSink shouldBe sink
           true
       }
-    }
   }
 
   it should "not actually run changefeed selection query after .run call" in {
@@ -187,16 +185,17 @@ class RunnersTest extends FlatSpec with Matchers with MockFactory with Inside {
     implicit val abcShape = AbcShape
 
     val sink = Sink.seq[ChangefeedNotification[Abc]]
-    val (futureMat: Future[Future[Seq[ChangefeedNotification[Abc]]]], futureDone: Future[Done]) =
-      TestDatabase.abc.table().get("uuid").changes().run(pool).drainTo(sink)
+    val q = TestDatabase.abc.table().get("uuid").changes()
+    val futureMat: Future[Seq[ChangefeedNotification[Abc]]] = q.run(pool).drainTo(sink)
 
-    pool.send _ verify where { msg: ConnectionPoolIncomingMessages =>
-      inside(msg) {
-        case AcquireConnection(responseType, _, _) =>
-          responseType shouldBe Stream
+    pool.runStream[ReqlInfiniteStream[ReqlChangefeedNotification[Abc]], ChangefeedNotification[Abc], Future[Seq[Long]]] _ verify
+      where {
+        case (expr, options, decoder, runSink) =>
+          expr shouldBe q
+          options.isEmpty shouldBe true
+          runSink shouldBe sink
           true
       }
-    }
   }
 
   it should "not actually run single model insertion query after .run call" in {
@@ -221,14 +220,13 @@ class RunnersTest extends FlatSpec with Matchers with MockFactory with Inside {
     implicit val abcShape = AbcShape
     val model: Abc = Abc("123", Some("abc name"))
 
-    val f: Future[ModificationResult[Abc, String]] = TestDatabase.abc.table().insert(model).run(pool).future()
+    val q = TestDatabase.abc.table().insert(model)
+    val f: Future[ModificationResult[Abc, String]] = q.run(pool).future()
 
-    pool.send _ verify where { msg: ConnectionPoolIncomingMessages =>
-      inside(msg) {
-        case AcquireConnection(responseType, _, _) =>
-          responseType shouldBe Atom
-          true
-      }
+    pool.runAtom _ verify where { case (expr, options, decoder) =>
+      expr shouldBe q
+      options.isEmpty shouldBe true
+      true
     }
   }
 
@@ -254,15 +252,13 @@ class RunnersTest extends FlatSpec with Matchers with MockFactory with Inside {
 
     val obj = JsonObject.fromMap(Map("field" -> Json.fromString("data")))
 
-    val f: Future[ModificationResult[JsonObject, String]] =
-      r.db("test").table[JsonObject, String]("abc").insert(obj).run(pool).future()
+    val q = r.db("test").table[JsonObject, String]("abc").insert(obj)
+    val f: Future[ModificationResult[JsonObject, String]] = q.run(pool).future()
 
-    pool.send _ verify where { msg: ConnectionPoolIncomingMessages =>
-      inside(msg) {
-        case AcquireConnection(responseType, _, _) =>
-          responseType shouldBe Atom
-          true
-      }
+    pool.runAtom _ verify where { case (expr, options, decoder) =>
+      expr shouldBe q
+      options.isEmpty shouldBe true
+      true
     }
   }
 

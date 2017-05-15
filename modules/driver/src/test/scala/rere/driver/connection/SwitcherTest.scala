@@ -1,6 +1,7 @@
 package rere.driver.connection
 
 import akka.actor.ActorSystem
+import akka.event.Logging
 import akka.stream._
 import akka.stream.scaladsl.{GraphDSL, RunnableGraph}
 import akka.stream.testkit.scaladsl.{TestSink, TestSource}
@@ -8,7 +9,7 @@ import akka.testkit.TestKit
 import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
 import org.scalatest.{FlatSpecLike, Matchers}
-import rere.driver.util.StreamsDebugging
+
 import scala.concurrent.duration._
 
 class SwitcherTest
@@ -18,9 +19,10 @@ class SwitcherTest
 
   trait mocks {
 
-    val verbose = StreamsDebugging.verbose
-    def logStart(tag: String): Unit = if (verbose) println(s"start $tag")
-    def logEnd(tag: String): Unit = if (verbose) println(s"end $tag")
+    val logger = Logging(system, "switcher-test")
+
+    def logStart(tag: String): Unit = logger.debug("start {}", tag)
+    def logEnd(tag: String): Unit = logger.debug("end {}", tag)
 
     implicit val mat = ActorMaterializer(
       ActorMaterializerSettings.create(system).withInputBuffer(16, 16)
@@ -34,7 +36,7 @@ class SwitcherTest
         TestSource.probe[ByteString],
         TestSink.probe[ByteString],
         TestSink.probe[ByteString],
-        new Switcher
+        new Switcher(logger)
       ) (
         (authSource, dataSource, toServerSink, fromServerSource, authSink, dataSink, switcher) =>
           (authSource, dataSource, toServerSink, fromServerSource, authSink, dataSink, switcher)
@@ -317,7 +319,7 @@ object SwitcherTest {
 
   val config = """
     akka {
-      loglevel = "WARNING"
+      loglevel = "DEBUG"
     }
   """
 }

@@ -7,22 +7,21 @@ import rere.ql.options.Options
 import rere.ql.types.{ReqlDatum, ReqlExpr, ReqlFiniteStreamLike}
 
 trait FiniteStreamRunners {
-
-  implicit class RunOnReqlFiniteStream[InnerExpr <: ReqlDatum](val expr: ReqlFiniteStreamLike[InnerExpr]) {
-    def run[ScalaType, Mat](
+  implicit class RunOnReqlFiniteStream[InnerExpr <: ReqlDatum](expr: ReqlFiniteStreamLike[InnerExpr]) {
+    def run[ScalaType, OutMat](
       pool: ConnectionPool)(
       implicit inference: AutoInference.Aux[InnerExpr, ScalaType]
-    ): FiniteStreamReadyToGo[ScalaType, Mat] = {
+    ): FiniteStreamReadyToGo[ScalaType, OutMat] = {
       val runOptions = Options.EmptyOptions
       new ReadyToGoFiniteStreamInferred(pool, expr, runOptions, inference)
     }
   }
 
-  class ReadyToGoFiniteStreamInferred[Expr <: ReqlExpr, InnerExpr <: ReqlExpr, Out, Mat](
+  class ReadyToGoFiniteStreamInferred[Expr <: ReqlExpr, InnerExpr <: ReqlExpr, Out, OutMat](
     pool: ConnectionPool,
     expr: Expr,
     runOptions: Options,
     inference: AutoInference.Aux[InnerExpr, Out]
-  ) extends ReadyToGoStreamInferred[Expr, InnerExpr, Out, Mat](pool, expr, runOptions, inference)
-    with FiniteStreamReadyToGo[Out, Mat]
+  ) extends ReadyToGoStreamInferred[Expr, InnerExpr, Out, OutMat](pool, expr, runOptions, inference)
+    with FiniteStreamReadyToGo[Out, OutMat]
 }

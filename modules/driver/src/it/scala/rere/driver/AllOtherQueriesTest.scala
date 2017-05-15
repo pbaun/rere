@@ -207,9 +207,11 @@ class AllOtherQueriesTest extends WordSpec with ScalaFutures with Matchers with 
 
     "receive changefeeds" ignore {
       val counter = new AtomicLong(0)
-      val sinkCF = Flow[ChangefeedNotification[Abc]].toMat(Sink.foreach { change =>
-        println(s"@@Sink: ${counter.getAndIncrement()} $change")
-      })(Keep.right)
+      val sinkCF = Flow[ChangefeedNotification[Abc]]
+        .watchTermination()(Keep.both)
+        .toMat(Sink.foreach { change =>
+          println(s"@@Sink: ${counter.getAndIncrement()} $change")
+        })(Keep.left)
 
       implicit val abcShape = AbcShape
 

@@ -6,8 +6,8 @@ import rere.ql.ql2.Response.{ErrorType, ResponseType}
 
 final case class ReqlResponse(
   responseType: Int,
-  data: List[Json],
-  profile: Option[List[Json]],
+  data: Vector[Json],
+  profile: Option[Vector[Json]],
   backtrace: Option[Json],
   errorType: Option[Json]
 )
@@ -20,8 +20,8 @@ object ReqlResponse {
     Decoder.instance(c =>
       for {
         responseType <- c.downField("t").as[Int]
-        data <- c.downField("r").as[List[Json]]
-        profile <- c.downField("p").as[Option[List[Json]]]
+        data <- c.downField("r").as[Vector[Json]]
+        profile <- c.downField("p").as[Option[Vector[Json]]]
         backtrace <- c.downField("b").as[Option[Json]]
         errorType <- c.downField("e").as[Option[Json]]
       } yield ReqlResponse(responseType, data, profile, backtrace, errorType)

@@ -1,108 +1,138 @@
 package rere.driver.workers
 
-import akka.actor.{Actor, ActorRef, Props}
+import akka.event.LoggingAdapter
+import akka.stream.stage._
+import akka.stream.{Attributes, Inlet, Outlet}
 import rere.driver.connection.LogicalConnectionProtocol
-import rere.driver.exceptions.{ReqlDecodeError, ReqlDriverError, ReqlQueryFailedException, ReqlQueryShutdownException}
-import rere.driver.logger.{ATOM_WORKER, Logger}
-import rere.driver.protocol._
+import rere.driver.connection.LogicalConnectionProtocol.{RawResponse, RenderedCommand}
+import rere.driver.exceptions.{ReqlDecodeError, ReqlDriverError, ReqlQueryFailedException}
+import rere.driver.protocol.{ReqlCommand, ReqlResponse, ReqlStartCommand}
 import rere.ql.options.Options
 import rere.ql.ql2.Response.ResponseType
 import rere.ql.types.ReqlExpr
 import rere.ql.wire.ReqlDecoder
 
-import scala.concurrent.Promise
+import scala.concurrent.{Future, Promise}
 
 class AtomQueryWorker[Expr <: ReqlExpr, Out](
     expr: Expr,
     runOptions: Options,
     reqlDecoder: ReqlDecoder[Out],
-    resultPromise: Promise[Out],
-    connectionRef: ActorRef,
-    logger: Logger
-  ) extends Actor {
+    logger: LoggingAdapter
+  ) extends GraphStageWithMaterializedValue[AtomWorkerShape[
+    RawResponse,
+    RenderedCommand
+  ], Future[Out]] {
 
-  override def preStart(): Unit = {
-    logger.log(ATOM_WORKER, self.toString(), "Start done")
-    val command = new ReqlStartCommand[Expr](expr, runOptions)
-    connectionRef ! LogicalConnectionProtocol.RenderedCommand(ReqlCommand.render(command), generateToken = true)
-  }
+  private val dbResponses = Inlet[RawResponse]("AtomQueryWorker.dbResponses")
+  private val commands = Outlet[RenderedCommand]("AtomQueryWorker.commands")
 
-  override def postStop(): Unit = {
-    context.parent ! QueryWorkerProtocol.ShutdownComplete(connectionRef, self)
-    logger.log(ATOM_WORKER, self.toString(), "Stop done")
-  }
+  val shape = new AtomWorkerShape(dbResponses, commands)
 
-  override def receive: Receive = {
-    case rawResponse: LogicalConnectionProtocol.RawResponse =>
-      ReqlResponse.decode(rawResponse.body) match {
-        case Left(failure) =>
-          resultPromise.tryFailure(new ReqlDecodeError(
-            s"Can't decode response. Query will be finished with error. $failure"
-          ))
+  override def createLogicAndMaterializedValue(inheritedAttributes: Attributes): (GraphStageLogic, Future[Out]) = {
+    val resultPromise = Promise[Out]()
+    val logic = new GraphStageLogic(shape) {
 
-        case Right(response) =>
-          logger.log(ATOM_WORKER, self.toString(), response.toString)
+      var notStarted = true
+      var waitingForResponse = false
 
-          response.responseType match {
-            case ResponseType.SUCCESS_ATOM =>
-              response.data match {
-                case data :: _ =>
-                  reqlDecoder.decode(data) match {
-                    case Right(out) =>
-                      resultPromise.trySuccess(out)
+      override def preStart(): Unit = {
+        logger.debug("AtomQueryWorker.preStart")
+      }
 
-                    case Left(error) =>
-                      resultPromise.tryFailure(new ReqlDecodeError(
-                        s"Can't decode atom element. Query will be finished with error. $error"
+      override def postStop(): Unit = {
+        logger.debug("AtomQueryWorker.postStop")
+        resultPromise.tryFailure(new NoSuchElementException)
+        ()
+      }
+
+      private def tryToCompleteWithResult(result: Out): Unit = {
+        resultPromise.trySuccess(result)
+        completeStage()
+      }
+
+      private def tryToCompleteWithError(cause: Throwable): Unit = {
+        resultPromise.tryFailure(cause)
+        failStage(cause)
+      }
+
+      setHandler(dbResponses, new InHandler {
+        override def onPush(): Unit = {
+          logger.debug("dbResponses.onPush")
+          waitingForResponse = false
+          val rawResponse = grab(dbResponses)
+
+          ReqlResponse.decode(rawResponse.body) match {
+            case Left(failure) =>
+              tryToCompleteWithError(new ReqlDecodeError(
+                s"Can't decode response. Query will be finished with error. $failure"
+              ))
+
+            case Right(response) =>
+              response.responseType match {
+                case ResponseType.SUCCESS_ATOM =>
+                  response.data match {
+                    case Vector(data) =>
+                      reqlDecoder.decode(data) match {
+                        case Right(out) =>
+                          tryToCompleteWithResult(out)
+
+                        case Left(error) =>
+                          tryToCompleteWithError(new ReqlDecodeError(
+                            s"Can't decode atom element. Query will be finished with error. $error"
+                          ))
+                      }
+
+                    case _ =>
+                      tryToCompleteWithError(new ReqlDecodeError(
+                        "Response contains not exactly 1 element. Query will be finished with error."
                       ))
                   }
 
-                case _ =>
-                  resultPromise.tryFailure(new ReqlDecodeError(
-                    "Response contains not exactly 1 element. Query will be finished with error."
+                case ResponseType.SUCCESS_SEQUENCE | ResponseType.SUCCESS_PARTIAL =>
+                  tryToCompleteWithError(new ReqlDriverError(
+                    "Sequence received but single value expected"
                   ))
+
+                case ResponseType.WAIT_COMPLETE =>
+                  tryToCompleteWithError(new ReqlDriverError(
+                    "Queries with noReply option are not supported by driver."
+                  ))
+
+                case _ =>
+                  val cause = new ReqlQueryFailedException(ReqlResponse.determineError(response))
+                  tryToCompleteWithError(cause)
               }
-
-            case ResponseType.SUCCESS_SEQUENCE | ResponseType.SUCCESS_PARTIAL =>
-              resultPromise.tryFailure(new ReqlDriverError(
-                 "Sequence received but single value expected"
-              ))
-
-            case ResponseType.WAIT_COMPLETE =>
-              resultPromise.tryFailure(new ReqlDriverError(
-                "Queries with noReply option are not supported by driver."
-              ))
-
-            case _ =>
-              val cause = new ReqlQueryFailedException(ReqlResponse.determineError(response))
-              resultPromise.tryFailure(cause)
           }
-      }
-      context.stop(self)
+        }
+      })
 
-    case QueryWorkerProtocol.ShutdownNow =>
-      logger.log(ATOM_WORKER, self.toString(), "Will shutdown now")
-      val cause = new ReqlQueryShutdownException()
-      resultPromise.tryFailure(cause)
-      context.stop(self)
+      setHandler(commands, new OutHandler {
+        override def onPull(): Unit = {
+          logger.debug("commands.onPull")
 
-    case QueryWorkerProtocol.ConnectionLost(cause) =>
-      logger.log(ATOM_WORKER, self.toString(), s"Connection lost: $cause")
-      resultPromise.tryFailure(cause)
-      context.stop(self)
+          if (notStarted) {
+            val command = new ReqlStartCommand[Expr](expr, runOptions)
+            val rendered = LogicalConnectionProtocol.RenderedCommand(ReqlCommand.render(command))
+            waitingForResponse = true
+            push(commands, rendered)
+            pull(dbResponses)
+            notStarted = false
+          }
+        }
+
+        override def onDownstreamFinish(): Unit = {
+          logger.debug("commands.onDownstreamFinish; waitingForResponse = {}", waitingForResponse)
+          if (waitingForResponse || notStarted) {
+            tryToCompleteWithError(new IllegalStateException("Premature finish"))
+          } else {
+            completeStage()
+          }
+        }
+      })
+    }
+
+    (logic, resultPromise.future)
   }
 
-}
-
-object AtomQueryWorker {
-  def props[Expr <: ReqlExpr, Out](
-    expr: Expr,
-    runOptions: Options,
-    reqlDecoder: ReqlDecoder[Out],
-    resultPromise: Promise[Out],
-    connectionRef: ActorRef,
-    logger: Logger
-  ): Props = {
-    Props(new AtomQueryWorker(expr, runOptions, reqlDecoder, resultPromise, connectionRef, logger))
-  }
 }

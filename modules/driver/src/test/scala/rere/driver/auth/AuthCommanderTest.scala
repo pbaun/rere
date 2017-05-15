@@ -2,6 +2,7 @@ package rere.driver.auth
 
 import akka.Done
 import akka.actor.ActorSystem
+import akka.event.Logging
 import akka.stream.scaladsl.Keep
 import akka.stream.testkit.scaladsl.{TestSink, TestSource}
 import akka.stream.testkit.{TestPublisher, TestSubscriber}
@@ -68,7 +69,8 @@ class AuthCommanderTest
     def getCommander(login: String, password: String): ((TestPublisher.Probe[ByteString], Future[Done]), TestSubscriber.Probe[ByteString]) = {
       val fromServer = TestSource.probe[ByteString]
       val toServer = TestSink.probe[ByteString]
-      val authCommander = new AuthCommander(clientFirstStep, login, password)
+      val logger = Logging(system, "auth-commander-test")
+      val authCommander = new AuthCommander(clientFirstStep, login, password, logger)
 
       fromServer.watchTermination()(Keep.both).via(authCommander).toMat(toServer)(Keep.both).run()
     }

@@ -62,6 +62,8 @@ lazy val cats         = "org.typelevel"          %% "cats"                      
 lazy val akkaActor    = "com.typesafe.akka"      %% "akka-actor"                  % akkaVersion         // ApacheV2
 lazy val akkaStream   = "com.typesafe.akka"      %% "akka-stream"                 % akkaVersion         // ApacheV2
 
+lazy val logback      = "ch.qos.logback"         % "logback-classic"              % "1.2.3"             // EPL/LGPL
+
 lazy val scalatest    = "org.scalatest"          %% "scalatest"                   % "3.0.1"             // ApacheV2
 lazy val scalamock    = "org.scalamock"          %% "scalamock-scalatest-support" % "3.5.0"             // MIT
 lazy val akkaTK       = "com.typesafe.akka"      %% "akka-testkit"                % akkaVersion         // ApacheV2
@@ -130,6 +132,7 @@ lazy val driver = (project in modules / "driver")
       cats,
       akkaActor,
       akkaStream,
+      logback,
       scalatest % "test,it",
       scalamock % Test,
       akkaTK % Test,

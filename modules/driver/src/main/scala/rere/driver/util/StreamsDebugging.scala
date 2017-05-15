@@ -1,25 +1,28 @@
 package rere.driver.util
 
-import akka.stream.scaladsl.{BidiFlow, Flow, Keep}
+import akka.NotUsed
+import akka.event.LoggingAdapter
+import akka.stream.scaladsl.{BidiFlow, Flow}
 import akka.util.ByteString
 
 object StreamsDebugging {
 
-  val verbose = true
+  def loggingBidi(logger: LoggingAdapter): BidiFlow[ByteString, ByteString, ByteString, ByteString, NotUsed] =
+    BidiFlow.fromFlows(
+      loggingFlow("from server", logger),
+      loggingFlow("to server", logger)
+    )
 
-  def log(x: Any): Unit = if (verbose) println(x)
-
-  def logging(tag: String) = {
-    Flow[ByteString].map { x =>
-      val buf = x.toArray
-      val str = buf.map("%02X" format _).mkString
-      log(s"$tag: ${x.utf8String} ${str}")
-      x
+  private def loggingFlow[M](tag: String, logger: LoggingAdapter): Flow[ByteString, ByteString, NotUsed] =
+    Flow[ByteString].map { buf =>
+      if (logger.isDebugEnabled) {
+        logger.debug("{}: {} {}", tag, buf.utf8String, toHex(buf))
+      }
+      buf
     }
-  }
-  val loggingBidi = BidiFlow.fromFlowsMat(logging("from server"), logging("to server"))(Keep.left)
 
-  def toHex(buf: ByteString): String = {
+  private def toHex(buf: ByteString): String = {
     buf.map(x => "%02X" format x).mkString
   }
+
 }
