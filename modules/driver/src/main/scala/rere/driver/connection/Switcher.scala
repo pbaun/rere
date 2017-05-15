@@ -27,11 +27,14 @@ class BidiMergeShape[-In1, -In2, +Out1, -In3, +Out2, +Out3](
       in3.carbonCopy(), out2.carbonCopy(), out3.carbonCopy()
     )
   }
-  override def copyFromPorts(inlets: immutable.Seq[Inlet[_]], outlets: immutable.Seq[Outlet[_]]): Shape = {
+
+  // Kept for compatibility with akka 2.4
+  def copyFromPorts(inlets: immutable.Seq[Inlet[_]], outlets: immutable.Seq[Outlet[_]]): Shape = {
     require(inlets.size == 3, s"proposed inlets [${inlets.mkString(", ")}] do not fit BidiMergeShape")
     require(outlets.size == 3, s"proposed outlets [${outlets.mkString(", ")}] do not fit BidiMergeShape")
     new BidiMergeShape(inlets(0), inlets(1), outlets(0), inlets(2), outlets(1), outlets(2))
   }
+
   def reversed: Shape = copyFromPorts(inlets.reverse, outlets.reverse)
 }
 

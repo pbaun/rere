@@ -291,7 +291,7 @@ class LogicalConnectionShape[-In1, -In2, -In3, +Out1](
     )
   }
 
-  override def copyFromPorts(inlets: immutable.Seq[Inlet[_]], outlets: immutable.Seq[Outlet[_]]): Shape = {
+  def copyFromPorts(inlets: immutable.Seq[Inlet[_]], outlets: immutable.Seq[Outlet[_]]): Shape = {
     require(inlets.size == 3, s"proposed inlets [${inlets.mkString(", ")}] do not fit LogicalConnectionShape")
     require(outlets.size == 1, s"proposed outlets [${outlets.mkString(", ")}] do not fit LogicalConnectionShape")
     new LogicalConnectionShape(inlets(0), inlets(1), inlets(2), outlets(0))
@@ -414,7 +414,8 @@ class WorkerRegistrarMergeShape[-In1, -In2, +Out1](
     )
   }
 
-  override def copyFromPorts(inlets: immutable.Seq[Inlet[_]], outlets: immutable.Seq[Outlet[_]]): Shape = {
+  // Kept for compatibility with akka 2.4
+  def copyFromPorts(inlets: immutable.Seq[Inlet[_]], outlets: immutable.Seq[Outlet[_]]): Shape = {
     require(inlets.size == 2, s"proposed inlets [${inlets.mkString(", ")}] do not fit WorkerRegistrarMergeShape")
     require(outlets.size == 1, s"proposed outlets [${outlets.mkString(", ")}] do not fit WorkerRegistrarMergeShape")
     new WorkerRegistrarMergeShape(inlets(0), inlets(1), outlets(0))

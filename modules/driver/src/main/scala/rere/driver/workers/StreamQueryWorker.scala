@@ -218,7 +218,8 @@ class StreamWorkerShape[-In1, +Out1, +Out2](
     new StreamWorkerShape(dbResponses.carbonCopy(), commands.carbonCopy(), out.carbonCopy())
   }
 
-  override def copyFromPorts(inlets: immutable.Seq[Inlet[_]], outlets: immutable.Seq[Outlet[_]]): Shape = {
+  // Kept for compatibility with akka 2.4
+  def copyFromPorts(inlets: immutable.Seq[Inlet[_]], outlets: immutable.Seq[Outlet[_]]): Shape = {
     require(inlets.size == 1, s"proposed inlets [${inlets.mkString(", ")}] do not fit StreamWorkerShape")
     require(outlets.size == 2, s"proposed outlets [${outlets.mkString(", ")}] do not fit StreamWorkerShape")
     new StreamWorkerShape(inlets(0), outlets(0), outlets(1))

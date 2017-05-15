@@ -43,7 +43,7 @@ lazy val noPublishSettings = Seq(
 )
 
 
-val akkaVersion = "2.4.17"
+val akkaVersion = "2.5.1"
 val circeVersion = "0.7.0"
 val catsVersion = "0.9.0"
 

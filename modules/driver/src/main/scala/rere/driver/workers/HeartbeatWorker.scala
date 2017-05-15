@@ -164,7 +164,8 @@ class AtomWorkerShape[-In1, +Out1](
     new AtomWorkerShape(dbResponses.carbonCopy(), commands.carbonCopy())
   }
 
-  override def copyFromPorts(inlets: immutable.Seq[Inlet[_]], outlets: immutable.Seq[Outlet[_]]): Shape = {
+  // Kept for compatibility with akka 2.4
+  def copyFromPorts(inlets: immutable.Seq[Inlet[_]], outlets: immutable.Seq[Outlet[_]]): Shape = {
     require(inlets.size == 1, s"proposed inlets [${inlets.mkString(", ")}] do not fit AtomWorkerShape")
     require(outlets.size == 1, s"proposed outlets [${outlets.mkString(", ")}] do not fit AtomWorkerShape")
     new AtomWorkerShape(inlets(0), outlets(0))
