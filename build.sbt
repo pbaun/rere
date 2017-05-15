@@ -65,7 +65,7 @@ lazy val akkaStream   = "com.typesafe.akka"      %% "akka-stream"               
 lazy val logback      = "ch.qos.logback"         % "logback-classic"              % "1.2.3"             // EPL/LGPL
 
 lazy val scalatest    = "org.scalatest"          %% "scalatest"                   % "3.0.3"             // ApacheV2
-lazy val scalamock    = "org.scalamock"          %% "scalamock-scalatest-support" % "3.5.0"             // MIT
+lazy val scalamock    = "org.scalamock"          %% "scalamock-scalatest-support" % "3.6.0"             // MIT
 lazy val akkaTK       = "com.typesafe.akka"      %% "akka-testkit"                % akkaVersion         // ApacheV2
 lazy val akkaStreamTK = "com.typesafe.akka"      %% "akka-stream-testkit"         % akkaVersion         // ApacheV2
 
