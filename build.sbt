@@ -95,7 +95,7 @@ lazy val ql = (project in modules / "ql")
     name := "ql"
   )
   .settings(
-    sourceGenerators in Compile += ProtoGenerator.gen.taskValue
+    sourceGenerators in Compile += ProtoGenerator.gen
   )
   .settings(
     libraryDependencies ++= Seq(
