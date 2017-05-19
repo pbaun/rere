@@ -39,11 +39,11 @@ object LogicalConnection {
 
         import GraphDSL.Implicits._
 
-        mergeHub ~> logicalConnection.commands
-        logicalConnection.framingRequests  ~> realConnection.in
-        logicalConnection.framingResponses <~ realConnection.out
         // db response will be delivered to worker using Source.queue that will be created on demand
 
+        mergeHub       ~> logicalConnection.commands
+                          logicalConnection.framingRequests    ~> realConnection.in
+                          logicalConnection.framingResponses   <~ realConnection.out
         shutdownSource ~> logicalConnection.prepareForShutdown
 
         ClosedShape
@@ -116,6 +116,9 @@ class LogicalConnection private(
           command => RenderedCommandWithToken(workerToken, command.body)
         })
 
+        tokenizer ~> blockingRegistrar.commandsIn
+                     blockingRegistrar.commandsOut ~> mergeSink
+
         // registrar will block commands flow until it will get queue reference from materializedValue outlet
         // later queue reference will be used by logical connection stage for deliver response to right worker
         // it's safe to register queue before first command and use later for response routing because ...
@@ -128,9 +131,6 @@ class LogicalConnection private(
         // ... so queue registration happens before response routing
 
         builder.materializedValue ~> blockingRegistrar.matValue
-
-        tokenizer ~> blockingRegistrar.commandsIn
-                     blockingRegistrar.commandsOut ~> mergeSink
 
         FlowShape.of(tokenizer.in, responseSource.out)
     }).mapMaterializedValue(_ => NotUsed)

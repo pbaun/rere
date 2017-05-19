@@ -263,19 +263,18 @@ class AuthCommander(
 object AuthCommander {
   def getCommanderFlow(authCommander: AuthCommander): Flow[ByteString, ByteString, NotUsed] = {
     Flow.fromGraph(
-      GraphDSL.create(authCommander) {
-        implicit builder =>
-          commander =>
+      GraphDSL.create(authCommander) { implicit builder =>
+        commander =>
 
-            import GraphDSL.Implicits._
+          import GraphDSL.Implicits._
 
-            val commandEncoder = builder.add(Flow[ByteString].map(command => command ++ ByteString("\u0000")))
-            val commandDecoder = builder.add(Framing.delimiter(ByteString("\u0000"), maximumFrameLength = 4096, allowTruncation = false))
+          val commandEncoder = builder.add(Flow[ByteString].map(command => command ++ ByteString("\u0000")))
+          val commandDecoder = builder.add(Framing.delimiter(ByteString("\u0000"), maximumFrameLength = 4096, allowTruncation = false))
 
-            commander.out ~> commandEncoder.in
-            commander.in  <~ commandDecoder.out
+          commander.out ~> commandEncoder.in
+          commander.in  <~ commandDecoder.out
 
-            FlowShape.of(commandDecoder.in, commandEncoder.out)
+          FlowShape.of(commandDecoder.in, commandEncoder.out)
       }
     )
   }

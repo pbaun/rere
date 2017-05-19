@@ -45,9 +45,9 @@ class StreamQueryWorkerTest
 
         import GraphDSL.Implicits._
 
-        dbResponses ~> worker.dbResponses
-                       worker.commands    ~> commands
-                       worker.out         ~> out
+        out <~ worker.out
+               worker.commands    ~> commands
+               worker.dbResponses <~ dbResponses
 
         ClosedShape
     })

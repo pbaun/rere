@@ -141,7 +141,8 @@ final class StreamPool(
 
         import GraphDSL.Implicits._
 
-        workerFlow.commands ~> connectionFlow ~> workerFlow.dbResponses
+        workerFlow.commands    ~> connectionFlow
+        workerFlow.dbResponses <~ connectionFlow
 
         ClosedShape
     })
@@ -175,7 +176,8 @@ final class StreamPool(
 
         import GraphDSL.Implicits._
 
-        workerFlow.commands ~> connectionFlow ~> workerFlow.dbResponses
+        workerFlow.commands    ~> connectionFlow
+        workerFlow.dbResponses <~ connectionFlow
 
         ClosedShape
     })
@@ -208,9 +210,9 @@ final class StreamPool(
 
         import GraphDSL.Implicits._
 
-        workerFlow.commands ~> connectionFlow ~> workerFlow.dbResponses
-
-        workerFlow.out      ~> outSink.in
+        outSink.in <~ workerFlow.out
+                      workerFlow.commands    ~> connectionFlow
+                      workerFlow.dbResponses <~ connectionFlow
 
         ClosedShape
     })

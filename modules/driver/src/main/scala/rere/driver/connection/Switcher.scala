@@ -9,22 +9,22 @@ import akka.util.ByteString
 import scala.annotation.unchecked.uncheckedVariance
 import scala.collection.immutable
 
-class BidiMergeShape[-In1, -In2, +Out1, -In3, +Out2, +Out3](
-    val in1: Inlet[In1 @uncheckedVariance],
-    val in2: Inlet[In2 @uncheckedVariance],
-    val out1: Outlet[Out1 @uncheckedVariance],
-    val in3: Inlet[In3 @uncheckedVariance],
-    val out2: Outlet[Out2 @uncheckedVariance],
-    val out3: Outlet[Out3 @uncheckedVariance]
+class BidiMergeShape[-UpstreamAIn, -UpstreamBIn, +UpstreamOut, -DownstreamIn, +DownstreamAOut, +DownstreamBOut](
+    val upstreamAIn: Inlet[UpstreamAIn @uncheckedVariance],
+    val upstreamBIn: Inlet[UpstreamBIn @uncheckedVariance],
+    val upstreamOut: Outlet[UpstreamOut @uncheckedVariance],
+    val downstreamIn: Inlet[DownstreamIn @uncheckedVariance],
+    val downstreamAOut: Outlet[DownstreamAOut @uncheckedVariance],
+    val downstreamBOut: Outlet[DownstreamBOut @uncheckedVariance]
   ) extends Shape {
 
-  override val inlets: immutable.Seq[Inlet[_]] = List(in1, in2, in3)
-  override val outlets: immutable.Seq[Outlet[_]] = List(out1, out2, out3)
+  override val inlets: immutable.Seq[Inlet[_]] = List(upstreamAIn, upstreamBIn, downstreamIn)
+  override val outlets: immutable.Seq[Outlet[_]] = List(upstreamOut, downstreamAOut, downstreamBOut)
 
-  override def deepCopy(): BidiMergeShape[In1, In2, Out1, In3, Out2, Out3] = {
+  override def deepCopy(): BidiMergeShape[UpstreamAIn, UpstreamBIn, UpstreamOut, DownstreamIn, DownstreamAOut, DownstreamBOut] = {
     new BidiMergeShape(
-      in1.carbonCopy(), in2.carbonCopy(), out1.carbonCopy(),
-      in3.carbonCopy(), out2.carbonCopy(), out3.carbonCopy()
+      upstreamAIn.carbonCopy(), upstreamBIn.carbonCopy(), upstreamOut.carbonCopy(),
+      downstreamIn.carbonCopy(), downstreamAOut.carbonCopy(), downstreamBOut.carbonCopy()
     )
   }
 
@@ -162,12 +162,12 @@ object Switcher {
 
         import GraphDSL.Implicits._
 
-        commander.out ~> switcher.in1
-        switcher.out1 ~> connection.in
-        switcher.in3  <~ connection.out
-        commander.in  <~ switcher.out2
+        commander.out ~> switcher.upstreamAIn
+                         switcher.upstreamOut    ~> connection.in
+                         switcher.downstreamIn   <~ connection.out
+        commander.in  <~ switcher.downstreamAOut
 
-        FlowShape.of(switcher.in2, switcher.out3)
+        FlowShape.of(switcher.upstreamBIn, switcher.downstreamBOut)
     })
   }
 }

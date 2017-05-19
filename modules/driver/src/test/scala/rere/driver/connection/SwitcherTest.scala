@@ -45,12 +45,12 @@ class SwitcherTest
 
           import GraphDSL.Implicits._
 
-          authSource.out ~> switcher.in1
-          dataSource.out ~> switcher.in2
-                            switcher.out1 ~> toServerSink.in
-                            switcher.in3  <~ fromServerSource.out
-          authSink.in    <~ switcher.out2
-          dataSink.in    <~ switcher.out3
+          authSource.out ~> switcher.upstreamAIn
+          dataSource.out ~> switcher.upstreamBIn
+                            switcher.upstreamOut    ~> toServerSink.in
+                            switcher.downstreamIn   <~ fromServerSource.out
+          authSink.in    <~ switcher.downstreamAOut
+          dataSink.in    <~ switcher.downstreamBOut
 
           ClosedShape
       })
