@@ -14,7 +14,7 @@ import io.circe.{DecodingFailure, ParsingFailure}
 import org.parboiled2.ParseError
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{FlatSpecLike, Inside, Matchers}
+import org.scalatest.{BeforeAndAfterAll, FlatSpecLike, Inside, Matchers}
 import rere.driver.exceptions.{ReqlAuthError, ReqlDriverError}
 import rere.sasl.gs2
 import rere.sasl.gs2.ChannelBindingFlag
@@ -29,10 +29,16 @@ import scala.concurrent.duration._
 class AuthCommanderTest
   extends TestKit(ActorSystem("AuthCommanderTest", ConfigFactory.parseString(AuthCommanderTest.config)))
   with FlatSpecLike
+  with BeforeAndAfterAll
   with MockFactory
   with ScalaFutures
   with Inside
   with Matchers {
+
+  override def afterAll(): Unit = {
+    TestKit.shutdownActorSystem(system, verifySystemShutdown = true)
+    super.afterAll()
+  }
 
   trait mocks {
     implicit val mat = ActorMaterializer(

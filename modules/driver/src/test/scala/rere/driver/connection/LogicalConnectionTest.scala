@@ -11,7 +11,7 @@ import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
 import org.scalatest.concurrent.PatienceConfiguration.{Interval, Timeout}
 import org.scalatest.concurrent.{Eventually, ScalaFutures}
-import org.scalatest.{FlatSpecLike, Matchers}
+import org.scalatest.{BeforeAndAfterAll, FlatSpecLike, Matchers}
 import rere.driver.connection.LogicalConnectionProtocol._
 
 import scala.concurrent.duration._
@@ -19,9 +19,15 @@ import scala.concurrent.duration._
 class LogicalConnectionTest
   extends TestKit(ActorSystem("LogicalConnectionTest", ConfigFactory.parseString(LogicalConnectionTest.config)))
   with FlatSpecLike
+  with BeforeAndAfterAll
   with ScalaFutures
   with Matchers
   with Eventually {
+
+  override def afterAll(): Unit = {
+    TestKit.shutdownActorSystem(system, verifySystemShutdown = true)
+    super.afterAll()
+  }
 
   trait mocks {
     implicit val mat = ActorMaterializer(

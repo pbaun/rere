@@ -13,7 +13,7 @@ import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{FlatSpecLike, Matchers}
+import org.scalatest.{BeforeAndAfterAll, FlatSpecLike, Matchers}
 import rere.driver.connection.LogicalConnectionProtocol._
 
 import scala.concurrent.Promise
@@ -21,9 +21,15 @@ import scala.concurrent.Promise
 class LogicalConnectionStageTest
   extends TestKit(ActorSystem("LogicalConnectionStageTest", ConfigFactory.parseString(LogicalConnectionStageTest.config)))
   with FlatSpecLike
+  with BeforeAndAfterAll
   with ScalaFutures
   with Matchers
   with MockFactory {
+
+  override def afterAll(): Unit = {
+    TestKit.shutdownActorSystem(system, verifySystemShutdown = true)
+    super.afterAll()
+  }
 
   trait mocks {
     implicit val mat = ActorMaterializer(

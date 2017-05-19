@@ -6,14 +6,20 @@ import akka.stream.{ActorMaterializer, OverflowStrategy}
 import akka.testkit.TestKit
 import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
-import org.scalatest.{AsyncFlatSpecLike, Matchers}
+import org.scalatest.{AsyncFlatSpecLike, BeforeAndAfterAll, Matchers}
 
 import scala.concurrent.Future
 
 class ReqlFramingTest
   extends TestKit(ActorSystem("ReqlFramingTest", ConfigFactory.parseString(ReqlFramingTest.config)))
-    with AsyncFlatSpecLike
-    with Matchers {
+  with AsyncFlatSpecLike
+  with BeforeAndAfterAll
+  with Matchers {
+
+  override def afterAll(): Unit = {
+    TestKit.shutdownActorSystem(system, verifySystemShutdown = true)
+    super.afterAll()
+  }
 
   behavior of "ReqlFraming.renderFlow"
 

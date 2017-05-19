@@ -8,14 +8,20 @@ import akka.stream.testkit.scaladsl.{TestSink, TestSource}
 import akka.testkit.TestKit
 import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
-import org.scalatest.{FlatSpecLike, Matchers}
+import org.scalatest.{BeforeAndAfterAll, FlatSpecLike, Matchers}
 
 import scala.concurrent.duration._
 
 class SwitcherTest
   extends TestKit(ActorSystem("SwitcherTest", ConfigFactory.parseString(SwitcherTest.config)))
   with FlatSpecLike
+  with BeforeAndAfterAll
   with Matchers {
+
+  override def afterAll(): Unit = {
+    TestKit.shutdownActorSystem(system, verifySystemShutdown = true)
+    super.afterAll()
+  }
 
   trait mocks {
 

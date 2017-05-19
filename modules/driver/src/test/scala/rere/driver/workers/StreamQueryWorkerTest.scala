@@ -10,7 +10,7 @@ import akka.testkit.TestKit
 import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{FlatSpecLike, Matchers}
+import org.scalatest.{BeforeAndAfterAll, FlatSpecLike, Matchers}
 import rere.driver.connection.LogicalConnectionProtocol.{RawResponse, RenderedCommand}
 import rere.driver.exceptions.{ReqlDriverError, ReqlQueryShutdownException}
 import rere.ql.options.Options
@@ -21,8 +21,14 @@ import rere.ql.wire.ReqlDecoder
 class StreamQueryWorkerTest
   extends TestKit(ActorSystem("StreamQueryWorkerTest", ConfigFactory.parseString(StreamQueryWorkerTest.config)))
   with FlatSpecLike
+  with BeforeAndAfterAll
   with ScalaFutures
   with Matchers {
+
+  override def afterAll(): Unit = {
+    TestKit.shutdownActorSystem(system, verifySystemShutdown = true)
+    super.afterAll()
+  }
 
   trait mocks {
     implicit val mat = ActorMaterializer(
