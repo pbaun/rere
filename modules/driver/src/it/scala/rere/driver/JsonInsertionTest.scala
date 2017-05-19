@@ -42,8 +42,8 @@ class JsonInsertionTest extends WordSpec with ScalaFutures with Matchers {
           result("id") shouldBe Some(Json.fromString(generatedKey))
 
           whenReady(pool.shutdown()) { shutdownResult =>
-            //TODO: port it
-            //shutdownResult shouldBe ShutdownSuccessfullyDone(2L, poolSize)
+            shutdownResult.queriesStarted shouldBe 2L
+            shutdownResult.connectionsTurnedOff shouldBe poolSize
 
             whenReady(system.terminate()) { terminationResult =>
               terminationResult shouldBe an[Terminated]

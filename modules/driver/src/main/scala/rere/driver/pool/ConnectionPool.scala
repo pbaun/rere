@@ -1,6 +1,5 @@
 package rere.driver.pool
 
-import akka.Done
 import akka.actor.ActorSystem
 import akka.stream.scaladsl.Sink
 import rere.driver.pool.impl.StreamPool
@@ -25,7 +24,7 @@ trait ConnectionPool {
     outSink: Sink[Out, OutMat]
   ): OutMat
 
-  def shutdown(): Future[Done]
+  def shutdown(): Future[PoolShutdownResult]
 }
 
 object ConnectionPool {

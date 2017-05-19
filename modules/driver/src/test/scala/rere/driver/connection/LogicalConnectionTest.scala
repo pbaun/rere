@@ -50,7 +50,7 @@ class LogicalConnectionTest
       Flow.fromSinkAndSourceMat(responseSink, commandsSource)(Keep.both)
     }
 
-    val connectionFlow = logicalConnection.getConnectionFlow()
+    val connectionFlow = logicalConnection.createConnectionFlow()
 
     val (responseSink, commandsSource) = workerFlow.join(connectionFlow).run()
 

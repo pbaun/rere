@@ -45,8 +45,8 @@ class ModelInsertionTest extends WordSpec with ScalaFutures with Matchers {
         result.generatedKeys shouldBe None
 
         whenReady(pool.shutdown()) { shutdownResult =>
-          //TODO: port it
-          //shutdownResult shouldBe ShutdownSuccessfullyDone(1L, poolSize)
+          shutdownResult.queriesStarted shouldBe 1L
+          shutdownResult.connectionsTurnedOff shouldBe poolSize
 
           whenReady(system.terminate()) { terminationResult =>
             terminationResult shouldBe an[Terminated]

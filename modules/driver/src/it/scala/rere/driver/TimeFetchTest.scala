@@ -40,8 +40,8 @@ class TimeFetchTest extends WordSpec with ScalaFutures with Matchers {
         ) should be < 10L
 
         whenReady(pool.shutdown()) { shutdownResult =>
-          //TODO: port it
-          //shutdownResult shouldBe ShutdownSuccessfullyDone(1L, poolSize)
+          shutdownResult.queriesStarted shouldBe 1L
+          shutdownResult.connectionsTurnedOff shouldBe poolSize
 
           whenReady(system.terminate()) { terminationResult =>
             terminationResult shouldBe an[Terminated]

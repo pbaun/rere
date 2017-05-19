@@ -93,10 +93,10 @@ class LogicalConnection private(
     routingTable.containsKey(token)
   }
 
-  // fo debug and tests
+  // for debug and tests
   def done: Future[Done] = connectionDone
 
-  def getConnectionFlow(): Flow[RenderedCommand, RawResponse, NotUsed] = {
+  def createConnectionFlow(): Flow[RenderedCommand, RawResponse, NotUsed] = {
     val workerToken = acquireToken()
     val responseSource = Source.queue[RawResponse](0, OverflowStrategy.fail)
 

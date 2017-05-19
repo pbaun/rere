@@ -46,8 +46,8 @@ class ConnectionPoolTest extends WordSpec with Matchers with Inside {
 
         val shutdownF = pool.shutdown()
         whenReady(shutdownF) { shutdownResult =>
-          //TODO: port it
-          //shutdownResult shouldBe ShutdownSuccessfullyDone(1, poolSize)
+          shutdownResult.queriesStarted shouldBe 1L
+          shutdownResult.connectionsTurnedOff shouldBe poolSize
 
           whenReady(system.terminate()) { terminationResult =>
             terminationResult shouldBe an[Terminated]
@@ -75,8 +75,8 @@ class ConnectionPoolTest extends WordSpec with Matchers with Inside {
 
         val shutdownF = pool.shutdown()
         whenReady(shutdownF) { shutdownResult =>
-          //TODO: port it
-          //shutdownResult shouldBe ShutdownSuccessfullyDone(0, poolSize)
+          shutdownResult.queriesStarted shouldBe 0
+          shutdownResult.connectionsTurnedOff shouldBe poolSize
 
           whenReady(system.terminate()) { terminationResult =>
             terminationResult shouldBe an[Terminated]
@@ -105,8 +105,8 @@ class ConnectionPoolTest extends WordSpec with Matchers with Inside {
 
         val shutdownF = pool.shutdown()
         whenReady(shutdownF) { shutdownResult =>
-          //TODO: port it
-          //shutdownResult shouldBe ShutdownSuccessfullyDone(1, poolSize)
+          shutdownResult.queriesStarted shouldBe 1L
+          shutdownResult.connectionsTurnedOff shouldBe poolSize
 
           whenReady(system.terminate()) { terminationResult =>
             terminationResult shouldBe an[Terminated]
@@ -180,8 +180,8 @@ class ConnectionPoolTest extends WordSpec with Matchers with Inside {
 
         val shutdownF = pool.shutdown()
         whenReady(shutdownF) { shutdownResult =>
-          //TODO: port it
-          //shutdownResult shouldBe ShutdownSuccessfullyDone(1L, poolSize)
+          shutdownResult.queriesStarted shouldBe 1L
+          shutdownResult.connectionsTurnedOff shouldBe poolSize
 
           whenReady(system.terminate()) { terminationResult =>
             terminationResult shouldBe an[Terminated]
@@ -239,21 +239,12 @@ class ConnectionPoolTest extends WordSpec with Matchers with Inside {
 
         val shutdownF = pool.shutdown()
         whenReady(shutdownF) { shutdownResult =>
-          inside(shutdownResult) {
-            case Done =>
-              whenReady(system.terminate()) { terminationResult =>
-                terminationResult shouldBe an[Terminated]
-              }
+          shutdownResult.queriesStarted shouldBe 1L
+          shutdownResult.connectionsTurnedOff should be >= poolSize.toLong
+          shutdownResult.connectionsTurnedOff should be <= poolSize * 3L
 
-            //TODO: port it
-            /*case ShutdownSuccessfullyDone(queriesExecuted, connectionsTurnedOff) =>
-              queriesExecuted shouldBe 1
-              connectionsTurnedOff should be >= poolSize
-              connectionsTurnedOff should be <= poolSize * 3
-
-              whenReady(system.terminate()) { terminationResult =>
-                terminationResult shouldBe an[Terminated]
-              }*/
+          whenReady(system.terminate()) { terminationResult =>
+            terminationResult shouldBe an[Terminated]
           }
         }
       }

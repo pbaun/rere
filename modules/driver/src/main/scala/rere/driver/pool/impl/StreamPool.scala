@@ -127,7 +127,7 @@ final class StreamPool(
     connectionLostPromise: Promise[ConnectionLost],
     connectionLogger: LoggingAdapter
   ): Future[Done] = {
-    val connectionFlow = connection.getConnectionFlow()
+    val connectionFlow = connection.createConnectionFlow()
 
     val heartbeatWorker = new HeartbeatWorker(
       poolSettings.heartbeatInitialDelay, poolSettings.heartbeatCheckInterval,
@@ -165,7 +165,7 @@ final class StreamPool(
 
     val connection = connectionBag.selectConnection()
     logger.debug("connection #{} is selected for worker #{}", connection.id, workerId)
-    val connectionFlow = connection.getConnectionFlow()
+    val connectionFlow = connection.createConnectionFlow()
 
     val graph = RunnableGraph.fromGraph(GraphDSL.create(
       workerFlow, connectionFlow) {
@@ -198,7 +198,7 @@ final class StreamPool(
 
     val connection = connectionBag.selectConnection()
     logger.debug("connection #{} is selected for worker #{}", connection.id, workerId)
-    val connectionFlow = connection.getConnectionFlow()
+    val connectionFlow = connection.createConnectionFlow()
 
     val graph = RunnableGraph.fromGraph(GraphDSL.create(
       workerFlow, outSink, connectionFlow) {
@@ -218,14 +218,14 @@ final class StreamPool(
     graph.run()(materializer)
   }
 
-  override def shutdown(): Future[Done] = {
+  override def shutdown(): Future[PoolShutdownResult] = {
     started.set(false)
     implicit val executionContext = actorSystem.dispatcher
     Future.sequence(
       connectionBag.clear().map(_.prepareForShutdown())
-    ).map { _ =>
+    ).map { connectionsShutdownResult =>
       materializer.shutdown()
-      Done
+      StreamPoolShutdownResult(workersCounter.get(), connectionsShutdownResult.length.toLong)
     }
   }
 }
