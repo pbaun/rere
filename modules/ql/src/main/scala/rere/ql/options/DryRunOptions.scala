@@ -6,16 +6,10 @@ trait DryRunOptions {
 
   sealed trait DryRunOptions extends ComposableOptions
 
-  case object RealRun extends DryRunOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object RealRun extends DryRunOptions with DefaultOption
 
-  case object DryRun extends DryRunOptions {
-    def isEmpty = false
+  case object DryRun extends DryRunOptions with NonDefaultOption {
     def view = "dry_run" -> values.expr(true) :: Nil
-    val expr = exprFromView
   }
 
 }

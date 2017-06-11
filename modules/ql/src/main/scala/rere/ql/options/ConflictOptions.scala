@@ -8,22 +8,14 @@ trait ConflictOptions {
 
   sealed trait ConflictOptions[T, PK] extends ComposableOptions
 
-  case class ErrorOnConflict[T, PK]() extends ConflictOptions[T, PK] {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case class ErrorOnConflict[T, PK]() extends ConflictOptions[T, PK] with DefaultOption
 
-  case class ReplaceOnConflict[T, PK]() extends ConflictOptions[T, PK] {
-    def isEmpty = false
+  case class ReplaceOnConflict[T, PK]() extends ConflictOptions[T, PK] with NonDefaultOption {
     def view = "conflict" -> values.expr("replace") :: Nil
-    val expr = exprFromView
   }
 
-  case class UpdateOnConflict[T, PK]() extends ConflictOptions[T, PK] {
-    def isEmpty = false
+  case class UpdateOnConflict[T, PK]() extends ConflictOptions[T, PK] with NonDefaultOption {
     def view = "conflict" -> values.expr("update") :: Nil
-    val expr = exprFromView
   }
 
   //TODO: id type
@@ -31,10 +23,8 @@ trait ConflictOptions {
     resolver: (ReqlDatum, ReqlModel[T, PK], ReqlModel[T, PK]) => ReqlModel[T, PK]
   )(
     implicit shape: ModelShape[T, PK]
-  ) extends ConflictOptions[T, PK] {
-    def isEmpty = false
+  ) extends ConflictOptions[T, PK] with NonDefaultOption {
     def view = "conflict" -> Func.wrap3(resolver) :: Nil
-    val expr = exprFromView
   }
 
 }

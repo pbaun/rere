@@ -6,16 +6,12 @@ trait EmergencyRepairOptions {
 
   sealed trait EmergencyRepairOptions extends ComposableOptions
 
-  case object UnsafeRollback extends EmergencyRepairOptions {
-    def isEmpty = false
+  case object UnsafeRollback extends EmergencyRepairOptions with NonDefaultOption {
     def view = "emergency_repair" -> values.expr("unsafe_rollback") :: Nil
-    val expr = exprFromView
   }
 
-  case object UnsafeRollbackOrErase extends EmergencyRepairOptions {
-    def isEmpty = false
+  case object UnsafeRollbackOrErase extends EmergencyRepairOptions with NonDefaultOption {
     def view = "emergency_repair" -> values.expr("unsafe_rollback_or_erase") :: Nil
-    val expr = exprFromView
   }
 
 }

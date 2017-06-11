@@ -6,16 +6,10 @@ trait GroupMultiplicityOptions {
 
   sealed trait GroupMultiplicityOptions extends ComposableOptions
 
-  case object DefaultGroupMultiplicity extends GroupMultiplicityOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object DefaultGroupMultiplicity extends GroupMultiplicityOptions with DefaultOption
 
-  case object MultiGroup extends GroupMultiplicityOptions {
-    def isEmpty = false
+  case object MultiGroup extends GroupMultiplicityOptions with NonDefaultOption {
     def view = "multi" -> values.expr(true) :: Nil
-    val expr = exprFromView
   }
 
 }

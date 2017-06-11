@@ -1,12 +1,12 @@
 package rere.ql.options
 
 import rere.ql.rasterization.{recursive, trampolined}
-import rere.ql.types.{ReqlExpr, ReqlPrimitiveExpr}
+import rere.ql.types.{ReqlObject, ReqlPrimitiveExpr}
 
 //TODO: make test for checking keys format (should be snake_case)
 trait Options {
   def isEmpty: Boolean
-  def expr: ReqlExpr
+  def expr: ReqlObject
 
   def recursiveRasterizer: recursive.Rasterizer = expr.recursiveRasterizer
   def trampolinedRasterizer: trampolined.Rasterizer = expr.trampolinedRasterizer
@@ -14,10 +14,10 @@ trait Options {
 
 object Options {
   object EmptyOptions extends Options {
-    override def isEmpty = true
-    override val expr: ReqlExpr = new ReqlPrimitiveExpr {
-      def string: String = "obj"
-      def repr = "{}"
+    override def isEmpty: Boolean = true
+    override val expr: ReqlObject = new ReqlObject with ReqlPrimitiveExpr {
+      override def string: String = "obj"
+      override def repr = "{}"
     }
   }
 

@@ -6,22 +6,14 @@ trait ProfileOptions {
 
   sealed trait ProfileOptions extends ComposableOptions
 
-  case object DefaultProfile extends ProfileOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object DefaultProfile extends ProfileOptions with DefaultOption
 
-  case object DoProfile extends ProfileOptions {
-    def isEmpty = false
+  case object DoProfile extends ProfileOptions with NonDefaultOption {
     def view = "profile" -> values.expr(true) :: Nil
-    val expr = exprFromView
   }
 
-  case object DontProfile extends ProfileOptions {
-    def isEmpty = false
+  case object DontProfile extends ProfileOptions with NonDefaultOption {
     def view = "profile" -> values.expr(false) :: Nil
-    val expr = exprFromView
   }
 
 }

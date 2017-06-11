@@ -6,16 +6,10 @@ trait NumVerticesOptions {
 
   sealed trait NumVerticesOptions extends ComposableOptions
 
-  case object DefaultNumVertices extends NumVerticesOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object DefaultNumVertices extends NumVerticesOptions with DefaultOption
 
-  case class NumVertices(n: Integer) extends NumVerticesOptions {
-    def isEmpty = false
+  case class NumVertices(n: Integer) extends NumVerticesOptions with NonDefaultOption {
     def view = "num_vertices" -> values.expr(n) :: Nil
-    def expr = exprFromView
   }
 
 }

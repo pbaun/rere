@@ -7,28 +7,18 @@ trait HttpVerifyOptions {
 
   sealed trait HttpVerifyOptions extends ComposableOptions
 
-  case object WithDefaultHttpVerify extends HttpVerifyOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object WithDefaultHttpVerify extends HttpVerifyOptions with DefaultOption
 
-  case object DoVerify extends HttpVerifyOptions {
-    def isEmpty = false
+  case object DoVerify extends HttpVerifyOptions with NonDefaultOption {
     def view = "verify" -> values.expr(true) :: Nil
-    val expr = exprFromView
   }
 
-  case object DoNotVerify extends HttpVerifyOptions {
-    def isEmpty = false
+  case object DoNotVerify extends HttpVerifyOptions with NonDefaultOption {
     def view = "verify" -> values.expr(false) :: Nil
-    val expr = exprFromView
   }
 
-  case class WithHttpVerify(verify: ReqlBoolean) extends HttpVerifyOptions {
-    def isEmpty = false
+  case class WithHttpVerify(verify: ReqlBoolean) extends HttpVerifyOptions with NonDefaultOption {
     def view = "verify" -> verify :: Nil
-    def expr = exprFromView
   }
 
 }

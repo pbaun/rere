@@ -6,16 +6,10 @@ trait DefaultTimezoneOptions {
 
   sealed trait DefaultTimezoneOptions extends ComposableOptions
 
-  case object WithoutTimezone extends DefaultTimezoneOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object WithoutTimezone extends DefaultTimezoneOptions with DefaultOption
 
-  case class DefaultTimezone(offset: ReqlString) extends DefaultTimezoneOptions {
-    def isEmpty = false
+  case class DefaultTimezone(offset: ReqlString) extends DefaultTimezoneOptions with NonDefaultOption {
     def view = "default_timezone" -> offset :: Nil
-    def expr = exprFromView
   }
 
 }

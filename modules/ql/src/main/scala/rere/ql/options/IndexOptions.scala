@@ -6,15 +6,9 @@ trait IndexOptions {
   sealed trait IndexOptions extends ComposableOptions
 
   // index is inherited from previous operators: specific from .orderBy; primary from table???
-  case object DefaultIndex extends IndexOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object DefaultIndex extends IndexOptions with DefaultOption
 
-  case class Index(index: String) extends IndexOptions {
-    def isEmpty = false
+  case class Index(index: String) extends IndexOptions with NonDefaultOption {
     def view = "index" -> values.expr(index) :: Nil
-    def expr = exprFromView
   }
 }

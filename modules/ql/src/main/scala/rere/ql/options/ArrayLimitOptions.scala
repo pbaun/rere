@@ -6,16 +6,10 @@ trait ArrayLimitOptions {
 
   sealed trait ArrayLimitOptions extends ComposableOptions
 
-  case object DefaultArrayLimit extends ArrayLimitOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object DefaultArrayLimit extends ArrayLimitOptions with DefaultOption
 
-  case class ArrayLimit(limit: Long) extends ArrayLimitOptions {
-    def isEmpty = false
+  case class ArrayLimit(limit: Long) extends ArrayLimitOptions with NonDefaultOption {
     def view = "array_limit" -> values.expr(limit) :: Nil
-    val expr = exprFromView
   }
 
 }

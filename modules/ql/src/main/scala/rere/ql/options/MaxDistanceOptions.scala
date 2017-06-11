@@ -6,16 +6,10 @@ trait MaxDistanceOptions {
 
   sealed trait MaxDistanceOptions extends ComposableOptions
 
-  case object DefaultMaxDistance extends MaxDistanceOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object DefaultMaxDistance extends MaxDistanceOptions with DefaultOption
 
-  case class MaxDistance(n: Integer) extends MaxDistanceOptions {
-    def isEmpty = false
+  case class MaxDistance(n: Integer) extends MaxDistanceOptions with NonDefaultOption {
     def view = "max_dist" -> values.expr(n) :: Nil
-    def expr = exprFromView
   }
 
 }

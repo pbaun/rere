@@ -15,13 +15,11 @@ trait EmitOptions {
     Out <: ReqlDatum
   ](
     emitFunction: (R, Base, R) => ReqlArray[Out]
-  ) extends EmitOptions[R, Base] {
+  ) extends EmitOptions[R, Base] with NonDefaultOption {
 
     def withFinalEmit(finalEmit: R => ReqlArray[Out]): EmitWithFinalEmit[R, Base, Out] = EmitWithFinalEmit(emitFunction, finalEmit)
 
-    def isEmpty = false
     def view = "emit" -> Func.wrap3(emitFunction) :: Nil
-    def expr = exprFromView
   }
 
   // usually compiler can't infer this types and they should be specified explicitly
@@ -32,11 +30,9 @@ trait EmitOptions {
   ](
     emitFunction: (R, Base, R) => ReqlArray[Out],
     finalEmit: R => ReqlArray[Out]
-  ) extends EmitOptions[R, Base] {
+  ) extends EmitOptions[R, Base] with NonDefaultOption {
 
-    def isEmpty = false
     def view = "emit" -> Func.wrap3(emitFunction) :: "final_emit" -> Func.wrap1(finalEmit) :: Nil
-    def expr = exprFromView
   }
 
 }

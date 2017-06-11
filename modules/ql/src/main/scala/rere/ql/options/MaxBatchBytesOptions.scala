@@ -6,16 +6,10 @@ trait MaxBatchBytesOptions {
 
   sealed trait MaxBatchBytesOptions extends ComposableOptions
 
-  case object DefaultMaxBatchBytes extends MaxBatchBytesOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object DefaultMaxBatchBytes extends MaxBatchBytesOptions with DefaultOption
 
-  case class MaxBatchBytes(bytes: Long) extends MaxBatchBytesOptions {
-    def isEmpty = false
+  case class MaxBatchBytes(bytes: Long) extends MaxBatchBytesOptions with NonDefaultOption {
     def view = "max_batch_bytes" -> values.expr(bytes) :: Nil
-    def expr = exprFromView
   }
 
 }

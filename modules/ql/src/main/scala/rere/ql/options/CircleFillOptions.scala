@@ -6,22 +6,14 @@ trait CircleFillOptions {
 
   sealed trait CircleFillOptions extends ComposableOptions
 
-  case object DefaultCircleFill extends CircleFillOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object DefaultCircleFill extends CircleFillOptions with DefaultOption
 
-  case object FillCircle extends CircleFillOptions {
-    def isEmpty = false
+  case object FillCircle extends CircleFillOptions with NonDefaultOption {
     def view = "fill" -> values.expr(true) :: Nil
-    val expr = exprFromView
   }
 
-  case object NotFillCircle extends CircleFillOptions {
-    def isEmpty = false
+  case object NotFillCircle extends CircleFillOptions with NonDefaultOption {
     def view = "fill" -> values.expr(false) :: Nil
-    val expr = exprFromView
   }
 
 }

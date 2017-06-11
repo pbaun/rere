@@ -7,46 +7,30 @@ trait HttpResultFormatOptions {
 
   sealed trait HttpResultFormatOptions extends ComposableOptions
 
-  case object WithDefaultHttpResultFormat extends HttpResultFormatOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object WithDefaultHttpResultFormat extends HttpResultFormatOptions with DefaultOption
 
-  case object TextResultFormat extends HttpResultFormatOptions {
-    def isEmpty = false
+  case object TextResultFormat extends HttpResultFormatOptions with NonDefaultOption {
     def view = "result_format" -> values.expr("text") :: Nil
-    val expr = exprFromView
   }
 
-  case object JsonResultFormat extends HttpResultFormatOptions {
-    def isEmpty = false
+  case object JsonResultFormat extends HttpResultFormatOptions with NonDefaultOption {
     def view = "result_format" -> values.expr("json") :: Nil
-    val expr = exprFromView
   }
 
-  case object JsonpResultFormat extends HttpResultFormatOptions {
-    def isEmpty = false
+  case object JsonpResultFormat extends HttpResultFormatOptions with NonDefaultOption {
     def view = "result_format" -> values.expr("jsonp") :: Nil
-    val expr = exprFromView
   }
 
-  case object BinaryResultFormat extends HttpResultFormatOptions {
-    def isEmpty = false
+  case object BinaryResultFormat extends HttpResultFormatOptions with NonDefaultOption {
     def view = "result_format" -> values.expr("binary") :: Nil
-    val expr = exprFromView
   }
 
-  case object AutoResultFormat extends HttpResultFormatOptions {
-    def isEmpty = false
+  case object AutoResultFormat extends HttpResultFormatOptions with NonDefaultOption {
     def view = "result_format" -> values.expr("auto") :: Nil
-    val expr = exprFromView
   }
 
-  case class WithHttpResultFormat(resultFormat: ReqlString) extends HttpResultFormatOptions {
-    def isEmpty = false
+  case class WithHttpResultFormat(resultFormat: ReqlString) extends HttpResultFormatOptions with NonDefaultOption {
     def view = "result_format" -> resultFormat :: Nil
-    def expr = exprFromView
   }
 
 }

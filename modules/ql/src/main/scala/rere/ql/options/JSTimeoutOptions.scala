@@ -6,16 +6,10 @@ trait JSTimeoutOptions {
 
   sealed trait JSTimeoutOptions extends ComposableOptions
 
-  case object WithDefaultJSTimeout extends JSTimeoutOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object WithDefaultJSTimeout extends JSTimeoutOptions with DefaultOption
 
-  case class WithJSTimeout(seconds: ReqlNumber) extends JSTimeoutOptions {
-    def isEmpty = false
+  case class WithJSTimeout(seconds: ReqlNumber) extends JSTimeoutOptions with NonDefaultOption {
     def view = "timeout" -> seconds :: Nil
-    def expr = exprFromView
   }
 
 }

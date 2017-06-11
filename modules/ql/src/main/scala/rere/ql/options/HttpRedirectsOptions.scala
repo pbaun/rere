@@ -6,16 +6,10 @@ trait HttpRedirectsOptions {
 
   sealed trait HttpRedirectsOptions extends ComposableOptions
 
-  case object WithDefaultHttpRedirects extends HttpRedirectsOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object WithDefaultHttpRedirects extends HttpRedirectsOptions with DefaultOption
 
-  case class WithHttpRedirects(redirects: ReqlInteger) extends HttpRedirectsOptions {
-    def isEmpty = false
+  case class WithHttpRedirects(redirects: ReqlInteger) extends HttpRedirectsOptions with NonDefaultOption {
     def view = "redirects" -> redirects :: Nil
-    def expr = exprFromView
   }
 
 }

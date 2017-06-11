@@ -6,16 +6,10 @@ trait RandomOptions {
 
   sealed trait RandomOptions extends ComposableOptions
 
-  case object IntegerValues extends RandomOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object IntegerValues extends RandomOptions with DefaultOption
 
-  case object FloatValues extends RandomOptions {
-    def isEmpty = false
+  case object FloatValues extends RandomOptions with NonDefaultOption {
     def view = "float" -> values.expr(true) :: Nil
-    val expr = exprFromView
   }
 
 }

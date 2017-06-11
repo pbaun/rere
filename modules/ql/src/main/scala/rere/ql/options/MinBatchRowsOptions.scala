@@ -6,16 +6,10 @@ trait MinBatchRowsOptions {
 
   sealed trait MinBatchRowsOptions extends ComposableOptions
 
-  case object DefaultMinBatchRows extends MinBatchRowsOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object DefaultMinBatchRows extends MinBatchRowsOptions with DefaultOption
 
-  case class MinBatchRows(n: Long) extends MinBatchRowsOptions {
-    def isEmpty = false
+  case class MinBatchRows(n: Long) extends MinBatchRowsOptions with NonDefaultOption {
     def view = "min_batch_rows" -> values.expr(n) :: Nil
-    def expr = exprFromView
   }
 
 }

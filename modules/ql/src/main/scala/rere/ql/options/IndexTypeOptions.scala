@@ -6,30 +6,18 @@ trait IndexTypeOptions {
 
   sealed trait IndexMultiplicityOptions extends ComposableOptions
 
-  case object SimpleIndex extends IndexMultiplicityOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object SimpleIndex extends IndexMultiplicityOptions with DefaultOption
 
-  case object MultiIndex extends IndexMultiplicityOptions {
-    def isEmpty = false
+  case object MultiIndex extends IndexMultiplicityOptions with NonDefaultOption {
     def view = "multi" -> values.expr(true) :: Nil
-    val expr = exprFromView
   }
 
   sealed trait IndexNatureOptions extends ComposableOptions
 
-  case object RangeIndex extends IndexNatureOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object RangeIndex extends IndexNatureOptions with DefaultOption
 
-  case object GeoIndex extends IndexNatureOptions {
-    def isEmpty = false
+  case object GeoIndex extends IndexNatureOptions with NonDefaultOption {
     def view = "geo" -> values.expr(true) :: Nil
-    val expr = exprFromView
   }
 
 }

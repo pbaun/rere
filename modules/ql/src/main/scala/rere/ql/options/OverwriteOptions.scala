@@ -6,16 +6,10 @@ trait OverwriteOptions {
 
   sealed trait OverwriteOptions extends ComposableOptions
 
-  case object NotOverwrite extends OverwriteOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object NotOverwrite extends OverwriteOptions with DefaultOption
 
-  case object Overwrite extends OverwriteOptions {
-    def isEmpty = false
+  case object Overwrite extends OverwriteOptions with NonDefaultOption {
     def view = "overwrite" -> values.expr(true) :: Nil
-    val expr = exprFromView
   }
 
 }

@@ -6,16 +6,10 @@ trait ShardsOptions {
 
   sealed trait ShardsOptions extends ComposableOptions
 
-  case object SingleShard extends ShardsOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object SingleShard extends ShardsOptions with DefaultOption
 
-  case class Shards(amount: Int) extends ShardsOptions {
-    def isEmpty = false
+  case class Shards(amount: Int) extends ShardsOptions with NonDefaultOption {
     def view = "shards" -> values.expr(amount) :: Nil
-    def expr = exprFromView
   }
 
 }

@@ -6,16 +6,10 @@ trait MaxBatchRowsOptions {
 
   sealed trait MaxBatchRowsOptions extends ComposableOptions
 
-  case object DefaultMaxBatchRows extends MaxBatchRowsOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object DefaultMaxBatchRows extends MaxBatchRowsOptions with DefaultOption
 
-  case class MaxBatchRows(n: Long) extends MaxBatchRowsOptions {
-    def isEmpty = false
+  case class MaxBatchRows(n: Long) extends MaxBatchRowsOptions with NonDefaultOption {
     def view = "max_batch_rows" -> values.expr(n) :: Nil
-    def expr = exprFromView
   }
 
 }

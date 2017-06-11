@@ -1,7 +1,7 @@
 package rere.ql.options
 
 import rere.ql.queries.values
-import rere.ql.types.ReqlValue
+import rere.ql.types.{ReqlObject, ReqlValue}
 
 trait BoundsOptions {
 
@@ -20,15 +20,11 @@ trait BoundsOptions {
 
   sealed trait BoundsOptions extends ComposableOptions
 
-  case object DefaultBounds extends BoundsOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object DefaultBounds extends BoundsOptions with DefaultOption
 
   case class Bounds(leftBound: BoundType, rightBound: BoundType) extends BoundsOptions {
-    def isEmpty = (leftBound == DefaultBound) && (rightBound == DefaultBound)
-    def view: List[(String, ReqlValue)] = {
+    override def isEmpty: Boolean = (leftBound == DefaultBound) && (rightBound == DefaultBound)
+    override def view: ComposableOptions.View = {
       val leftView = leftBound match {
         case DefaultBound => Nil
         case left => "left_bound" -> left.rqlValue :: Nil
@@ -41,7 +37,7 @@ trait BoundsOptions {
 
       leftView ::: rightView
     }
-    def expr = exprFromView
+    override def expr: ReqlObject = exprFromView
   }
 
 }

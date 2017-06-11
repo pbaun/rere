@@ -6,22 +6,14 @@ trait NoreplyOptions {
 
   sealed trait NoreplyOptions extends ComposableOptions
 
-  case object DefaultNoreply extends NoreplyOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object DefaultNoreply extends NoreplyOptions with DefaultOption
 
-  case object Noreply extends NoreplyOptions {
-    def isEmpty = false
+  case object Noreply extends NoreplyOptions with NonDefaultOption {
     def view = "noreply" -> values.expr(true) :: Nil
-    val expr = exprFromView
   }
 
-  case object Reply extends NoreplyOptions {
-    def isEmpty = false
+  case object Reply extends NoreplyOptions with NonDefaultOption {
     def view = "noreply" -> values.expr(false) :: Nil
-    val expr = exprFromView
   }
 
 }

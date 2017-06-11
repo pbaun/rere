@@ -6,16 +6,10 @@ trait HttpTimeoutOptions {
 
   sealed trait HttpTimeoutOptions extends ComposableOptions
 
-  case object WithDefaultHttpTimeout extends HttpTimeoutOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object WithDefaultHttpTimeout extends HttpTimeoutOptions with DefaultOption
 
-  case class WithHttpTimeout(seconds: ReqlNumber) extends HttpTimeoutOptions {
-    def isEmpty = false
+  case class WithHttpTimeout(seconds: ReqlNumber) extends HttpTimeoutOptions with NonDefaultOption {
     def view = "timeout" -> seconds :: Nil
-    def expr = exprFromView
   }
 
 }

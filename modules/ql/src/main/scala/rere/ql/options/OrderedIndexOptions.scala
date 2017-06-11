@@ -6,10 +6,8 @@ trait OrderedIndexOptions {
 
   sealed trait OrderedIndexOptions extends ComposableOptions
 
-  case class OrderedIndex(ordering: ReqlNameOrdering) extends OrderedIndexOptions {
-    def isEmpty = false
+  case class OrderedIndex(ordering: ReqlNameOrdering) extends OrderedIndexOptions with NonDefaultOption {
     def view = "index" -> ordering :: Nil
-    def expr = exprFromView
   }
 
 }

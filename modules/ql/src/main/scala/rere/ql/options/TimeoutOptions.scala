@@ -6,16 +6,10 @@ trait TimeoutOptions {
 
   sealed trait TimeoutOptions extends ComposableOptions
 
-  case object WithoutTimeout extends TimeoutOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object WithoutTimeout extends TimeoutOptions with DefaultOption
 
-  case class WithTimeout(timeout: Int) extends TimeoutOptions {
-    def isEmpty = false
+  case class WithTimeout(timeout: Int) extends TimeoutOptions with NonDefaultOption {
     def view = "timeout" -> values.expr(timeout) :: Nil
-    def expr = exprFromView
   }
 
 }

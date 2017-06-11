@@ -6,22 +6,14 @@ trait IdentifierFormatOptions {
 
   sealed trait IdentifierFormatOptions extends ComposableOptions
 
-  case object DefaultIdentifierFormat extends IdentifierFormatOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object DefaultIdentifierFormat extends IdentifierFormatOptions with DefaultOption
 
-  case object NameIdentifier extends IdentifierFormatOptions {
-    def isEmpty = false
+  case object NameIdentifier extends IdentifierFormatOptions with NonDefaultOption {
     def view = "identifier_format" -> values.expr("name") :: Nil
-    val expr = exprFromView
   }
 
-  case object UuidIdentifier extends IdentifierFormatOptions {
-    def isEmpty = false
+  case object UuidIdentifier extends IdentifierFormatOptions with NonDefaultOption {
     def view = "identifier_format" -> values.expr("uuid") :: Nil
-    val expr = exprFromView
   }
 
 }

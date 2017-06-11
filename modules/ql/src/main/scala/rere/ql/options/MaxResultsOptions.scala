@@ -6,16 +6,10 @@ trait MaxResultsOptions {
 
   sealed trait MaxResultsOptions extends ComposableOptions
 
-  case object DefaultMaxResults extends MaxResultsOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object DefaultMaxResults extends MaxResultsOptions with DefaultOption
 
-  case class MaxResults(n: Integer) extends MaxResultsOptions {
-    def isEmpty = false
+  case class MaxResults(n: Integer) extends MaxResultsOptions with NonDefaultOption {
     def view = "max_results" -> values.expr(n) :: Nil
-    def expr = exprFromView
   }
 
 }

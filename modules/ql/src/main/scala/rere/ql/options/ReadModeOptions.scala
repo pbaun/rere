@@ -6,28 +6,18 @@ trait ReadModeOptions {
 
   sealed trait ReadModeOptions extends ComposableOptions
 
-  case object DefaultReadMode extends ReadModeOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object DefaultReadMode extends ReadModeOptions with DefaultOption
 
-  case object Single extends ReadModeOptions {
-    def isEmpty = false
+  case object Single extends ReadModeOptions with NonDefaultOption {
     def view = "read_mode" -> values.expr("single") :: Nil
-    val expr = exprFromView
   }
 
-  case object Majority extends ReadModeOptions {
-    def isEmpty = false
+  case object Majority extends ReadModeOptions with NonDefaultOption {
     def view = "read_mode" -> values.expr("majority") :: Nil
-    val expr = exprFromView
   }
 
-  case object Outdated extends ReadModeOptions {
-    def isEmpty = false
+  case object Outdated extends ReadModeOptions with NonDefaultOption {
     def view = "read_mode" -> values.expr("outdated") :: Nil
-    val expr = exprFromView
   }
 
 }

@@ -6,16 +6,10 @@ trait NonAtomicOptions {
 
   sealed trait NonAtomicOptions extends ComposableOptions
 
-  case object AtomicUpdate extends NonAtomicOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object AtomicUpdate extends NonAtomicOptions with DefaultOption
 
-  case object NonAtomicUpdate extends NonAtomicOptions {
-    def isEmpty = false
+  case object NonAtomicUpdate extends NonAtomicOptions with NonDefaultOption {
     def view = "non_atomic" -> values.expr(true) :: Nil
-    val expr = exprFromView
   }
 
 }

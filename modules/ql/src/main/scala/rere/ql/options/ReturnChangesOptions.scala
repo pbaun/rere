@@ -6,22 +6,14 @@ trait ReturnChangesOptions {
 
   sealed trait ReturnChangesOptions extends ComposableOptions
 
-  case object DoNotReturnChanges extends ReturnChangesOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object DoNotReturnChanges extends ReturnChangesOptions with DefaultOption
 
-  case object DoReturnChanges extends ReturnChangesOptions {
-    def isEmpty = false
+  case object DoReturnChanges extends ReturnChangesOptions with NonDefaultOption {
     def view = "return_changes" -> values.expr(true) :: Nil
-    val expr = exprFromView
   }
 
-  case object AlwaysReturnChanges extends ReturnChangesOptions {
-    def isEmpty = false
+  case object AlwaysReturnChanges extends ReturnChangesOptions with NonDefaultOption {
     def view = "return_changes" -> values.expr("always") :: Nil
-    val expr = exprFromView
   }
 
 }

@@ -7,16 +7,10 @@ trait ReplicasOptions { this: Classes =>
 
   sealed trait ReplicasOptions extends ComposableOptions
 
-  case object SingleReplica extends ReplicasOptions {
-    def isEmpty = true
-    def view = Nil
-    val expr = exprFromView
-  }
+  case object SingleReplica extends ReplicasOptions with DefaultOption
 
-  case class Replicas(amount: Int) extends ReplicasOptions {
-    def isEmpty = false
+  case class Replicas(amount: Int) extends ReplicasOptions with NonDefaultOption {
     def view = "replicas" -> values.expr(amount) :: Nil
-    def expr = exprFromView
 
     def allVoting(): VotingReplicasOptions = {
       NonVotingReplicas(this.view, Nil)
@@ -24,8 +18,10 @@ trait ReplicasOptions { this: Classes =>
   }
 
   //TODO: not allow empty pairs - at least they should contain primary
-  case class ReplicasByTags(primary: ServerTag, pair: (ServerTag, Int), pairs: (ServerTag, Int)*) extends ReplicasOptions {
-    def isEmpty = false
+  case class ReplicasByTags(primary: ServerTag, pair: (ServerTag, Int), pairs: (ServerTag, Int)*)
+    extends ReplicasOptions
+    with NonDefaultOption {
+
     def view = {
       "replicas" -> new ReqlMakeObjFromPairsListQuery((pair :: pairs.toList).map {
         case (serverTag, amount) => serverTag.tag -> values.expr(amount)
@@ -33,7 +29,6 @@ trait ReplicasOptions { this: Classes =>
       "primary_replica_tag" -> values.expr(primary.tag) ::
       Nil
     }
-    def expr = exprFromView
 
     def nonvoting(tags: ServerTag*): VotingReplicasOptions = {
       NonVotingReplicas(this.view, tags)
@@ -47,15 +42,16 @@ trait ReplicasOptions { this: Classes =>
   sealed trait VotingReplicasOptions extends ComposableOptions
 
   //use ReplicasByTags(...).nonvoting(...) for safe construction
-  private case class NonVotingReplicas(replicasConfigView: ComposableOptions.View, tags: Seq[ServerTag]) extends VotingReplicasOptions {
-    def isEmpty = false
+  private case class NonVotingReplicas(replicasConfigView: ComposableOptions.View, tags: Seq[ServerTag])
+    extends VotingReplicasOptions
+    with NonDefaultOption {
+
     def view = {
       if (tags.nonEmpty) {
         val replicaTags = tags.map(serverTag => values.expr(serverTag.tag))
         "nonvoting_replica_tags" -> values.expr(replicaTags) :: replicasConfigView //order already broken
       } else replicasConfigView
     }
-    def expr = exprFromView
   }
 
 }

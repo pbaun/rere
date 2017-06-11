@@ -6,17 +6,10 @@ import rere.ql.queries.{control, values}
 trait DefaultOptions {
   sealed trait DefaultOptions extends ComposableOptions
 
-  // default - not need to transmit
-  case object Skip extends DefaultOptions {
-    def isEmpty = true
-    def view = Nil      // "default" -> false
-    val expr = exprFromView
-  }
+  case object Skip extends DefaultOptions with DefaultOption
 
-  case object NoSkip extends DefaultOptions {
-    def isEmpty = false
+  case object NoSkip extends DefaultOptions with NonDefaultOption {
     def view = "default" -> values.expr(true) :: Nil
-    val expr = exprFromView
   }
 
   // special version of r.error without message
@@ -27,9 +20,7 @@ trait DefaultOptions {
     val options = Options.empty
   }
 
-  case object RethrowError extends DefaultOptions {
-    def isEmpty = false
+  case object RethrowError extends DefaultOptions with NonDefaultOption {
     def view = "default" -> rethrowError :: Nil
-    val expr = exprFromView
   }
 }
