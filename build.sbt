@@ -1,4 +1,4 @@
-organization in ThisBuild := "rere"
+organization in ThisBuild := "com.github.pbaun"
 
 lazy val compilerOptions = Seq(
   "-target:jvm-1.8",
@@ -34,6 +34,32 @@ lazy val baseSettings = Seq(
   scalacOptions in Test ~= {
     _.filterNot(Set("-Ywarn-dead-code"))
   }
+)
+
+lazy val publishSettings = Seq(
+  releaseCrossBuild := true,
+  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
+  releaseTagComment := s"=pro Release ${(version in ThisBuild).value}",
+  releaseCommitMessage := s"=pro Set version to ${(version in ThisBuild).value}",
+  homepage := Some(url("https://github.com/pbaun/rere")),
+  licenses := Seq("Apache 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
+  publishMavenStyle := true,
+  publishArtifact in Test := false,
+  pomIncludeRepository := { _ => false },
+  publishTo := {
+    val nexus = "https://oss.sonatype.org/"
+    if (isSnapshot.value)
+      Some("snapshots" at nexus + "content/repositories/snapshots")
+    else
+      Some("releases" at nexus + "service/local/staging/deploy/maven2")
+  },
+  scmInfo := Some(
+    ScmInfo(url("https://github.com/pbaun/rere"), "scm:git:git@github.com:pbaun/rere.git")
+  ),
+  developers := List(
+    Developer("pbaun", "Pavel Baun", "baunpavel@gmail.com", url("https://github.com/pbaun"))
+  ),
+  autoAPIMappings := true
 )
 
 lazy val noPublishSettings = Seq(
@@ -79,6 +105,7 @@ lazy val sasl = (project in modules / "sasl")
     moduleName := "rere-sasl",
     name := "sasl"
   )
+  .settings(publishSettings)
   .settings(
     libraryDependencies ++= Seq(
       parboiled,
@@ -94,6 +121,7 @@ lazy val ql = (project in modules / "ql")
     moduleName := "rere-ql",
     name := "ql"
   )
+  .settings(publishSettings)
   .settings(
     sourceGenerators in Compile += ProtoGenerator.gen
   )
@@ -111,7 +139,6 @@ lazy val ql = (project in modules / "ql")
     )
   )
 
-
 lazy val driver = (project in modules / "driver")
   .dependsOn(sasl, ql)
   .configs(IntegrationTest)
@@ -122,6 +149,7 @@ lazy val driver = (project in modules / "driver")
     moduleName := "rere-driver",
     name := "driver"
   )
+  .settings(publishSettings)
   .settings(
     libraryDependencies ++= Seq(
       circeCore,
@@ -141,17 +169,17 @@ lazy val driver = (project in modules / "driver")
   )
 
 lazy val example = (project in modules / "example")
-  .dependsOn(driver)
   .settings(baseSettings)
+  .settings(noPublishSettings)
   .settings(
     description := "rere example",
     moduleName := "rere-example",
     name := "example"
   )
-  .settings(noPublishSettings:_*)
+  .dependsOn(driver)
 
 lazy val rere = (project in file("."))
+  .settings(baseSettings)
+  .settings(noPublishSettings)
   .aggregate(sasl, ql, driver)
   .dependsOn(sasl, ql, driver)
-  .settings(baseSettings)
-  .settings(noPublishSettings:_*)
