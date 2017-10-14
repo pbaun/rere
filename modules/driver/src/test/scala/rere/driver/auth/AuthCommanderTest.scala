@@ -135,8 +135,8 @@ class AuthCommanderTest
       finalMessage.extensions == Nil
     }
 
-    fromServer.expectNoMsg(200.millis)    // no cancel from client
-    fromServer.sendComplete()             // server will send complete
+    fromServer.expectNoMessage(200.millis)    // no cancel from client
+    fromServer.sendComplete()                 // server will send complete
 
     // ... and done
     whenReady(doneFuture) { done =>
@@ -197,8 +197,8 @@ class AuthCommanderTest
       finalMessage.extensions == Nil
     }
 
-    fromServer.expectNoMsg(200.millis)    // no cancel from client
-    fromServer.sendComplete()             // server will send complete
+    fromServer.expectNoMessage(200.millis)    // no cancel from client
+    fromServer.sendComplete()                 // server will send complete
 
     // ... and done
     whenReady(doneFuture) { done =>
@@ -255,8 +255,8 @@ class AuthCommanderTest
 
     // client can't process previous message, no need to validate it
 
-    fromServer.expectNoMsg(200.millis)    // no cancel from client
-    fromServer.sendComplete()             // server will send complete
+    fromServer.expectNoMessage(200.millis)    // no cancel from client
+    fromServer.sendComplete()                 // server will send complete
 
     // ... and done
     whenReady(doneFuture) { done =>
@@ -313,8 +313,8 @@ class AuthCommanderTest
 
     // client can't process previous message, no need to validate it
 
-    fromServer.expectNoMsg(200.millis)    // no cancel from client
-    fromServer.sendComplete()             // server will send complete
+    fromServer.expectNoMessage(200.millis)    // no cancel from client
+    fromServer.sendComplete()                 // server will send complete
 
     // ... and done
     whenReady(doneFuture) { done =>
@@ -360,8 +360,8 @@ class AuthCommanderTest
       firstMessage.extensions.isEmpty
     }
 
-    fromServer.expectNoMsg(200.millis)    // no cancel from client
-    fromServer.sendComplete()             // server will send complete
+    fromServer.expectNoMessage(200.millis)    // no cancel from client
+    fromServer.sendComplete()                 // server will send complete
 
     // ... and done
     whenReady(doneFuture) { done =>
@@ -400,8 +400,8 @@ class AuthCommanderTest
 
     // client can't process previous message, no need to validate it
 
-    fromServer.expectNoMsg(200.millis)    // no cancel from client
-    fromServer.sendComplete()             // server will send complete
+    fromServer.expectNoMessage(200.millis)    // no cancel from client
+    fromServer.sendComplete()                 // server will send complete
 
     // ... and done
     whenReady(doneFuture) { done =>
@@ -440,8 +440,8 @@ class AuthCommanderTest
 
     // client can't process previous message, no need to validate it
 
-    fromServer.expectNoMsg(200.millis)    // no cancel from client
-    fromServer.sendComplete()             // server will send complete
+    fromServer.expectNoMessage(200.millis)    // no cancel from client
+    fromServer.sendComplete()                 // server will send complete
 
     // ... and done
     whenReady(doneFuture) { done =>
@@ -478,8 +478,8 @@ class AuthCommanderTest
 
     // client can't process previous message, no need to validate it
 
-    fromServer.expectNoMsg(200.millis)    // no cancel from client
-    fromServer.sendComplete()             // server will send complete
+    fromServer.expectNoMessage(200.millis)    // no cancel from client
+    fromServer.sendComplete()                 // server will send complete
 
     // ... and done
     whenReady(doneFuture) { done =>
@@ -517,8 +517,8 @@ class AuthCommanderTest
 
     // client can't process previous message, no need to validate it
 
-    fromServer.expectNoMsg(200.millis)    // no cancel from client
-    fromServer.sendComplete()             // server will send complete
+    fromServer.expectNoMessage(200.millis)    // no cancel from client
+    fromServer.sendComplete()                 // server will send complete
 
     // ... and done
     whenReady(doneFuture) { done =>
@@ -555,8 +555,8 @@ class AuthCommanderTest
 
     // client can't process previous message, no need to validate it
 
-    fromServer.expectNoMsg(200.millis)    // no cancel from client
-    fromServer.sendComplete()             // server will send complete
+    fromServer.expectNoMessage(200.millis)    // no cancel from client
+    fromServer.sendComplete()                 // server will send complete
 
     // ... and done
     whenReady(doneFuture) { done =>
@@ -593,8 +593,8 @@ class AuthCommanderTest
 
     // client can't process previous message, no need to validate it
 
-    fromServer.expectNoMsg(200.millis)    // no cancel from client
-    fromServer.sendComplete()             // server will send complete
+    fromServer.expectNoMessage(200.millis)    // no cancel from client
+    fromServer.sendComplete()                 // server will send complete
 
     // ... and done
     whenReady(doneFuture) { done =>
@@ -631,8 +631,8 @@ class AuthCommanderTest
 
     // client can't process previous message, no need to validate it
 
-    fromServer.expectNoMsg(200.millis)    // no cancel from client
-    fromServer.sendComplete()             // server will send complete
+    fromServer.expectNoMessage(200.millis)    // no cancel from client
+    fromServer.sendComplete()                 // server will send complete
 
     // ... and done
     whenReady(doneFuture) { done =>
@@ -670,8 +670,8 @@ class AuthCommanderTest
 
     // client can't process previous message, no need to validate it
 
-    fromServer.expectNoMsg(200.millis)    // no cancel from client
-    fromServer.sendComplete()             // server will send complete
+    fromServer.expectNoMessage(200.millis)    // no cancel from client
+    fromServer.sendComplete()                 // server will send complete
 
     // ... and done
     whenReady(doneFuture) { done =>
@@ -709,8 +709,8 @@ class AuthCommanderTest
 
     // client can't process previous message, no need to validate it
 
-    fromServer.expectNoMsg(200.millis)    // no cancel from client
-    fromServer.sendComplete()             // server will send complete
+    fromServer.expectNoMessage(200.millis)    // no cancel from client
+    fromServer.sendComplete()                 // server will send complete
 
     // ... and done
     whenReady(doneFuture) { done =>

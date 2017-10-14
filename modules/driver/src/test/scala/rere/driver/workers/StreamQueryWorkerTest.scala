@@ -18,6 +18,8 @@ import rere.ql.queries.all._
 import rere.ql.types.ReqlString
 import rere.ql.wire.ReqlDecoder
 
+import scala.concurrent.duration._
+
 class StreamQueryWorkerTest
   extends TestKit(ActorSystem("StreamQueryWorkerTest", ConfigFactory.parseString(StreamQueryWorkerTest.config)))
   with FlatSpecLike
@@ -116,14 +118,14 @@ class StreamQueryWorkerTest
 
     outSink.request(1L)
     outSink.expectNext("abc")
-    outSink.expectNoMsg()
+    outSink.expectNoMessage(200.millis)
 
     outSink.request(1L)
     outSink.expectNext("bcd")
-    outSink.expectNoMsg()
+    outSink.expectNoMessage(200.millis)
 
     commandsSink.request(1L)
-    commandsSink.expectNoMsg()
+    commandsSink.expectNoMessage(200.millis)
 
     outSink.request(1L)
 

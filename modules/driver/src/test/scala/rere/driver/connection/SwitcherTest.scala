@@ -302,11 +302,11 @@ class SwitcherTest
     toServerSink.request(1L)
 
     dataSink.ensureSubscription()
-    dataSink.expectNoMsg(1.second)
+    dataSink.expectNoMessage(1.second)
 
     dataSink.request(1L)                                              //<- demand response after transmission start
     dataSink.expectNext(ByteString("saved"))
-    dataSink.expectNoMsg(1.second)
+    dataSink.expectNoMessage(1.second)
     dataSink.request(1L)
     dataSink.expectNext(ByteString("saved2"))
 
