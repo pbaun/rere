@@ -38,5 +38,4 @@ class StringRendererTest extends FlatSpec with Matchers {
     renderer.~~(None: Option[UniqueClass])
     renderer.get shouldBe ""
   }
-
 }

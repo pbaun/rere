@@ -7,14 +7,35 @@ import rere.sasl.scram.messages.ServerErrorType._
 import rere.sasl.scram.messages._
 import rere.sasl.util._
 
+/**
+  * 1. Maybe issue in rfc5802:
+  *   Section 5.1 of rfc5802 says:
+  *     All attribute names are single US-ASCII letters and are case-sensitive.
+  *   In section 7 of rfc5802 attr-val defined as
+  *     authzid         = "a=" saslname
+  *   But sesction 2.3 of rfc5234 says:
+  *     ABNF strings are case insensitive and the character set for these strings is US-ASCII
+  *   This means that A=saslname also valid form of authzid
+  *   Case-sensitive definition of authzid should look like that:
+  *     authzid         = %d97 %d61 saslname
+  *
+  * 2. Maybe issue in rfc5802:
+  *   nonce defined as:
+  *     nonce           = "r=" c-nonce [s-nonce]
+  *     c-nonce         = printable
+  *     s-nonce         = printable
+  *     printable       = %x21-2B / %x2D-7E
+  *
+  *   This means that nonce defined like:
+  *     nonce           = "r=" Char [Char]
+  *
+  *   Maybe c-nonce and s-nonce should be defined like:
+  *     c-nonce         = 1*printable
+  *     s-nonce         = 1*printable
+  *
+  * */
 trait RFC5802Parser {
   this: Parser =>
-
-  //TODO: attr-val is case sensitive (rfc5802#section-5.1) but in protocol used "a=" (e.g. authzid = "a=" saslname).
-  //      rfc5234 says that "abc" form is case insensitive.
-  //        ABNF strings are case insensitive and the character set for these
-  //        strings is US-ASCII.
-  //      It means that A= is valid form too.
 
   // rfc5234#appendix-B.1
   def `ALPHA`: Rule0 = rule {
@@ -24,15 +45,15 @@ trait RFC5802Parser {
   // rfc5234#appendix-B.1
   def `DIGIT`: Rule0 = rule { CharPredicate('\u0030' to '\u0039') }
 
-  //TODO: not imported in RFC5802
+  // In rfc5802 it used for validation of base64 encoded part of channel-binding
   // rfc5234#appendix-B.1
   //def `OCTET` = rule { CharPredicate.All }
 
   //UTF-8 rules not used because this parser operates UTF-16 chars
 
-  //All attribute names are single US-ASCII letters and are case-sensitive
+  //Section 5.1: All attribute names are single US-ASCII letters and are case-sensitive
   def `attr-val`: Rule1[AttrVal] = rule {
-    capture(`ALPHA`) ~ '=' ~ `value` ~>
+    capture(`ALPHA`) ~ '=' ~!~ `value` ~>
     ((attribute: String, value: NoCommaString) => AttrVal(attribute.charAt(0), value))
   }
 
@@ -40,7 +61,7 @@ trait RFC5802Parser {
     capture(oneOrMore(`value-char`)) ~> ((value: String) => new NoCommaString(value))
   }
 
-  def `value-safe-char`: Rule0 = rule { noneOf("\u0000\u002c\u003d") } //TODO: \ud800 - \udfff not allowed two
+  def `value-safe-char`: Rule0 = rule { noneOf("\u0000\u002c\u003d") }
 
   def `value-char`: Rule0 = rule { `value-safe-char` | '=' }
 
@@ -62,9 +83,8 @@ trait RFC5802Parser {
     capture(CharPredicate('\u0031' to '\u0039') ~ zeroOrMore(`DIGIT`)) ~> ((num: String) => num.toInt)
   }
 
-  //case-sensitive =2C and =3D
   def `saslname`: Rule1[EscapedString] = rule {
-    capture(oneOrMore(`value-safe-char` | "=2C" | "=3D")) ~>
+    capture(oneOrMore(`value-safe-char` | "=2C" | "=2c" | "=3D" | "=3d")) ~>
     ((name: String) => new EscapedString(name))
   }
 
@@ -98,19 +118,6 @@ trait RFC5802Parser {
   def `channel-binding`: Rule1[Base64String] = rule { "c=" ~ `base64` }
 
   def `proof`: Rule1[Base64String] = rule { "p=" ~ `base64` }
-
-  //TODO: seems like error in rfc: "r=" Char Char
-  /*def `nonce`: Rule1[String] = rule {
-    "r=" ~ capture(`c-nonce`) ~ optional(capture(`s-nonce`)) ~>
-    ((clientNonce: String, serverNonce: Option[String]) => {
-      serverNonce match {
-        case Some(sn) => clientNonce + sn
-        case None => clientNonce
-      }
-    })
-  }
-  def `c-nonce` = rule { `printable` }
-  def `s-nonce` = rule { `printable` }*/
 
   def `nonce`: Rule1[PrintableString] = rule {
     "r=" ~ capture(oneOrMore(`printable`)) ~>
@@ -208,14 +215,15 @@ trait RFC5802Parser {
     )
   }
 
-  //proof adds after extensions and we must check that it will not be captured as extensions
   def `extensions`: Rule1[Seq[AttrVal]] = rule {
     (&(!"p=") ~ `attr-val` ~> ((attrVal: AttrVal) => Seq(attrVal))) ~
     zeroOrMore(',' ~ &(!"p=") ~ `attr-val` ~> ((tail: Seq[AttrVal], head: AttrVal) => head +: tail)) ~>
     ((attrVals: Seq[AttrVal]) => attrVals.reverse)
   }
 
+  // In rfc5802 it used for validation of base64 encoded part of channel-binding
   //def `cbind-data` = rule { oneOrMore(`OCTET`) }
 
+  // In rfc5802 it used for validation of base64 encoded part of channel-binding
   //def `cbind-input` = rule { `gs2-header` ~ optional(`cbind-data`) }
 }

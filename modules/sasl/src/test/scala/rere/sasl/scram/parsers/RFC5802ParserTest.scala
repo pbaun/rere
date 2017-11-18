@@ -305,15 +305,15 @@ class RFC5802ParserTest extends FunSpec with Inside {
       parser("abc=2Cdef=3Dghi").`saslname`.run() shouldBe Success(new EscapedString("abc=2Cdef=3Dghi"))
     }
 
+    it("should allow replacements in lower case") {
+      parser("ABC=2c123").`saslname`.run() shouldBe Success(new EscapedString("ABC=2c123"))
+      parser("ABC=3d123").`saslname`.run() shouldBe Success(new EscapedString("ABC=3d123"))
+    }
+
     it("should not capture ',', '=' and NUL") {
       parser("ABC,abc").`saslname`.run() shouldBe Success(new EscapedString("ABC"))
       parser("ABC=abc").`saslname`.run() shouldBe Success(new EscapedString("ABC"))
       parser("ABC\u0000abc").`saslname`.run() shouldBe Success(new EscapedString("ABC"))
-    }
-
-    it("should not allow replacements in lower case") {
-      parser("ABC=2c123").`saslname`.run() shouldBe Success(new EscapedString("ABC"))
-      parser("ABC=3d123").`saslname`.run() shouldBe Success(new EscapedString("ABC"))
     }
 
     it("should not parse empty string") {

@@ -7,9 +7,28 @@ class EscapedStringTest extends FlatSpec {
 
   behavior of "EscapedString"
 
+  it should "compute same hash code for string with upper case replacement and string with lower case replacement" in {
+    val withUpperCaseReplacementHashCode = new EscapedString("abc=2Cdef").hashCode()
+    val withLowerCaseReplacementHashCode = new EscapedString("abc=2cdef").hashCode()
+
+    withUpperCaseReplacementHashCode shouldBe withLowerCaseReplacementHashCode
+  }
+
+  it should "treat string with upper case replacement same as string with lower case replacement" in {
+    val withUpperCaseReplacement = new EscapedString("abc=2Cdef")
+    val withLowerCaseReplacement = new EscapedString("abc=2cdef")
+
+    withUpperCaseReplacement shouldBe withLowerCaseReplacement
+  }
+
+  it should "return unescaped value as result of toString method" in {
+    new EscapedString("abc=2Cdef").toString shouldBe "abc,def"
+  }
+
   it should "encode regular string to safe" in {
     EscapedString.to("abc,def=ghi") shouldBe new EscapedString("abc=2Cdef=3Dghi")
-    //TODO: unicode tests
+    EscapedString.to("абв,ГДЕ=\uD83D\uDE00") shouldBe new EscapedString("абв=2CГДЕ=3D\uD83D\uDE00")
+    EscapedString.to("абв,ГДЕ=\uD83D=\uDE00") shouldBe new EscapedString("абв=2CГДЕ=3D\uD83D=3D\uDE00")
   }
 
   it should "encode all symbols in one pass, not just one per pass" in {
@@ -24,7 +43,9 @@ class EscapedStringTest extends FlatSpec {
 
   it should "decode safe strings to regular" in {
     EscapedString.from(new EscapedString("abc=2Cdef=3Dghi")) shouldBe "abc,def=ghi"
-    //TODO: unicode tests
+    EscapedString.from(new EscapedString("abc=2cdef=3dghi")) shouldBe "abc,def=ghi"
+    EscapedString.from(new EscapedString("абв=2CГДЕ=3D\uD83D\uDE00")) shouldBe "абв,ГДЕ=\uD83D\uDE00"
+    EscapedString.from(new EscapedString("абв=2CГДЕ=3D\uD83D=3d\uDE00")) shouldBe "абв,ГДЕ=\uD83D=\uDE00"
   }
 
   it should "decode all symbols in one pass" in {
@@ -38,11 +59,11 @@ class EscapedStringTest extends FlatSpec {
     EscapedString.from(new EscapedString("=3D2C")) should not be ","
   }
 
-  it should "not decode lower case alternatives" in {
-    EscapedString.from(new EscapedString("=2c=2c")) shouldBe "=2c=2c"
-    EscapedString.from(new EscapedString("=3d=3d")) shouldBe "=3d=3d"
-    EscapedString.from(new EscapedString("=2c=3d")) shouldBe "=2c=3d"
-    EscapedString.from(new EscapedString("=3d=2c")) shouldBe "=3d=2c"
+  it should "decode lower case alternatives" in {
+    EscapedString.from(new EscapedString("=2c=2c")) shouldBe ",,"
+    EscapedString.from(new EscapedString("=3d=3d")) shouldBe "=="
+    EscapedString.from(new EscapedString("=2c=3d")) shouldBe ",="
+    EscapedString.from(new EscapedString("=3d=2c")) shouldBe "=,"
   }
 
   it should "throw exception if passes sequence is not valid" in {
