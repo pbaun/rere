@@ -321,13 +321,13 @@ class WorkerRegistrarMerge(
 
       private var unlocked = false
 
-      val doneCallback = getAsyncCallback[Try[Done]] {
+      private val doneCallback = getAsyncCallback[Try[Done]] {
         case Success(done) =>
           logger.debug("doneCallback.Success({})", done)
           completeStage()
         case Failure(cause) =>
           logger.debug("doneCallback.Failure({})", cause)
-          failStage(cause)   //TODO: should we fail connection?
+          failStage(cause)
       }
 
       override def preStart(): Unit = {

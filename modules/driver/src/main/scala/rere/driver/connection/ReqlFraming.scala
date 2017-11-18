@@ -89,12 +89,8 @@ final class ReqlInFraming extends GraphStage[FlowShape[ByteString, List[ReqlFram
         isHeaderParsed = false
       }
 
-      private def dropDataBuffer(): Unit = {
-        buffer = ByteString.empty
-      }
-
       private def makeFrame(): ReqlFrame = {
-        val frame = ReqlFrame(queryToken, buffer.take(bodySize))  //TODO: .compact ???
+        val frame = ReqlFrame(queryToken, buffer.take(bodySize))
         buffer = buffer.drop(bodySize)
         forgiveHeader()
         frame
@@ -133,7 +129,7 @@ final class ReqlInFraming extends GraphStage[FlowShape[ByteString, List[ReqlFram
         }
 
         override def onDownstreamFinish(): Unit = {
-          // It is ok what buffer contain some amount of not parsed data; downstream not need it anyway
+          // It is ok that buffer contains some amount of not parsed data; downstream do not need them anyway
           completeStage()
         }
       })

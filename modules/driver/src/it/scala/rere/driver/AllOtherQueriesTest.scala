@@ -40,7 +40,7 @@ class AllOtherQueriesTest extends WordSpec with ScalaFutures with Matchers with 
   implicit val ec = ExecutionContext.Implicits.global
   implicit val system = ActorSystem("rere")
   val credentials = Credentials("admin", "")
-  val settings = ConnectionSettings("127.0.0.1", 28015, ConnectionSettings.noSslConnection)   //TODO: constants and helpers for ssl config
+  val settings = ConnectionSettings("127.0.0.1", 28015, ConnectionSettings.noSslConnection)
   /*val settings2 = ConnectionSettings(
     host = "127.0.0.1",
     port = 28015,

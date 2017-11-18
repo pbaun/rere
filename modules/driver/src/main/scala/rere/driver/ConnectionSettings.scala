@@ -15,6 +15,9 @@ case class ConnectionSettings(
   firstCheckDelay: FiniteDuration = 3.seconds)
 
 object ConnectionSettings {
+
+  //TODO: helpers for reading ssl config from files, byte arrays etc.
+
   def sslConnection(pathToCert: String, protocolVersion: TLSProtocolVersion): Option[SSLContextProvider] = {
     val certBytes = Files.readAllBytes(Paths.get(pathToCert))
     Some(new FromCertificateFileProvider(certBytes, protocolVersion))
