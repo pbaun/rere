@@ -3,7 +3,7 @@ package rere.ql.queries
 import rere.ql.options.Options
 import rere.ql.ql2.Term.TermType
 import rere.ql.shapes.ReqlModel
-import rere.ql.typeclasses.Transmuter
+import rere.ql.typeclasses.{ObjectProducer, Transmuter}
 import rere.ql.types._
 
 trait DocumentQueries {
@@ -242,7 +242,7 @@ trait DocumentQueries {
 
   //TODO: maybe result should be MergeTableQuery[U]
   implicit class MergeOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
-    def merge[U <: ReqlObject](objectProducers: ReqlObjectProducer[ReqlModel[T, PK], U]*): MergeTableQuery[U] = new MergeTableQuery[U] {
+    def merge[U <: ReqlObject](objectProducers: ObjectProducer[ReqlModel[T, PK], U]*): MergeTableQuery[U] = new MergeTableQuery[U] {
       val command = TermType.MERGE
       val string = "merge"
       val arguments = table :: objectProducers.toList
@@ -251,7 +251,7 @@ trait DocumentQueries {
   }
 
   implicit class MergeOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
-    def merge[U <: ReqlObject](objectProducers: ReqlObjectProducer[ReqlModel[T, PK], U]*): MergeTableSliceQuery[U] = new MergeTableSliceQuery[U] {
+    def merge[U <: ReqlObject](objectProducers: ObjectProducer[ReqlModel[T, PK], U]*): MergeTableSliceQuery[U] = new MergeTableSliceQuery[U] {
       val command = TermType.MERGE
       val string = "merge"
       val arguments = tableSlice :: objectProducers.toList
@@ -260,7 +260,7 @@ trait DocumentQueries {
   }
 
   implicit class MergeOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
-    def merge[U <: ReqlObject](objectProducers: ReqlObjectProducer[ReqlModel[T, PK], U]*): MergeSelectionOfArrayQuery[U] = new MergeSelectionOfArrayQuery[U] {
+    def merge[U <: ReqlObject](objectProducers: ObjectProducer[ReqlModel[T, PK], U]*): MergeSelectionOfArrayQuery[U] = new MergeSelectionOfArrayQuery[U] {
       val command = TermType.MERGE
       val string = "merge"
       val arguments = sel :: objectProducers.toList
@@ -269,7 +269,7 @@ trait DocumentQueries {
   }
 
   implicit class MergeOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
-    def merge[U <: ReqlObject](objectProducers: ReqlObjectProducer[ReqlModel[T, PK], U]*): MergeSelectionOfStreamQuery[U] = new MergeSelectionOfStreamQuery[U] {
+    def merge[U <: ReqlObject](objectProducers: ObjectProducer[ReqlModel[T, PK], U]*): MergeSelectionOfStreamQuery[U] = new MergeSelectionOfStreamQuery[U] {
       val command = TermType.MERGE
       val string = "merge"
       val arguments = sel :: objectProducers.toList
@@ -278,7 +278,7 @@ trait DocumentQueries {
   }
 
   implicit class MergeOnInfiniteStreamOp[T <: ReqlObject](val infiniteStream: ReqlInfiniteStream[T]) {
-    def merge[U <: ReqlObject](objectProducers: ReqlObjectProducer[T, U]*): MergeInfiniteStreamQuery[T] = new MergeInfiniteStreamQuery[T] {
+    def merge[U <: ReqlObject](objectProducers: ObjectProducer[T, U]*): MergeInfiniteStreamQuery[T] = new MergeInfiniteStreamQuery[T] {
       val command = TermType.MERGE
       val string = "merge"
       val arguments = infiniteStream :: objectProducers.toList
@@ -287,7 +287,7 @@ trait DocumentQueries {
   }
 
   implicit class MergeOnFiniteStreamOp[T <: ReqlObject](val finiteStream: ReqlFiniteStream[T]) {
-    def merge[Type <: ReqlObject](objectProducers: ReqlObjectProducer[T, Type]*): MergeFiniteStreamQuery[Type] = new MergeFiniteStreamQuery[Type] {
+    def merge[Type <: ReqlObject](objectProducers: ObjectProducer[T, Type]*): MergeFiniteStreamQuery[Type] = new MergeFiniteStreamQuery[Type] {
       val command = TermType.MERGE
       val string = "merge"
       val arguments = finiteStream :: objectProducers.toList
@@ -296,7 +296,7 @@ trait DocumentQueries {
   }
 
   implicit class MergeOnArrayOp[T <: ReqlObject](val array: ReqlArray[T]) {
-    def merge[U <: ReqlObject](objectProducers: ReqlObjectProducer[T, U]*): MergeArrayQuery[T] = new MergeArrayQuery[T] {
+    def merge[U <: ReqlObject](objectProducers: ObjectProducer[T, U]*): MergeArrayQuery[T] = new MergeArrayQuery[T] {
       val command = TermType.MERGE
       val string = "merge"
       val arguments = array :: objectProducers.toList
@@ -305,7 +305,7 @@ trait DocumentQueries {
   }
 
   implicit class MergeOnSelectionOfObjectOp[T, PK](val sel: ReqlSelectionOfObject[T, PK]) {
-    def merge[U <: ReqlObject : Transmuter](objectProducers: ReqlObjectProducer[ReqlModel[T, PK], U]*): U = {
+    def merge[U <: ReqlObject : Transmuter](objectProducers: ObjectProducer[ReqlModel[T, PK], U]*): U = {
       Transmuter.transmute[U] {
         new MergeSelectionOfObjectQuery {
           val command = TermType.MERGE
@@ -318,7 +318,7 @@ trait DocumentQueries {
   }
 
   implicit class MergeOnObjectOp[T <: ReqlObject](val obj: T) {
-    def merge[U <: ReqlObject : Transmuter](objectProducers: ReqlObjectProducer[T, U]*): U = {
+    def merge[U <: ReqlObject : Transmuter](objectProducers: ObjectProducer[T, U]*): U = {
       Transmuter.transmute[U] {
         new MergeObjectQuery {
           val command = TermType.MERGE

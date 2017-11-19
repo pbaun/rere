@@ -1,4 +1,4 @@
-package rere.ql.types
+package rere.ql.typeclasses
 
 import java.util.UUID
 
@@ -7,8 +7,9 @@ import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import rere.ql.queries.values
 import rere.ql.shapes.ReqlModel
+import rere.ql.types._
 
-class ReqlObjectProducerTest extends FlatSpec {
+class ObjectProducerTest extends FlatSpec {
 
   class Container[T <: ReqlDatum](v: T)
 
@@ -19,16 +20,16 @@ class ReqlObjectProducerTest extends FlatSpec {
     new Container[ReqlInteger](values.expr(123))
 
   implicit class ContainerOps[T <: ReqlDatum](container: Container[T]) {
-    def method[U <: ReqlObject](producer: ReqlObjectProducer[T, U]): ReqlExpr = {
+    def method[U <: ReqlObject](producer: ObjectProducer[T, U]): ReqlExpr = {
       producer
     }
 
-    def method2[U <: ReqlDatum](producer: ReqlObjectProducer[T, U], i: Int = 1): ReqlExpr = {
+    def method2[U <: ReqlDatum](producer: ObjectProducer[T, U], i: Int = 1): ReqlExpr = {
       producer
     }
   }
 
-  behavior of "ReqlObjectProducer"
+  behavior of "ObjectProducer"
 
   it should "work with ReqlNull" in {
     val reqlNull: ReqlNull = values.expr(null)

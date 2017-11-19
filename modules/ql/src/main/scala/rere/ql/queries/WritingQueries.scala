@@ -4,6 +4,7 @@ import rere.ql.options.all._
 import rere.ql.options.{ComposableOptions, Options}
 import rere.ql.ql2.Term.TermType
 import rere.ql.shapes.ReqlModel
+import rere.ql.typeclasses.ObjectProducer
 import rere.ql.types._
 
 trait WritingQueries {
@@ -61,7 +62,7 @@ trait WritingQueries {
   trait UpdateSelectionOfObjectQuery[T, PK] extends ReqlModificationResult[T, PK]
 
   implicit class UpdateOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
-    def update(producer: ReqlObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
+    def update(producer: ObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
                durability: DurabilityOptions = DefaultDurability,
                returnChanges: ReturnChangesOptions = DoNotReturnChanges,
                nonAtomic: NonAtomicOptions = AtomicUpdate): UpdateTableQuery[T, PK] = new UpdateTableQuery[T, PK] {
@@ -73,7 +74,7 @@ trait WritingQueries {
   }
 
   implicit class UpdateOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
-    def update(producer: ReqlObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
+    def update(producer: ObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
                durability: DurabilityOptions = DefaultDurability,
                returnChanges: ReturnChangesOptions = DoNotReturnChanges,
                nonAtomic: NonAtomicOptions = AtomicUpdate): UpdateTableSliceQuery[T, PK] = new UpdateTableSliceQuery[T, PK] {
@@ -85,7 +86,7 @@ trait WritingQueries {
   }
 
   implicit class UpdateOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
-    def update(producer: ReqlObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
+    def update(producer: ObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
                durability: DurabilityOptions = DefaultDurability,
                returnChanges: ReturnChangesOptions = DoNotReturnChanges,
                nonAtomic: NonAtomicOptions = AtomicUpdate): UpdateSelectionOfStreamQuery[T, PK] = new UpdateSelectionOfStreamQuery[T, PK] {
@@ -97,7 +98,7 @@ trait WritingQueries {
   }
 
   implicit class UpdateOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
-    def update(producer: ReqlObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
+    def update(producer: ObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
                durability: DurabilityOptions = DefaultDurability,
                returnChanges: ReturnChangesOptions = DoNotReturnChanges,
                nonAtomic: NonAtomicOptions = AtomicUpdate): UpdateSelectionOfArrayQuery[T, PK] = new UpdateSelectionOfArrayQuery[T, PK] {
@@ -109,7 +110,7 @@ trait WritingQueries {
   }
 
   implicit class UpdateOnSelectionOfObjectOp[T, PK](val sel: ReqlSelectionOfObject[T, PK]) {
-    def update(producer: ReqlObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
+    def update(producer: ObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
                durability: DurabilityOptions = DefaultDurability,
                returnChanges: ReturnChangesOptions = DoNotReturnChanges,
                nonAtomic: NonAtomicOptions = AtomicUpdate): UpdateSelectionOfObjectQuery[T, PK] = new UpdateSelectionOfObjectQuery[T, PK] {
@@ -128,7 +129,7 @@ trait WritingQueries {
   trait ReplaceSelectionOfObjectQuery[T, PK] extends ReqlModificationResult[T, PK]
 
   implicit class ReplaceOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
-    def replace(producer: ReqlObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
+    def replace(producer: ObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
                 durability: DurabilityOptions = DefaultDurability,
                 returnChanges: ReturnChangesOptions = DoNotReturnChanges,
                 nonAtomic: NonAtomicOptions = AtomicUpdate): ReplaceTableQuery[T, PK] = new ReplaceTableQuery[T, PK] {
@@ -140,7 +141,7 @@ trait WritingQueries {
   }
 
   implicit class ReplaceOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
-    def replace(producer: ReqlObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
+    def replace(producer: ObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
                 durability: DurabilityOptions = DefaultDurability,
                 returnChanges: ReturnChangesOptions = DoNotReturnChanges,
                 nonAtomic: NonAtomicOptions = AtomicUpdate): ReplaceTableSliceQuery[T, PK] = new ReplaceTableSliceQuery[T, PK] {
@@ -152,7 +153,7 @@ trait WritingQueries {
   }
 
   implicit class ReplaceOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
-    def replace(producer: ReqlObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
+    def replace(producer: ObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
                 durability: DurabilityOptions = DefaultDurability,
                 returnChanges: ReturnChangesOptions = DoNotReturnChanges,
                 nonAtomic: NonAtomicOptions = AtomicUpdate): ReplaceSelectionOfStreamQuery[T, PK] = new ReplaceSelectionOfStreamQuery[T, PK] {
@@ -164,7 +165,7 @@ trait WritingQueries {
   }
 
   implicit class ReplaceOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
-    def replace(producer: ReqlObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
+    def replace(producer: ObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
                 durability: DurabilityOptions = DefaultDurability,
                 returnChanges: ReturnChangesOptions = DoNotReturnChanges,
                 nonAtomic: NonAtomicOptions = AtomicUpdate): ReplaceSelectionOfArrayQuery[T, PK] = new ReplaceSelectionOfArrayQuery[T, PK] {
@@ -176,7 +177,7 @@ trait WritingQueries {
   }
 
   implicit class ReplaceOnSelectionOfObjectOp[T, PK](val sel: ReqlSelectionOfObject[T, PK]) {
-    def replace(producer: ReqlObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
+    def replace(producer: ObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
                 durability: DurabilityOptions = DefaultDurability,
                 returnChanges: ReturnChangesOptions = DoNotReturnChanges,
                 nonAtomic: NonAtomicOptions = AtomicUpdate): ReplaceSelectionOfObjectQuery[T, PK] = new ReplaceSelectionOfObjectQuery[T, PK] {
