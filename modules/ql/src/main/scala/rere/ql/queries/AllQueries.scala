@@ -1,6 +1,6 @@
 package rere.ql.queries
 
-import rere.ql.typeclasses.{ToPredicate, Transmuter}
+import rere.ql.typeclasses.{DatumSelector, ToPredicate, Transmuter}
 import rere.ql.types._
 
 trait AllQueries
@@ -42,7 +42,7 @@ trait AllQueries
 
   //TODO: it's extension, not part of official api
   implicit class SelectorOp(val r: ReqlR) {
-    def sel[T <: ReqlObject, U <: ReqlDatum](str: String): ReqlDatumSelector[T, U] = {
+    def sel[T <: ReqlObject, U <: ReqlDatum](str: String): DatumSelector[T, U] = {
       str
     }
   }

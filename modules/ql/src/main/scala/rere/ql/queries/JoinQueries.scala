@@ -3,7 +3,7 @@ package rere.ql.queries
 import rere.ql.options.all._
 import rere.ql.options.{ComposableOptions, Options}
 import rere.ql.ql2.Term.TermType
-import rere.ql.typeclasses.Transmuter
+import rere.ql.typeclasses.{DatumSelector, Transmuter}
 import rere.ql.types._
 
 trait JoinQueries {
@@ -111,7 +111,7 @@ trait JoinQueries {
 
   implicit class EqJoinOnInfiniteStreamLikeOp[T0 <: ReqlDatum](val infiniteStreamLike: ReqlInfiniteStreamLike[T0]) {
     def eqJoin[T1, PK1, Selected <: ReqlDatum](
-      selector: ReqlDatumSelector[T0, Selected],
+      selector: DatumSelector[T0, Selected],
       secondTable: ReqlTable[T1, PK1],
       secondTableIndex: IndexOptions = DefaultIndex,
       ordered: OrderingOptions = NotOrdered
@@ -125,7 +125,7 @@ trait JoinQueries {
 
   implicit class EqJoinOnFiniteStreamLikeOp[T0 <: ReqlDatum](val finiteStreamLike: ReqlFiniteStreamLike[T0]) {
     def eqJoin[T1, PK1, Selected <: ReqlDatum](
-      selector: ReqlDatumSelector[T0, Selected],
+      selector: DatumSelector[T0, Selected],
       secondTable: ReqlTable[T1, PK1],
       secondTableIndex: IndexOptions = DefaultIndex,
       ordered: OrderingOptions = NotOrdered
@@ -139,7 +139,7 @@ trait JoinQueries {
 
   implicit class EqJoinOnArrayLikeOp[T0 <: ReqlDatum](val arrayLike: ReqlFiniteArrayLike[T0]) {
     def eqJoin[T1, PK1, Selected <: ReqlDatum](
-      selector: ReqlDatumSelector[T0, Selected],
+      selector: DatumSelector[T0, Selected],
       table: ReqlTable[T1, PK1],
       tableIndex: IndexOptions = DefaultIndex,
       ordered: OrderingOptions = NotOrdered

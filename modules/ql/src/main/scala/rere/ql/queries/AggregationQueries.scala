@@ -4,7 +4,7 @@ import rere.ql.options.all._
 import rere.ql.options.{ComposableOptions, Options}
 import rere.ql.ql2.Term.TermType
 import rere.ql.shapes.ReqlModel
-import rere.ql.typeclasses.{ToPredicate, Transmuter}
+import rere.ql.typeclasses.{DatumSelector, ToPredicate, Transmuter}
 import rere.ql.types._
 
 trait AggregationQueries {
@@ -16,7 +16,7 @@ trait AggregationQueries {
   implicit class GroupOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
     //it returns immediately like array
     def group[U <: ReqlDatum](
-      selector: ReqlDatumSelector[ReqlModel[T, PK], U]
+      selector: DatumSelector[ReqlModel[T, PK], U]
     ): GroupTableQuery[U, ReqlModel[T, PK]] = new GroupTableQuery[U, ReqlModel[T, PK]] {
       val command = TermType.GROUP
       val string = "group"
@@ -25,8 +25,8 @@ trait AggregationQueries {
     }
 
     def group[U <: ReqlDatum](
-      selector0: ReqlDatumSelector[ReqlModel[T, PK], U],
-      selector1: ReqlDatumSelector[ReqlModel[T, PK], U]
+      selector0: DatumSelector[ReqlModel[T, PK], U],
+      selector1: DatumSelector[ReqlModel[T, PK], U]
     ): GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] = new GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] {
       val command = TermType.GROUP
       val string = "group"
@@ -52,7 +52,7 @@ trait AggregationQueries {
     }
 
     def group[U <: ReqlDatum](
-      selector: ReqlDatumSelector[ReqlModel[T, PK], U],
+      selector: DatumSelector[ReqlModel[T, PK], U],
       index: IndexOptions
     ): GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] = new GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] {
       val command = TermType.GROUP
@@ -62,8 +62,8 @@ trait AggregationQueries {
     }
 
     def group[U <: ReqlDatum](
-      selector0: ReqlDatumSelector[ReqlModel[T, PK], U],
-      selector1: ReqlDatumSelector[ReqlModel[T, PK], U],
+      selector0: DatumSelector[ReqlModel[T, PK], U],
+      selector1: DatumSelector[ReqlModel[T, PK], U],
       index: IndexOptions
     ): GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] = new GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] {
       val command = TermType.GROUP
@@ -80,7 +80,7 @@ trait AggregationQueries {
     }*/
 
     def group[U <: ReqlDatum](
-      selector: ReqlDatumSelector[ReqlModel[T, PK], U],
+      selector: DatumSelector[ReqlModel[T, PK], U],
       multi: GroupMultiplicityOptions
     ): GroupTableQuery[U, ReqlModel[T, PK]] = new GroupTableQuery[U, ReqlModel[T, PK]] {
       val command = TermType.GROUP
@@ -90,8 +90,8 @@ trait AggregationQueries {
     }
 
     def group[U <: ReqlDatum](
-      selector0: ReqlDatumSelector[ReqlModel[T, PK], U],
-      selector1: ReqlDatumSelector[ReqlModel[T, PK], U],
+      selector0: DatumSelector[ReqlModel[T, PK], U],
+      selector1: DatumSelector[ReqlModel[T, PK], U],
       multi: GroupMultiplicityOptions
     ): GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] = new GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] {
       val command = TermType.GROUP
@@ -118,7 +118,7 @@ trait AggregationQueries {
     }
 
     def group[U <: ReqlDatum](
-      selector: ReqlDatumSelector[ReqlModel[T, PK], U],
+      selector: DatumSelector[ReqlModel[T, PK], U],
       index: IndexOptions,
       multi: GroupMultiplicityOptions
     ): GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] = new GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] {
@@ -129,8 +129,8 @@ trait AggregationQueries {
     }
 
     def group[U <: ReqlDatum](
-      selector0: ReqlDatumSelector[ReqlModel[T, PK], U],
-      selector1: ReqlDatumSelector[ReqlModel[T, PK], U],
+      selector0: DatumSelector[ReqlModel[T, PK], U],
+      selector1: DatumSelector[ReqlModel[T, PK], U],
       index: IndexOptions,
       multi: GroupMultiplicityOptions
     ): GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] = new GroupTableQuery[ReqlArray[U], ReqlModel[T, PK]] {
