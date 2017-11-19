@@ -25,8 +25,8 @@ object ModelShape extends LowPriorityModelShape {
 
   def apply[Model, PK](implicit shape: ModelShape[Model, PK]): ModelShape[Model, PK] = shape
 
-  implicit def shapeAccessor[Model, PK](implicit tableDescriptor: TableDescriptor[Model, PK]): ModelShape[Model, PK] = {
-    tableDescriptor.shape
+  implicit def shapableToShape[Model, PK](implicit shapable: ReqlShapable[Model, PK]): ModelShape[Model, PK] = {
+    shapable.shape
   }
 
   def decodingResultConverter[T](result: ReqlDecoder.Result[T], json: Json): DecodingResult[T] = {
