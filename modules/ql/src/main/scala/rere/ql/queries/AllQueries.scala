@@ -53,8 +53,6 @@ trait AllQueries
 
     def asNull: ReqlNull = new NullHintProxy(datum)
     def asBoolean: ReqlBoolean = new BooleanHintProxy(datum)
-    //TODO: deprecate asNumber or make it alias for asFloat
-    def asNumber: ReqlNumber = new NumberHintProxy(datum)
     def asInteger: ReqlInteger = new IntegerHintProxy(datum)
     def asFloat: ReqlFloat = new FloatHintProxy(datum)
     def asString: ReqlString = new StringHintProxy(datum)

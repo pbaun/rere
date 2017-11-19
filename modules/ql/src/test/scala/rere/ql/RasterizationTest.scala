@@ -216,9 +216,10 @@ class RasterizationTest extends WordSpec {
 
       r.http("https://httpbin.org/get", params = WithoutHttpParams) =%=[ReqlHttpResult] """[153,["https://httpbin.org/get"]]"""
       r.http("https://httpbin.org/get", params = HttpParams(Seq(
-        new HttpQueryNumberParam("abc", 123),
-        new HttpQueryStringParam("bcd", "cde")
-      ))) =%=[ReqlHttpResult] """[153,["https://httpbin.org/get"],{"params":{"abc":123,"bcd":"cde"}}]"""
+        new HttpQueryIntegerParam("abc", 123),
+        new HttpQueryFloatParam("bcd", 234.56),
+        new HttpQueryStringParam("cde", "def")
+      ))) =%=[ReqlHttpResult] """[153,["https://httpbin.org/get"],{"params":{"abc":123,"bcd":234.56,"cde":"def"}}]"""
 
       r.http("https://httpbin.org/get", header = WithDefaultHttpHeader) =%=[ReqlHttpResult] """[153,["https://httpbin.org/get"]]"""
       r.http("https://httpbin.org/get", header = WithHttpHeader(
@@ -253,10 +254,11 @@ class RasterizationTest extends WordSpec {
       )) =%=[ReqlHttpResult] """[153,["https://httpbin.org/post"],{"method":"POST","data":"string data"}]"""
       r.http("https://httpbin.org/post", method = HttpPost, data = WithHttpData(
         HttpFormFieldsObject(Seq(
-          new HttpNumberFormField("abc", 123),
-          new HttpStringFormField("bcd", "cde")
+          new HttpIntegerFormField("abc", 123),
+          new HttpFloatFormField("bcd", 234.56),
+          new HttpStringFormField("cde", "def")
         ))
-      )) =%=[ReqlHttpResult] """[153,["https://httpbin.org/post"],{"method":"POST","data":{"abc":123,"bcd":"cde"}}]"""
+      )) =%=[ReqlHttpResult] """[153,["https://httpbin.org/post"],{"method":"POST","data":{"abc":123,"bcd":234.56,"cde":"def"}}]"""
       r.http("https://httpbin.org/post", method = HttpPost, data = WithHttpData(
         HttpFormFieldsObject(
           ("abc" := 123) ~
@@ -909,19 +911,19 @@ class RasterizationTest extends WordSpec {
 
     "map" in {
       //table
-      abcJsonTable.map { x => x.asNumber.mul(2) } =%=[ReqlFiniteStream[ReqlFloat]] """[38,[[15,["abc"]],[69,[[2,[0]],[26,[[10,[0]],2]]]]]]"""
+      abcJsonTable.map { x => x.asFloat.mul(2) } =%=[ReqlFiniteStream[ReqlFloat]] """[38,[[15,["abc"]],[69,[[2,[0]],[26,[[10,[0]],2]]]]]]"""
 
       abcJsonTable.map(bcdJsonTable, (x, y: ReqlModel[JsonObject, String]) => x.merge(y)) =%=[ReqlFiniteStream[ReqlObject]] """[38,[[15,["abc"]],[15,["bcd"]],[69,[[2,[0,1]],[35,[[10,[0]],[10,[1]]]]]]]]"""
 
       //tableSlice
-      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).map { x => x.asNumber.mul(2) } =%=[ReqlFiniteStream[ReqlNumber]] """[38,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[26,[[10,[0]],2]]]]]]"""
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).map { x => x.asFloat.mul(2) } =%=[ReqlFiniteStream[ReqlFloat]] """[38,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[26,[[10,[0]],2]]]]]]"""
 
       //selectionOfArray
-      abcJsonTable.orderBy(r.asc("code")).map { x => x.asNumber.mul(2) } =%=[ReqlArray[ReqlNumber]] """[38,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[26,[[10,[0]],2]]]]]]"""
+      abcJsonTable.orderBy(r.asc("code")).map { x => x.asFloat.mul(2) } =%=[ReqlArray[ReqlFloat]] """[38,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[26,[[10,[0]],2]]]]]]"""
 
       //selectionOfStream
       //TODO: it should not work - should not allow to convert object to number?
-      abcJsonTable.skip(10).map { x => x.asNumber.mul(2) } =%=[ReqlFiniteStream[ReqlNumber]] """[38,[[70,[[15,["abc"]],10]],[69,[[2,[0]],[26,[[10,[0]],2]]]]]]"""
+      abcJsonTable.skip(10).map { x => x.asFloat.mul(2) } =%=[ReqlFiniteStream[ReqlFloat]] """[38,[[70,[[15,["abc"]],10]],[69,[[2,[0]],[26,[[10,[0]],2]]]]]]"""
 
       //infiniteStream
       r.range().map(_.mul(2)) =%=[ReqlInfiniteStream[ReqlInteger]] """[38,[[173,[]],[69,[[2,[0]],[26,[[10,[0]],2]]]]]]"""
@@ -950,12 +952,12 @@ class RasterizationTest extends WordSpec {
       ) =%=[ReqlArray[ReqlInteger]] """[38,[[2,[123,234]],[2,[345,456]],[2,[567,678]],[69,[[2,[0,1,2]],[26,[[10,[0]],[10,[1]],[10,[2]]]]]]]]"""
 
       //complex example
-      abcJsonTable.getField[ReqlNumber]("code").map(x => x.mul(x)) =%=[ReqlFiniteStream[ReqlFloat]] """[38,[[31,[[15,["abc"]],"code"]],[69,[[2,[0]],[26,[[10,[0]],[10,[0]]]]]]]]"""
+      abcJsonTable.getField[ReqlFloat]("code").map(x => x.mul(x)) =%=[ReqlFiniteStream[ReqlFloat]] """[38,[[31,[[15,["abc"]],"code"]],[69,[[2,[0]],[26,[[10,[0]],[10,[0]]]]]]]]"""
 
-      abcJsonTable.getField[ReqlNumber]("code").map[ReqlNumber, ReqlNumber](abcJsonTable.getField[ReqlNumber]("num"), {
-        case (code: ReqlNumber, num: ReqlNumber) =>
-          code.asNumber.add(num.asNumber)
-      }) =%=[ReqlFiniteStream[ReqlNumber]] """[38,[[31,[[15,["abc"]],"code"]],[31,[[15,["abc"]],"num"]],[69,[[2,[0,1]],[24,[[10,[0]],[10,[1]]]]]]]]"""
+      abcJsonTable.getField[ReqlFloat]("code").map[ReqlFloat, ReqlFloat](abcJsonTable.getField[ReqlFloat]("num"), {
+        case (code: ReqlFloat, num: ReqlFloat) =>
+          code.add(num)
+      }) =%=[ReqlFiniteStream[ReqlFloat]] """[38,[[31,[[15,["abc"]],"code"]],[31,[[15,["abc"]],"num"]],[69,[[2,[0,1]],[24,[[10,[0]],[10,[1]]]]]]]]"""
     }
 
     "fold" in {
@@ -1219,7 +1221,7 @@ class RasterizationTest extends WordSpec {
         |r.expr(Seq(r.expr(123), r.expr(234))).concatMap(_.asNumber.add(r.expr(1)))
       """.stripMargin.shouldNot(compile)
 
-      r.expr(Seq(r.expr(123), r.expr(234))).concatMap(x => Seq(x.asNumber.add(r.expr(1)))) =%=[ReqlArray[ReqlFloat]] """[40,[[2,[123,234]],[69,[[2,[0]],[2,[[24,[[10,[0]],1]]]]]]]]"""
+      r.expr(Seq(r.expr(123), r.expr(234))).concatMap(x => Seq(x.add(r.expr(1)))) =%=[ReqlArray[ReqlInteger]] """[40,[[2,[123,234]],[69,[[2,[0]],[2,[[24,[[10,[0]],1]]]]]]]]"""
 
       r.expr(Seq(r.expr(1), r.expr(2), r.expr(3))).concatMap(
         _ => r.table("abc")
@@ -1231,8 +1233,8 @@ class RasterizationTest extends WordSpec {
         |  concatMap(x => x.asNumber.mul(x.asNumber))
       """.stripMargin.shouldNot(compile)
 
-      r.table("abc").getField[ReqlNumber]("code").
-        concatMap[ReqlNumber](x => Seq(x.asNumber.mul(x.asNumber))) =%=[ReqlFiniteStream[ReqlNumber]] """[40,[[31,[[15,["abc"]],"code"]],[69,[[2,[0]],[2,[[26,[[10,[0]],[10,[0]]]]]]]]]]"""
+      r.table("abc").getField[ReqlFloat]("code").
+        concatMap[ReqlFloat](x => Seq(x.mul(x))) =%=[ReqlFiniteStream[ReqlFloat]] """[40,[[31,[[15,["abc"]],"code"]],[69,[[2,[0]],[2,[[26,[[10,[0]],[10,[0]]]]]]]]]]"""
 
       r.table("abc").getField[ReqlNumber]("code").
         concatMap(_ => r.table("def")) =%=[ReqlFiniteStream[ReqlObject]] """[40,[[31,[[15,["abc"]],"code"]],[69,[[2,[0]],[15,["def"]]]]]]"""
@@ -1269,9 +1271,9 @@ class RasterizationTest extends WordSpec {
 
       abcJsonTable.orderBy(r.asc("code")) =%=[ReqlSelectionOfArray[JsonObject, String]] """[41,[[15,["abc"]],[73,["code"]]]]"""
 
-      abcJsonTable.orderBy(r.asc("code"), r.desc(_.asNumber.add(5))) =%=[ReqlSelectionOfArray[JsonObject, String]] """[41,[[15,["abc"]],[73,["code"]],[74,[[69,[[2,[0]],[24,[[10,[0]],5]]]]]]]]"""
+      abcJsonTable.orderBy(r.asc("code"), r.desc(_.asInteger.add(5))) =%=[ReqlSelectionOfArray[JsonObject, String]] """[41,[[15,["abc"]],[73,["code"]],[74,[[69,[[2,[0]],[24,[[10,[0]],5]]]]]]]]"""
 
-      abcJsonTable.orderBy(OrderedIndex(r.desc("id")), r.asc("code"), r.desc(_.asNumber.add(5))) =%=[ReqlSelectionOfStream[JsonObject, String]] """[41,[[15,["abc"]],[73,["code"]],[74,[[69,[[2,[0]],[24,[[10,[0]],5]]]]]]],{"index":[74,["id"]]}]"""
+      abcJsonTable.orderBy(OrderedIndex(r.desc("id")), r.asc("code"), r.desc(_.asInteger.add(5))) =%=[ReqlSelectionOfStream[JsonObject, String]] """[41,[[15,["abc"]],[73,["code"]],[74,[[69,[[2,[0]],[24,[[10,[0]],5]]]]]]],{"index":[74,["id"]]}]"""
 
 
       //tableSlice
@@ -2684,7 +2686,7 @@ class RasterizationTest extends WordSpec {
     "asc" in {
       r.asc("field") =*= """[73,["field"]]"""
 
-      r.asc(_.asNumber.add(5)) =*= """[73,[[69,[[2,[0]],[24,[[10,[0]],5]]]]]]"""
+      r.asc(_.asInteger.add(5)) =*= """[73,[[69,[[2,[0]],[24,[[10,[0]],5]]]]]]"""
 
       """r.asc(r.asc("code"))""".shouldNot(compile)
     }
@@ -2692,7 +2694,7 @@ class RasterizationTest extends WordSpec {
     "desc" in {
       r.desc("field") =*= """[74,["field"]]"""
 
-      r.desc(_.asNumber.add(5)) =*= """[74,[[69,[[2,[0]],[24,[[10,[0]],5]]]]]]"""
+      r.desc(_.asInteger.add(5)) =*= """[74,[[69,[[2,[0]],[24,[[10,[0]],5]]]]]]"""
 
       """r.desc(r.desc("code"))""".shouldNot(compile)
     }
@@ -3057,29 +3059,29 @@ class RasterizationTest extends WordSpec {
       //table
       """abcJsonTable.sum()""".shouldNot(compile)
       abcJsonTable.sum("code") =%=[ReqlFloat] """[145,[[15,["abc"]],"code"]]"""
-      abcJsonTable.sum(_("code").asNumber.add(7)) =%=[ReqlFloat] """[145,[[15,["abc"]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.sum(_("code").asFloat.add(7)) =%=[ReqlFloat] """[145,[[15,["abc"]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
 
       //tableSlice
       """abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).sum()""".shouldNot(compile)
       abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).sum("code") =%=[ReqlFloat] """[145,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],"code"]]"""
-      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).sum(_("code").asNumber.add(7)) =%=[ReqlFloat] """[145,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).sum(_("code").asFloat.add(7)) =%=[ReqlFloat] """[145,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
 
       //selectionOfArray
       abcJsonTable.orderBy(r.asc("code")) shouldBe an[ReqlSelectionOfArray[JsonObject, String]]
       """abcJsonTable.orderBy(r.asc("code")).sum()""".shouldNot(compile)
       abcJsonTable.orderBy(r.asc("code")).sum("code") =%=[ReqlFloat] """[145,[[41,[[15,["abc"]],[73,["code"]]]],"code"]]"""
-      abcJsonTable.orderBy(r.asc("code")).sum(_("code").asNumber.add(7)) =%=[ReqlFloat] """[145,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.orderBy(r.asc("code")).sum(_("code").asFloat.add(7)) =%=[ReqlFloat] """[145,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
 
       //selectionOfStream
       abcJsonTable.skip(1) shouldBe an[ReqlSelectionOfStream[ReqlObject, UUID]]
       """abcJsonTable.skip(1).sum()""".shouldNot(compile)
       abcJsonTable.skip(1).sum("code") =%=[ReqlFloat] """[145,[[70,[[15,["abc"]],1]],"code"]]"""
-      abcJsonTable.skip(1).sum(_("code").asNumber.add(7)) =%=[ReqlFloat] """[145,[[70,[[15,["abc"]],1]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.skip(1).sum(_("code").asFloat.add(7)) =%=[ReqlFloat] """[145,[[70,[[15,["abc"]],1]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
 
       //finiteStream
       r.range(4).sum() =%=[ReqlFloat] """[145,[[173,[4]]]]"""
       r.range(4).sum("code") =%=[ReqlFloat] """[145,[[173,[4]],"code"]]"""
-      r.range(4).sum(_.asNumber.add(7)) =%=[ReqlFloat] """[145,[[173,[4]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
+      r.range(4).sum(_.asFloat.add(7)) =%=[ReqlFloat] """[145,[[173,[4]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
 
       //infiniteStream
       """r.range().sum()""".shouldNot(compile)
@@ -3092,36 +3094,36 @@ class RasterizationTest extends WordSpec {
         sum("code") =%=[ReqlFloat] """[145,[[2,[1,2,3]],"code"]]"""
 
       r.expr(Seq(r.expr(1), r.expr(2), r.expr(3))).
-        sum(_.asNumber.add(7)) =%=[ReqlFloat] """[145,[[2,[1,2,3]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
+        sum(_.asFloat.add(7)) =%=[ReqlFloat] """[145,[[2,[1,2,3]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
     }
 
     "avg" in {
       //table
       """abcJsonTable.avg()""".shouldNot(compile)
       abcJsonTable.avg("code") =%=[ReqlFloat] """[146,[[15,["abc"]],"code"]]"""
-      abcJsonTable.avg(_("code").asNumber.add(7)) =%=[ReqlFloat] """[146,[[15,["abc"]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.avg(_("code").asFloat.add(7)) =%=[ReqlFloat] """[146,[[15,["abc"]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
 
       //tableSlice
       """abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).avg()""".shouldNot(compile)
       abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).avg("code") =%=[ReqlFloat] """[146,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],"code"]]"""
-      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).avg(_("code").asNumber.add(7)) =%=[ReqlFloat] """[146,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).avg(_("code").asFloat.add(7)) =%=[ReqlFloat] """[146,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
 
       //selectionOfArray
       abcJsonTable.orderBy(r.asc("code")) shouldBe an[ReqlSelectionOfArray[JsonObject, String]]
       """abcJsonTable.orderBy(r.asc("code")).avg()""".shouldNot(compile)
       abcJsonTable.orderBy(r.asc("code")).avg("code") =%=[ReqlFloat] """[146,[[41,[[15,["abc"]],[73,["code"]]]],"code"]]"""
-      abcJsonTable.orderBy(r.asc("code")).avg(_("code").asNumber.add(7)) =%=[ReqlFloat] """[146,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.orderBy(r.asc("code")).avg(_("code").asFloat.add(7)) =%=[ReqlFloat] """[146,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
 
       //selectionOfStream
       abcJsonTable.skip(1) shouldBe an[ReqlSelectionOfStream[JsonObject, String]]
       """abcJsonTable.skip(1).avg()""".shouldNot(compile)
       abcJsonTable.skip(1).avg("code") =%=[ReqlFloat] """[146,[[70,[[15,["abc"]],1]],"code"]]"""
-      abcJsonTable.skip(1).avg(_("code").asNumber.add(7)) =%=[ReqlFloat] """[146,[[70,[[15,["abc"]],1]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.skip(1).avg(_("code").asFloat.add(7)) =%=[ReqlFloat] """[146,[[70,[[15,["abc"]],1]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
 
       //finiteStream
       r.range(4).avg() =%=[ReqlFloat] """[146,[[173,[4]]]]"""
       r.range(4).avg("code") =%=[ReqlFloat] """[146,[[173,[4]],"code"]]"""
-      r.range(4).avg(_.asNumber.add(7)) =%=[ReqlFloat] """[146,[[173,[4]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
+      r.range(4).avg(_.add(7)) =%=[ReqlFloat] """[146,[[173,[4]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
 
       //infiniteStream
       """r.range().avg()""".shouldNot(compile)
@@ -3134,7 +3136,7 @@ class RasterizationTest extends WordSpec {
         avg("code") =%=[ReqlFloat] """[146,[[2,[1,2,3]],"code"]]"""
 
       r.expr(Seq(r.expr(1), r.expr(2), r.expr(3))).
-        avg(_.asNumber.add(7)) =%=[ReqlFloat] """[146,[[2,[1,2,3]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
+        avg(_.add(7)) =%=[ReqlFloat] """[146,[[2,[1,2,3]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
     }
 
     "min" in {
@@ -3142,34 +3144,34 @@ class RasterizationTest extends WordSpec {
       abcJsonTable.min() =%=[ReqlModel[JsonObject, String]] """[147,[[15,["abc"]]]]"""
       abcJsonTable.min(Index("code")) =%=[ReqlModel[JsonObject, String]] """[147,[[15,["abc"]]],{"index":"code"}]"""
       abcJsonTable.min("code") =%=[ReqlModel[JsonObject, String]] """[147,[[15,["abc"]],"code"]]"""
-      abcJsonTable.min(_("code").asNumber.add(7)) =%=[ReqlModel[JsonObject, String]] """[147,[[15,["abc"]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.min(_("code").asInteger.add(7)) =%=[ReqlModel[JsonObject, String]] """[147,[[15,["abc"]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
       abcJsonTable.min(_("code").asBinary) =%=[ReqlModel[JsonObject, String]] """[147,[[15,["abc"]],[69,[[2,[0]],[170,[[10,[0]],"code"]]]]]]"""
 
       //tableSlice
       abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).min() =%=[ReqlModel[JsonObject, String]] """[147,[[41,[[15,["abc"]]],{"index":[73,["code"]]}]]]"""
       abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).min("code") =%=[ReqlModel[JsonObject, String]] """[147,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],"code"]]"""
-      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).min(_("code").asNumber.add(7)) =%=[ReqlModel[JsonObject, String]] """[147,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).min(_("code").asInteger.add(7)) =%=[ReqlModel[JsonObject, String]] """[147,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
       abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).min(_("code").asBinary) =%=[ReqlModel[JsonObject, String]] """[147,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[170,[[10,[0]],"code"]]]]]]"""
 
       //selectionOfArray
       abcJsonTable.orderBy(r.asc("code")) shouldBe an[ReqlSelectionOfArray[JsonObject, String]]
       abcJsonTable.orderBy(r.asc("code")).min() =%=[ReqlModel[JsonObject, String]] """[147,[[41,[[15,["abc"]],[73,["code"]]]]]]"""
       abcJsonTable.orderBy(r.asc("code")).min("code") =%=[ReqlModel[JsonObject, String]] """[147,[[41,[[15,["abc"]],[73,["code"]]]],"code"]]"""
-      abcJsonTable.orderBy(r.asc("code")).min(_("code").asNumber.add(7)) =%=[ReqlModel[JsonObject, String]] """[147,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.orderBy(r.asc("code")).min(_("code").asInteger.add(7)) =%=[ReqlModel[JsonObject, String]] """[147,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
       abcJsonTable.orderBy(r.asc("code")).min(_("code").asBinary) =%=[ReqlModel[JsonObject, String]] """[147,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[170,[[10,[0]],"code"]]]]]]"""
 
       //selectionOfStream
       abcJsonTable.skip(1) shouldBe an[ReqlSelectionOfStream[JsonObject, String]]
       abcJsonTable.skip(1).min() =%=[ReqlModel[JsonObject, String]] """[147,[[70,[[15,["abc"]],1]]]]"""
       abcJsonTable.skip(1).min("code") =%=[ReqlModel[JsonObject, String]] """[147,[[70,[[15,["abc"]],1]],"code"]]"""
-      abcJsonTable.skip(1).min(_("code").asNumber.add(7)) =%=[ReqlModel[JsonObject, String]] """[147,[[70,[[15,["abc"]],1]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.skip(1).min(_("code").asInteger.add(7)) =%=[ReqlModel[JsonObject, String]] """[147,[[70,[[15,["abc"]],1]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
       abcJsonTable.skip(1).min(_("code").asBinary) =%=[ReqlModel[JsonObject, String]] """[147,[[70,[[15,["abc"]],1]],[69,[[2,[0]],[170,[[10,[0]],"code"]]]]]]"""
 
       //finiteStream
       r.range(4).min() =%=[ReqlInteger] """[147,[[173,[4]]]]"""
       //TODO: it should not work
       r.range(4).min("code") =%=[ReqlInteger] """[147,[[173,[4]],"code"]]"""
-      r.range(4).min(_.asNumber.add(7)) =%=[ReqlInteger] """[147,[[173,[4]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
+      r.range(4).min(_.add(7)) =%=[ReqlInteger] """[147,[[173,[4]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
 
       //infiniteStream
       """r.range().min()""".shouldNot(compile)
@@ -3182,7 +3184,7 @@ class RasterizationTest extends WordSpec {
         min("code") =%=[ReqlInteger] """[147,[[2,[1,2,3]],"code"]]"""
 
       r.expr(Seq(r.expr(1), r.expr(2), r.expr(3))).
-        min(_.asNumber.add(7)) =%=[ReqlInteger] """[147,[[2,[1,2,3]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
+        min(_.add(7)) =%=[ReqlInteger] """[147,[[2,[1,2,3]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
     }
 
     "max" in {
@@ -3190,34 +3192,34 @@ class RasterizationTest extends WordSpec {
       abcJsonTable.max() =%=[ReqlModel[JsonObject, String]] """[148,[[15,["abc"]]]]"""
       abcJsonTable.max(Index("code")) =%=[ReqlModel[JsonObject, String]] """[148,[[15,["abc"]]],{"index":"code"}]"""
       abcJsonTable.max("code") =%=[ReqlModel[JsonObject, String]] """[148,[[15,["abc"]],"code"]]"""
-      abcJsonTable.max(_("code").asNumber.add(7)) =%=[ReqlModel[JsonObject, String]] """[148,[[15,["abc"]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.max(_("code").asInteger.add(7)) =%=[ReqlModel[JsonObject, String]] """[148,[[15,["abc"]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
       abcJsonTable.max(_("code").asBinary) =%=[ReqlModel[JsonObject, String]] """[148,[[15,["abc"]],[69,[[2,[0]],[170,[[10,[0]],"code"]]]]]]"""
 
       //tableSlice
       abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).max() =%=[ReqlModel[JsonObject, String]] """[148,[[41,[[15,["abc"]]],{"index":[73,["code"]]}]]]"""
       abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).max("code") =%=[ReqlModel[JsonObject, String]] """[148,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],"code"]]"""
-      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).max(_("code").asNumber.add(7)) =%=[ReqlModel[JsonObject, String]] """[148,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).max(_("code").asInteger.add(7)) =%=[ReqlModel[JsonObject, String]] """[148,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
       abcJsonTable.orderBy(OrderedIndex(r.asc("code"))).max(_("code").asBinary) =%=[ReqlModel[JsonObject, String]] """[148,[[41,[[15,["abc"]]],{"index":[73,["code"]]}],[69,[[2,[0]],[170,[[10,[0]],"code"]]]]]]"""
 
       //selectionOfArray
       abcJsonTable.orderBy(r.asc("code")) shouldBe an[ReqlSelectionOfArray[JsonObject, String]]
       abcJsonTable.orderBy(r.asc("code")).max() =%=[ReqlModel[JsonObject, String]] """[148,[[41,[[15,["abc"]],[73,["code"]]]]]]"""
       abcJsonTable.orderBy(r.asc("code")).max("code") =%=[ReqlModel[JsonObject, String]] """[148,[[41,[[15,["abc"]],[73,["code"]]]],"code"]]"""
-      abcJsonTable.orderBy(r.asc("code")).max(_("code").asNumber.add(7)) =%=[ReqlModel[JsonObject, String]] """[148,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.orderBy(r.asc("code")).max(_("code").asInteger.add(7)) =%=[ReqlModel[JsonObject, String]] """[148,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
       abcJsonTable.orderBy(r.asc("code")).max(_("code").asBinary) =%=[ReqlModel[JsonObject, String]] """[148,[[41,[[15,["abc"]],[73,["code"]]]],[69,[[2,[0]],[170,[[10,[0]],"code"]]]]]]"""
 
       //selectionOfStream
       abcJsonTable.skip(1) shouldBe an[ReqlSelectionOfStream[JsonObject, String]]
       abcJsonTable.skip(1).max() =%=[ReqlModel[JsonObject, String]] """[148,[[70,[[15,["abc"]],1]]]]"""
       abcJsonTable.skip(1).max("code") =%=[ReqlModel[JsonObject, String]] """[148,[[70,[[15,["abc"]],1]],"code"]]"""
-      abcJsonTable.skip(1).max(_("code").asNumber.add(7)) =%=[ReqlModel[JsonObject, String]] """[148,[[70,[[15,["abc"]],1]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
+      abcJsonTable.skip(1).max(_("code").asInteger.add(7)) =%=[ReqlModel[JsonObject, String]] """[148,[[70,[[15,["abc"]],1]],[69,[[2,[0]],[24,[[170,[[10,[0]],"code"]],7]]]]]]"""
       abcJsonTable.skip(1).max(_("code").asBinary) =%=[ReqlModel[JsonObject, String]] """[148,[[70,[[15,["abc"]],1]],[69,[[2,[0]],[170,[[10,[0]],"code"]]]]]]"""
 
       //finiteStream
       r.range(4).max() =%=[ReqlInteger] """[148,[[173,[4]]]]"""
       //TODO: it should not work
       r.range(4).max("code") =%=[ReqlInteger] """[148,[[173,[4]],"code"]]"""
-      r.range(4).max(_.asNumber.add(7)) =%=[ReqlInteger] """[148,[[173,[4]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
+      r.range(4).max(_.add(7)) =%=[ReqlInteger] """[148,[[173,[4]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
 
       //infiniteStream
       """r.range().max()""".shouldNot(compile)
@@ -3230,7 +3232,7 @@ class RasterizationTest extends WordSpec {
         max("code") =%=[ReqlInteger] """[148,[[2,[1,2,3]],"code"]]"""
 
       r.expr(Seq(r.expr(1), r.expr(2), r.expr(3))).
-        max(_.asNumber.add(7)) =%=[ReqlInteger] """[148,[[2,[1,2,3]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
+        max(_.add(7)) =%=[ReqlInteger] """[148,[[2,[1,2,3]],[69,[[2,[0]],[24,[[10,[0]],7]]]]]]"""
     }
 
     "split" in {

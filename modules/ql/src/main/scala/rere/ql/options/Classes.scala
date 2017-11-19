@@ -10,7 +10,8 @@ trait Classes {
 
 
   sealed abstract class HttpQueryParam(val key: ReqlString, val value: ReqlValue)
-  final class HttpQueryNumberParam(key: ReqlString, value: ReqlNumber) extends HttpQueryParam(key, value)
+  final class HttpQueryIntegerParam(key: ReqlString, value: ReqlInteger) extends HttpQueryParam(key, value)
+  final class HttpQueryFloatParam(key: ReqlString, value: ReqlFloat) extends HttpQueryParam(key, value)
   final class HttpQueryStringParam(key: ReqlString, value: ReqlString) extends HttpQueryParam(key, value)
 
 
@@ -72,7 +73,8 @@ trait Classes {
     def fieldName: ReqlString
     def fieldValue: ReqlValue
   }
-  final class HttpNumberFormField(val fieldName: ReqlString, val fieldValue: ReqlNumber) extends HttpFormField
+  final class HttpIntegerFormField(val fieldName: ReqlString, val fieldValue: ReqlInteger) extends HttpFormField
+  final class HttpFloatFormField(val fieldName: ReqlString, val fieldValue: ReqlFloat) extends HttpFormField
   final class HttpStringFormField(val fieldName: ReqlString, val fieldValue: ReqlString) extends HttpFormField
 
   final class HttpFormFieldsObject private (fields: ReqlObject) extends HttpData {
