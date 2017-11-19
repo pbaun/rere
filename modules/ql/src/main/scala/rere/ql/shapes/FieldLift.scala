@@ -140,7 +140,6 @@ object FieldLift {
     override def getTransmuter: Transmuter[ReqlType] = Transmuter.binaryTransmuter
   }
 
-  //TODO: make getTransmuter: Transmuter[Reql] inside FieldLift and avoid ToDatumConverter
   implicit def optionTLift[Field, Reql <: ReqlDatum](
     implicit
     innerLift: FieldLift.Aux[Field, Reql]
