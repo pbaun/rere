@@ -9,13 +9,13 @@ trait BoundsOptions {
     def rqlValue: ReqlValue
   }
   case object OpenBound extends BoundType {
-    val rqlValue = values.expr("open")
+    override val rqlValue: ReqlValue = values.expr("open")
   }
   case object ClosedBound extends BoundType {
-    val rqlValue = values.expr("closed")
+    override val rqlValue: ReqlValue = values.expr("closed")
   }
   case object DefaultBound extends BoundType {
-    val rqlValue = values.expr(null)
+    override val rqlValue: ReqlValue = values.expr(null)
   }
 
   sealed trait BoundsOptions extends ComposableOptions

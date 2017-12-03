@@ -32,35 +32,35 @@ object ToUpper extends LowPriorityDoTransmuter {
     def toUpper(query: ReqlExpr): ReqlBoolean = Transmuter.booleanTransmuter.transmute(query)
   }
 
-  implicit def tableTransmuter[T, PK](
+  implicit def tableTransmuter[T, PK <: PrimaryKey](
     implicit modelShape: ModelShape[T, PK]
   ): Projection[ReqlTable[T, PK]] = new ToUpper[ReqlTable[T, PK]] {
     final type UpperType = ReqlTable[T, PK]
     def toUpper(query: ReqlExpr): ReqlTable[T, PK] = Transmuter.tableTransmuter.transmute(query)
   }
 
-  implicit def tableSliceTransmuter[T, PK](
+  implicit def tableSliceTransmuter[T, PK <: PrimaryKey](
     implicit modelShape: ModelShape[T, PK]
   ): Projection[ReqlTableSlice[T, PK]] = new ToUpper[ReqlTableSlice[T, PK]] {
     final type UpperType = ReqlTableSlice[T, PK]
     def toUpper(query: ReqlExpr): ReqlTableSlice[T, PK] = Transmuter.tableSliceTransmuter.transmute(query)
   }
 
-  implicit def selectionOfArrayTransmuter[T, PK](
+  implicit def selectionOfArrayTransmuter[T, PK <: PrimaryKey](
     implicit modelShape: ModelShape[T, PK]
   ): Projection[ReqlSelectionOfArray[T, PK]] = new ToUpper[ReqlSelectionOfArray[T, PK]] {
     final type UpperType = ReqlSelectionOfArray[T, PK]
     def toUpper(query: ReqlExpr): ReqlSelectionOfArray[T, PK] = Transmuter.selectionOfArrayTransmuter.transmute(query)
   }
 
-  implicit def selectionOfStreamTransmuter[T, PK](
+  implicit def selectionOfStreamTransmuter[T, PK <: PrimaryKey](
     implicit modelShape: ModelShape[T, PK]
   ): Projection[ReqlSelectionOfStream[T, PK]] = new ToUpper[ReqlSelectionOfStream[T, PK]] {
     final type UpperType = ReqlSelectionOfStream[T, PK]
     def toUpper(query: ReqlExpr): ReqlSelectionOfStream[T, PK] = Transmuter.selectionOfStreamTransmuter.transmute(query)
   }
 
-  implicit def selectionOfObjectTransmuter[T, PK](
+  implicit def selectionOfObjectTransmuter[T, PK <: PrimaryKey](
     implicit modelShape: ModelShape[T, PK]
   ): Projection[ReqlSelectionOfObject[T, PK]] = new ToUpper[ReqlSelectionOfObject[T, PK]] {
     final type UpperType = ReqlSelectionOfObject[T, PK]

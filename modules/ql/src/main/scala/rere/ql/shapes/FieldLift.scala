@@ -30,6 +30,16 @@ object FieldLift {
 
   def apply[Field](implicit fieldLift: FieldLift[Field]): FieldLift[Field] = fieldLift
 
+  implicit val nullLift: Aux[Null, ReqlNull] = new FieldLift[Null] {
+    final type ReqlType = ReqlNull
+
+    override def getEncoder: ReqlEncoder.Aux[Null, ReqlNull] = ReqlEncoder.nullEncoder
+
+    override def getDecoder: ReqlDecoder[Null] = ReqlDecoder.nullReqlDecoder
+
+    override def getTransmuter: Transmuter[ReqlType] = Transmuter.nullTransmuter
+  }
+
   implicit val boolLift: Aux[Boolean, ReqlBoolean] = new FieldLift[Boolean] {
     final type ReqlType = ReqlBoolean
 
@@ -110,14 +120,14 @@ object FieldLift {
     override def getTransmuter: Transmuter[ReqlType] = Transmuter.timeTransmuter
   }
 
-  implicit val uuidLift: Aux[UUID, ReqlString] = new FieldLift[UUID] {
-    final type ReqlType = ReqlString
+  implicit val uuidLift: Aux[UUID, ReqlUUID] = new FieldLift[UUID] {
+    final type ReqlType = ReqlUUID
 
     override def getEncoder: ReqlEncoder.Aux[UUID, ReqlType] = ReqlEncoder.uuidEncoder
 
     override def getDecoder: ReqlDecoder[UUID] = ReqlDecoder.uuidReqlDecoder
 
-    override def getTransmuter: Transmuter[ReqlType] = Transmuter.stringTransmuter
+    override def getTransmuter: Transmuter[ReqlType] = Transmuter.uuidTransmuter
   }
 
   implicit val jsonLift: Aux[Json, ReqlJson] = new FieldLift[Json] {
@@ -178,9 +188,9 @@ object FieldLift {
     }
   }
 
-  def liftFromShape[M, PK](shape: ModelShape[M, PK]): FieldLift.Aux[M, ReqlObject] = {
+  def liftFromShape[M, Key <: PrimaryKey](shape: ModelShape[M, Key]): FieldLift.Aux[M, ReqlModel[M, Key]] = {
     new FieldLift[M] {
-      final type ReqlType = ReqlObject
+      final type ReqlType = ReqlModel[M, Key]
 
       override def getEncoder: ReqlEncoder.Aux[M, ReqlType] = {
         ReqlEncoder.modelEncoder(shape)
@@ -190,7 +200,7 @@ object FieldLift {
         ReqlDecoder.modelReqlDecoder(shape)
       }
 
-      override def getTransmuter: Transmuter[ReqlType] = Transmuter.objectTransmuter
+      override def getTransmuter: Transmuter[ReqlType] = Transmuter.modelTransmuter(shape)
     }
   }
 

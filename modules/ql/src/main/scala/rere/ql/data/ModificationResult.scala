@@ -1,6 +1,6 @@
 package rere.ql.data
 
-case class ModificationResult[T, PK](
+case class ModificationResult[T, ScalaPK](
   inserted: Long,
   replaced: Long,
   unchanged: Long,
@@ -8,7 +8,7 @@ case class ModificationResult[T, PK](
   firstError: Option[String], //String?
   deleted: Long,
   skipped: Long,
-  generatedKeys: Option[Seq[PK]],
+  generatedKeys: Option[Seq[ScalaPK]],
   warnings: Option[String], //String?
   changes: Option[Seq[ChangefeedNotification[T]]]
 )

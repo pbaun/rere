@@ -4,13 +4,12 @@ import rere.driver.pool.ConnectionPool
 import rere.driver.runners.ready.SingleValueReadyToGo
 import rere.ql.extractors.AutoInference
 import rere.ql.options.Options
-import rere.ql.shapes.ReqlModel
-import rere.ql.types.ReqlSelectionOfObject
+import rere.ql.types.{PrimaryKey, ReqlModel, ReqlSelectionOfObject}
 
 import scala.concurrent.Future
 
 trait SelectionOfObjectRunners {
-  implicit class RunOnReqlSelectionOfObject[InnerExpr, InnerPK](expr: ReqlSelectionOfObject[InnerExpr, InnerPK]) {
+  implicit class RunOnReqlSelectionOfObject[InnerExpr, InnerPK <: PrimaryKey](expr: ReqlSelectionOfObject[InnerExpr, InnerPK]) {
     def run[ScalaType](
       pool: ConnectionPool)(
       implicit inference: AutoInference.Aux[ReqlModel[InnerExpr, InnerPK], ScalaType]
@@ -20,7 +19,7 @@ trait SelectionOfObjectRunners {
     }
   }
 
-  class ReadyToGoSelectionOfObjectInferred[InnerExpr, InnerPK, Out](
+  class ReadyToGoSelectionOfObjectInferred[InnerExpr, InnerPK <: PrimaryKey, Out](
     pool: ConnectionPool,
     expr: ReqlSelectionOfObject[InnerExpr, InnerPK],
     runOptions: Options,

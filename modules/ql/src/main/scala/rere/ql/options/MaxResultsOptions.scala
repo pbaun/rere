@@ -8,7 +8,7 @@ trait MaxResultsOptions {
 
   case object DefaultMaxResults extends MaxResultsOptions with DefaultOption
 
-  case class MaxResults(n: Integer) extends MaxResultsOptions with NonDefaultOption {
+  case class MaxResults(n: Int) extends MaxResultsOptions with NonDefaultOption {
     def view = "max_results" -> values.expr(n) :: Nil
   }
 

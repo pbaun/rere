@@ -1,12 +1,10 @@
 package rere.example.todo
 
-import java.util.UUID
-
-import rere.ql.shapes.{IdeaTypeHint, PrimaryKey, Shape}
+import rere.ql.shapes.{PK, Shape}
+import rere.ql.types.PrimaryKey
 
 object TaskShape
-  extends Shape(Task.apply _, PrimaryKey[UUID])
-  with IdeaTypeHint[Task] {
+  extends Shape(Task.apply _, PK[PrimaryKey.UUID]) {
 
   implicit val uuid = field("id", _.uuid)
   implicit val author = field("author_id", _.author)
@@ -19,8 +17,7 @@ object TaskShape
 }
 
 object ReminderShape
-  extends Shape(Reminder.apply _, PrimaryKey[UUID])
-  with IdeaTypeHint[Reminder] {
+  extends Shape(Reminder.apply _, PK[PrimaryKey.UUID]) {
 
   implicit val when = field("when", _.when)
   implicit val repeat = field("repeat", _.repeat)

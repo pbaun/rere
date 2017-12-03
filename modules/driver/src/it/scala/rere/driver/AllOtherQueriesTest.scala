@@ -14,6 +14,7 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
 import rere.driver.pool.ConnectionPool
 import rere.ql.data.{ChangefeedNotification, GeoPoint, ModificationResult, UserPermissions}
 import rere.ql.shapes._
+import rere.ql.types.PrimaryKey
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -29,8 +30,8 @@ class AllOtherQueriesTest extends WordSpec with ScalaFutures with Matchers with 
   case class Abc(id: String, name: Option[String])
 
   import io.circe.generic.auto._
-  object AuthorsShape extends CirceShape[Author, String]
-  object AbcShape extends CirceShape[Abc, String]
+  object AuthorsShape extends CirceShape[Author, PrimaryKey.String]
+  object AbcShape extends CirceShape[Abc, PrimaryKey.String]
 
   object TestDatabase extends DatabaseShape("test") {
     implicit val authors = table("authors", AuthorsShape)
@@ -62,7 +63,7 @@ class AllOtherQueriesTest extends WordSpec with ScalaFutures with Matchers with 
 
   "driver" should {
     "update models" ignore {
-      implicit val abcShape: ModelShape[Abc, String] = AbcShape
+      implicit val abcShape: ModelShape[Abc, PrimaryKey.String] = AbcShape
       val model: Abc = Abc("123-a", Some("abc name " + Random.nextInt()))
 
       val updateF = TestDatabase.abc.table().get("123-a").update(model).run(pool).future()
@@ -76,7 +77,7 @@ class AllOtherQueriesTest extends WordSpec with ScalaFutures with Matchers with 
     }
 
     "update many models" ignore {
-      implicit val abcShape: ModelShape[Abc, String] = AbcShape
+      implicit val abcShape: ModelShape[Abc, PrimaryKey.String] = AbcShape
       val model: Abc = Abc("123-a", Some("abc name " + Random.nextInt()))
 
       val updateF = TestDatabase.abc.table().filter(model).update(model).run(pool).future()
@@ -90,7 +91,7 @@ class AllOtherQueriesTest extends WordSpec with ScalaFutures with Matchers with 
     }
 
     "replace model" ignore {
-      implicit val abcShape: ModelShape[Abc, String] = AbcShape
+      implicit val abcShape: ModelShape[Abc, PrimaryKey.String] = AbcShape
       val model: Abc = Abc("123-a", Some("abc name " + Random.nextInt()))
 
       val replaceF = TestDatabase.abc.table().get("123-a").replace(model).run(pool).future()
@@ -104,7 +105,7 @@ class AllOtherQueriesTest extends WordSpec with ScalaFutures with Matchers with 
     }
 
     "delete model" ignore {
-      implicit val abcShape: ModelShape[Abc, String] = AbcShape
+      implicit val abcShape: ModelShape[Abc, PrimaryKey.String] = AbcShape
 
       val deleteF = TestDatabase.abc.table().get("123-a").delete().run(pool).future()
       deleteF.onComplete {
@@ -119,7 +120,7 @@ class AllOtherQueriesTest extends WordSpec with ScalaFutures with Matchers with 
     "insert and fetch models with complex types" ignore {
       case class Bcd(date: ZonedDateTime, uuid: UUID, json: Json, binary: ByteString, seq: Seq[String])
 
-      implicit object BcdShape extends Shape(Bcd.apply _, PrimaryKey[UUID]) with IdeaTypeHint[Bcd] {
+      implicit object BcdShape extends Shape(Bcd.apply _, PK[PrimaryKey.UUID]) {
         implicit val date = field("date", _.date)
         implicit val uuid = field("uuid", _.uuid)
         implicit val json = field("json", _.json)

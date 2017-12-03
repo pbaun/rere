@@ -4,7 +4,7 @@ trait ReqlChangefeedNotification[T] extends ReqlObject
 
 trait ReqlJoinResult[LeftType, RightType] extends ReqlObject
 
-trait ReqlModificationResult[T, PK] extends ReqlObject
+trait ReqlModificationResult[T, PK <: PrimaryKey] extends ReqlObject
 
 /*class ReqlModificationResultImpl[T <: ReqlObject](
     inserted: Long,

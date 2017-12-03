@@ -5,15 +5,15 @@ import rere.ql.options.all._
 import rere.ql.ql2.Term.TermType
 import rere.ql.queries.db.DatabaseQuery
 import rere.ql.queries.values
-import rere.ql.types.{ReqlDatabase, ReqlShapable, ReqlString, ReqlTable}
+import rere.ql.types._
 
 abstract class DatabaseShape(private val databaseName: String) {
-  protected def table[ScalaType, PK](
+  protected def table[ScalaType, Key <: PrimaryKey](
     tableName: String,
-    modelShape: ModelShape[ScalaType, PK],
+    modelShape: ModelShape[ScalaType, Key],
     readMode: ReadModeOptions = DefaultReadMode,
     identifierFormat: IdentifierFormatOptions = DefaultIdentifierFormat
-  ): TableDescriptor[ScalaType, PK] = {
+  ): TableDescriptor[ScalaType, Key] = {
     new TableDescriptor(databaseName, tableName, modelShape, readMode, identifierFormat)
   }
 }
@@ -24,13 +24,13 @@ object DatabaseShape {
   }
 }
 
-private class DatabaseTable[ScalaType, PK](
+private class DatabaseTable[ScalaType, Key <: PrimaryKey](
     database: ReqlDatabase,
     tableName: ReqlString,
-    modelShape: ModelShape[ScalaType, PK],
+    modelShape: ModelShape[ScalaType, Key],
     readMode: ReadModeOptions,
     identifierFormat: IdentifierFormatOptions
-  ) extends ReqlTable[ScalaType, PK] {
+  ) extends ReqlTable[ScalaType, Key] {
 
   def command = TermType.TABLE
   def string = "table"
@@ -39,31 +39,31 @@ private class DatabaseTable[ScalaType, PK](
   def shape = modelShape
 }
 
-class TableDescriptor[ScalaType, PK](
+class TableDescriptor[ScalaType, Key <: PrimaryKey](
     databaseName: String,
     tableName: String,
-    modelShape: ModelShape[ScalaType, PK],
+    modelShape: ModelShape[ScalaType, Key],
     readMode: ReadModeOptions,
     identifierFormat: IdentifierFormatOptions
-  ) extends ReqlShapable[ScalaType, PK] {
+  ) extends ReqlShapable[ScalaType, Key] {
 
-  override def shape: ModelShape[ScalaType, PK] = modelShape
+  override def shape: ModelShape[ScalaType, Key] = modelShape
 
-  def table(): ReqlTable[ScalaType, PK] = {
+  def table(): ReqlTable[ScalaType, Key] = {
     val database = new DatabaseQuery(values.expr(databaseName))
     new DatabaseTable(database, values.expr(tableName), modelShape, readMode, identifierFormat)
   }
 
   def table(
     readMode: ReadModeOptions
-  ): ReqlTable[ScalaType, PK] = {
+  ): ReqlTable[ScalaType, Key] = {
     val database = new DatabaseQuery(values.expr(databaseName))
     new DatabaseTable(database, values.expr(tableName), modelShape, readMode, identifierFormat)
   }
 
   def table(
     identifierFormat: IdentifierFormatOptions
-  ): ReqlTable[ScalaType, PK] = {
+  ): ReqlTable[ScalaType, Key] = {
     val database = new DatabaseQuery(values.expr(databaseName))
     new DatabaseTable(database, values.expr(tableName), modelShape, readMode, identifierFormat)
   }
@@ -71,7 +71,7 @@ class TableDescriptor[ScalaType, PK](
   def table(
     readMode: ReadModeOptions,
     identifierFormat: IdentifierFormatOptions
-  ): ReqlTable[ScalaType, PK] = {
+  ): ReqlTable[ScalaType, Key] = {
     val database = new DatabaseQuery(values.expr(databaseName))
     new DatabaseTable(database, values.expr(tableName), modelShape, readMode, identifierFormat)
   }

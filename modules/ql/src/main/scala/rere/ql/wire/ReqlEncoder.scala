@@ -24,6 +24,16 @@ object ReqlEncoder {
 
   def apply[ScalaType](implicit encoder: ReqlEncoder[ScalaType]): ReqlEncoder[ScalaType] = encoder
 
+  implicit val nullEncoder: Aux[Null, ReqlNull] = {
+    new ReqlEncoder[Null] {
+      override type ReqlType = ReqlNull
+
+      override def encode(value: Null): ReqlType = {
+        new ReqlNullQuery(value)
+      }
+    }
+  }
+
   implicit val booleanEncoder: Aux[Boolean, ReqlBoolean] = {
     new ReqlEncoder[Boolean] {
       override type ReqlType = ReqlBoolean
@@ -104,12 +114,12 @@ object ReqlEncoder {
     }
   }
 
-  implicit val uuidEncoder: Aux[UUID, ReqlString] = {
+  implicit val uuidEncoder: Aux[UUID, ReqlUUID] = {
     new ReqlEncoder[UUID] {
-      override type ReqlType = ReqlString
+      override type ReqlType = ReqlUUID
 
       override def encode(value: UUID): ReqlType = {
-        new ReqlStringQuery(value.toString)
+        new ReqlUUIDQuery(value)
       }
     }
   }
@@ -163,14 +173,14 @@ object ReqlEncoder {
     }
   }
 
-  implicit def modelEncoder[Model, PK](
+  implicit def modelEncoder[Model, PK <: PrimaryKey](
     implicit modelShape: ModelShape[Model, PK]
-  ): Aux[Model, ReqlObject] = {
+  ): Aux[Model, ReqlModel[Model, PK]] = {
     new ReqlEncoder[Model] {
-      override type ReqlType = ReqlObject
+      override type ReqlType = ReqlModel[Model, PK]
 
-      override def encode(value: Model): ReqlObject = {
-        modelShape.toReqlObject(value)
+      override def encode(model: Model): ReqlModel[Model, PK] = {
+        new ReqlObjectModel(model, modelShape)
       }
     }
   }

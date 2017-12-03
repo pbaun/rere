@@ -1,7 +1,9 @@
 package rere.ql.queries
 
+import java.util.UUID
+
 import io.circe.{Json, JsonObject}
-import rere.ql.types.{ReqlArray, _}
+import rere.ql.types._
 import rere.ql.values._
 
 /**
@@ -20,6 +22,8 @@ trait ValueQueries {
   implicit def expr(number: BigDecimal): ReqlFloat = new ReqlBigDecimalQuery(number)
 
   implicit def expr(string: String): ReqlString = new ReqlStringQuery(string)
+
+  implicit def expr(uuid: UUID): ReqlUUID = new ReqlUUIDQuery(uuid)
 
   implicit def expr(jsonArray: List[Json]): ReqlArray[ReqlJson] = new ReqlJsonArrayQuery(jsonArray)
   implicit def expr[T <: ReqlDatum](iterable: Iterable[T]): ReqlArray[T] =

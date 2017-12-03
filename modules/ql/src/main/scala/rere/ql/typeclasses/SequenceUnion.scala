@@ -1,6 +1,5 @@
 package rere.ql.typeclasses
 
-import rere.ql.shapes.ReqlModel
 import rere.ql.types._
 
 trait SequenceUnion[+T <: ReqlDatum, FirstSeq <: ReqlSequence[T]] {
@@ -28,7 +27,7 @@ object SequenceUnion extends LowPrioritySequenceUnion {
   // FiniteArrayLike + FiniteArrayLike = Array
   implicit def selectionOfArrayAndFiniteArrayLike[
     T,
-    PK,
+    PK <: PrimaryKey,
     Other <: ReqlFiniteArrayLike[ReqlModel[T, PK]]
   ]: Aux[ReqlModel[T, PK], ReqlSelectionOfArray[T, PK], Other, ReqlArray[ReqlModel[T, PK]]] = {
     new SequenceUnion[ReqlModel[T, PK], ReqlSelectionOfArray[T, PK]] {
@@ -41,7 +40,7 @@ object SequenceUnion extends LowPrioritySequenceUnion {
   // FiniteSequence + FiniteSequence = ReqlFiniteStream
   implicit def tableAndFiniteSequence[
     T,
-    PK,
+    PK <: PrimaryKey,
     Other <: ReqlFiniteSequence[ReqlModel[T, PK]]
   ]: Aux[ReqlModel[T, PK], ReqlTable[T, PK], Other, ReqlFiniteStream[ReqlModel[T, PK]]] = {
     new SequenceUnion[ReqlModel[T, PK], ReqlTable[T, PK]] {
@@ -54,7 +53,7 @@ object SequenceUnion extends LowPrioritySequenceUnion {
   // FiniteSequence + FiniteSequence = ReqlFiniteStream
   implicit def tableSliceAndFiniteSequence[
     T,
-    PK,
+    PK <: PrimaryKey,
     Other <: ReqlFiniteSequence[ReqlModel[T, PK]]
   ]: Aux[ReqlModel[T, PK], ReqlTableSlice[T, PK], Other, ReqlFiniteStream[ReqlModel[T, PK]]] = {
     new SequenceUnion[ReqlModel[T, PK], ReqlTableSlice[T, PK]] {
@@ -67,7 +66,7 @@ object SequenceUnion extends LowPrioritySequenceUnion {
   // FiniteSequence + FiniteSequence = ReqlFiniteStream
   implicit def selectionOfStreamAndFiniteSequence[
     T,
-    PK,
+    PK <: PrimaryKey,
     Other <: ReqlFiniteSequence[ReqlModel[T, PK]]
   ]: Aux[ReqlModel[T, PK], ReqlSelectionOfStream[T, PK], Other, ReqlFiniteStream[ReqlModel[T, PK]]] = {
     new SequenceUnion[ReqlModel[T, PK], ReqlSelectionOfStream[T, PK]] {
@@ -119,7 +118,7 @@ trait LowPrioritySequenceUnion extends EvenMoreLowPrioritySequenceUnion {
   // FiniteArrayLike + FiniteSequence = ReqlFiniteStream
   implicit def selectionOfArrayAndFiniteSequence[
     T,
-    PK,
+    PK <: PrimaryKey,
     Other <: ReqlFiniteSequence[ReqlModel[T, PK]]
   ]: SequenceUnion.Aux[ReqlModel[T, PK], ReqlSelectionOfArray[T, PK], Other, ReqlFiniteStream[ReqlModel[T, PK]]] = {
     new SequenceUnion[ReqlModel[T, PK], ReqlSelectionOfArray[T, PK]] {
@@ -132,7 +131,7 @@ trait LowPrioritySequenceUnion extends EvenMoreLowPrioritySequenceUnion {
   // FiniteSequence + Sequence = ReqlInfiniteStream
   implicit def tableAndSequence[
     T,
-    PK,
+    PK <: PrimaryKey,
     Other <: ReqlSequence[ReqlModel[T, PK]]
   ]: SequenceUnion.Aux[ReqlModel[T, PK], ReqlTable[T, PK], Other, ReqlInfiniteStream[ReqlModel[T, PK]]] = {
     new SequenceUnion[ReqlModel[T, PK], ReqlTable[T, PK]] {
@@ -145,7 +144,7 @@ trait LowPrioritySequenceUnion extends EvenMoreLowPrioritySequenceUnion {
   // FiniteSequence + Sequence = ReqlInfiniteStream
   implicit def tableSliceAndSequence[
     T,
-    PK,
+    PK <: PrimaryKey,
     Other <: ReqlSequence[ReqlModel[T, PK]]
   ]: SequenceUnion.Aux[ReqlModel[T, PK], ReqlTableSlice[T, PK], Other, ReqlInfiniteStream[ReqlModel[T, PK]]] = {
     new SequenceUnion[ReqlModel[T, PK], ReqlTableSlice[T, PK]] {
@@ -158,7 +157,7 @@ trait LowPrioritySequenceUnion extends EvenMoreLowPrioritySequenceUnion {
   // FiniteSequence + Sequence = ReqlInfiniteStream
   implicit def selectionOfStreamAndSequence[
     T,
-    PK,
+    PK <: PrimaryKey,
     Other <: ReqlSequence[ReqlModel[T, PK]]
   ]: SequenceUnion.Aux[ReqlModel[T, PK], ReqlSelectionOfStream[T, PK], Other, ReqlInfiniteStream[ReqlModel[T, PK]]] = {
     new SequenceUnion[ReqlModel[T, PK], ReqlSelectionOfStream[T, PK]] {
@@ -198,7 +197,7 @@ trait EvenMoreLowPrioritySequenceUnion {
   // FiniteArrayLike + Sequence = ReqlInfiniteStream
   implicit def selectionOfArrayAndSequence[
     T,
-    PK,
+    PK <: PrimaryKey,
     Other <: ReqlSequence[ReqlModel[T, PK]]
   ]: SequenceUnion.Aux[ReqlModel[T, PK], ReqlSelectionOfArray[T, PK], Other, ReqlInfiniteStream[ReqlModel[T, PK]]] = {
     new SequenceUnion[ReqlModel[T, PK], ReqlSelectionOfArray[T, PK]] {

@@ -5,6 +5,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Matchers, WordSpec}
 import rere.driver.pool.ConnectionPool
+import rere.ql.types.PrimaryKey
 
 import scala.concurrent.ExecutionContext
 import scala.util.Random
@@ -30,7 +31,7 @@ class ModelInsertionTest extends WordSpec with ScalaFutures with Matchers {
       import rere.ql.shapes._
 
       case class Abc(id: String, name: Option[String])
-      object AbcShape extends CirceShape[Abc, String]
+      object AbcShape extends CirceShape[Abc, PrimaryKey.String]
 
       object TestDatabase extends DatabaseShape("test") {
         implicit val abc = table("abc", AbcShape)

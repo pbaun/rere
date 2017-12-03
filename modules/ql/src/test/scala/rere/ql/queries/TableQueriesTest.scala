@@ -17,37 +17,37 @@ class TableQueriesTest extends WordSpec with ReqlMatchers {
     "be accessible on r and" should {
       "allow to call it only with table name" in {
         r.table("marvel") shouldBe
-          subtypeOf [ReqlTable[JsonObject, String]] and serializedTo("""[15,["marvel"]]""")
+          subtypeOf [ReqlTable[JsonObject, PrimaryKey.String]] and serializedTo("""[15,["marvel"]]""")
       }
 
       "allow to call it with table name and read mode option" in {
         r.table("marvel", DefaultReadMode) shouldBe
-          subtypeOf [ReqlTable[JsonObject, String]] and serializedTo("""[15,["marvel"]]""")
+          subtypeOf [ReqlTable[JsonObject, PrimaryKey.String]] and serializedTo("""[15,["marvel"]]""")
 
         r.table("marvel", Single) shouldBe
-          subtypeOf [ReqlTable[JsonObject, String]] and serializedTo("""[15,["marvel"],{"read_mode":"single"}]""")
+          subtypeOf [ReqlTable[JsonObject, PrimaryKey.String]] and serializedTo("""[15,["marvel"],{"read_mode":"single"}]""")
 
         r.table("marvel", Majority) shouldBe
-          subtypeOf [ReqlTable[JsonObject, String]] and serializedTo("""[15,["marvel"],{"read_mode":"majority"}]""")
+          subtypeOf [ReqlTable[JsonObject, PrimaryKey.String]] and serializedTo("""[15,["marvel"],{"read_mode":"majority"}]""")
 
         r.table("marvel", Outdated) shouldBe
-          subtypeOf [ReqlTable[JsonObject, String]] and serializedTo("""[15,["marvel"],{"read_mode":"outdated"}]""")
+          subtypeOf [ReqlTable[JsonObject, PrimaryKey.String]] and serializedTo("""[15,["marvel"],{"read_mode":"outdated"}]""")
       }
 
       "allow to call it with table name and identifier format option" in {
         r.table("marvel", identifierFormat = DefaultIdentifierFormat) shouldBe
-          subtypeOf [ReqlTable[JsonObject, String]] and serializedTo("""[15,["marvel"]]""")
+          subtypeOf [ReqlTable[JsonObject, PrimaryKey.String]] and serializedTo("""[15,["marvel"]]""")
 
         r.table("marvel", identifierFormat = NameIdentifier) shouldBe
-          subtypeOf [ReqlTable[JsonObject, String]] and serializedTo("""[15,["marvel"],{"identifier_format":"name"}]""")
+          subtypeOf [ReqlTable[JsonObject, PrimaryKey.String]] and serializedTo("""[15,["marvel"],{"identifier_format":"name"}]""")
 
         r.table("marvel", identifierFormat = UuidIdentifier) shouldBe
-          subtypeOf [ReqlTable[JsonObject, String]] and serializedTo("""[15,["marvel"],{"identifier_format":"uuid"}]""")
+          subtypeOf [ReqlTable[JsonObject, PrimaryKey.String]] and serializedTo("""[15,["marvel"],{"identifier_format":"uuid"}]""")
       }
 
       "allow to call it with table name and both options" in {
         r.table("marvel", Majority, UuidIdentifier) shouldBe
-          subtypeOf [ReqlTable[JsonObject, String]] and
+          subtypeOf [ReqlTable[JsonObject, PrimaryKey.String]] and
           serializedTo("""[15,["marvel"],{"read_mode":"majority","identifier_format":"uuid"}]""")
       }
     }
@@ -55,43 +55,43 @@ class TableQueriesTest extends WordSpec with ReqlMatchers {
     "be accessible on ReqlDatabase and" should {
       "allow to call it only with table name" in {
         r.db("heroes").table("marvel") shouldBe
-          subtypeOf [ReqlTable[JsonObject, String]] and serializedTo("""[15,[[14,["heroes"]],"marvel"]]""")
+          subtypeOf [ReqlTable[JsonObject, PrimaryKey.String]] and serializedTo("""[15,[[14,["heroes"]],"marvel"]]""")
       }
 
       "allow to call it with table name and read mode option" in {
         r.db("heroes").table("marvel", DefaultReadMode) shouldBe
-          subtypeOf [ReqlTable[JsonObject, String]] and serializedTo("""[15,[[14,["heroes"]],"marvel"]]""")
+          subtypeOf [ReqlTable[JsonObject, PrimaryKey.String]] and serializedTo("""[15,[[14,["heroes"]],"marvel"]]""")
 
         r.db("heroes").table("marvel", Single) shouldBe
-          subtypeOf [ReqlTable[JsonObject, String]] and
+          subtypeOf [ReqlTable[JsonObject, PrimaryKey.String]] and
           serializedTo("""[15,[[14,["heroes"]],"marvel"],{"read_mode":"single"}]""")
 
         r.db("heroes").table("marvel", Majority) shouldBe
-          subtypeOf [ReqlTable[JsonObject, String]] and
+          subtypeOf [ReqlTable[JsonObject, PrimaryKey.String]] and
           serializedTo("""[15,[[14,["heroes"]],"marvel"],{"read_mode":"majority"}]""")
 
         r.db("heroes").table("marvel", Outdated) shouldBe
-          subtypeOf [ReqlTable[JsonObject, String]] and
+          subtypeOf [ReqlTable[JsonObject, PrimaryKey.String]] and
           serializedTo("""[15,[[14,["heroes"]],"marvel"],{"read_mode":"outdated"}]""")
       }
 
       "allow to call it with table name and identifier format option" in {
         r.db("heroes").table("marvel", identifierFormat = DefaultIdentifierFormat) shouldBe
-          subtypeOf [ReqlTable[JsonObject, String]] and
+          subtypeOf [ReqlTable[JsonObject, PrimaryKey.String]] and
           serializedTo("""[15,[[14,["heroes"]],"marvel"]]""")
 
         r.db("heroes").table("marvel", identifierFormat = NameIdentifier) shouldBe
-          subtypeOf [ReqlTable[JsonObject, String]] and
+          subtypeOf [ReqlTable[JsonObject, PrimaryKey.String]] and
           serializedTo("""[15,[[14,["heroes"]],"marvel"],{"identifier_format":"name"}]""")
 
         r.db("heroes").table("marvel", identifierFormat = UuidIdentifier) shouldBe
-          subtypeOf [ReqlTable[JsonObject, String]] and
+          subtypeOf [ReqlTable[JsonObject, PrimaryKey.String]] and
           serializedTo("""[15,[[14,["heroes"]],"marvel"],{"identifier_format":"uuid"}]""")
       }
 
       "allow to call it with table name and both options" in {
         r.db("heroes").table("marvel", Majority, UuidIdentifier) shouldBe
-          subtypeOf [ReqlTable[JsonObject, String]] and
+          subtypeOf [ReqlTable[JsonObject, PrimaryKey.String]] and
           serializedTo("""[15,[[14,["heroes"]],"marvel"],{"read_mode":"majority","identifier_format":"uuid"}]""")
       }
     }
@@ -107,7 +107,7 @@ class TableQueriesTest extends WordSpec with ReqlMatchers {
       "allow to call it with all options" in {
         r.tableCreate(
           "abc",
-          PrimaryKey("code"),
+          PrimaryKeyField("code"),
           Hard,
           Shards(7),
           ReplicasByTags(ServerTag("spb"), ServerTag("spb") -> 3, ServerTag("msk") -> 2)
@@ -126,7 +126,7 @@ class TableQueriesTest extends WordSpec with ReqlMatchers {
       "allow to call it with all options" in {
         r.db("test").tableCreate(
           "abc",
-          PrimaryKey("name"),
+          PrimaryKeyField("name"),
           Soft,
           Shards(3),
           Replicas(1)
@@ -136,7 +136,7 @@ class TableQueriesTest extends WordSpec with ReqlMatchers {
 
         r.db("test").tableCreate(
           "abc",
-          PrimaryKey("code"),
+          PrimaryKeyField("code"),
           Hard,
           Shards(7),
           ReplicasByTags(ServerTag("spb"), ServerTag("spb") -> 3, ServerTag("msk") -> 2)
@@ -171,31 +171,31 @@ class TableQueriesTest extends WordSpec with ReqlMatchers {
   "indexCreate operator" should {
     "be accessible on ReqlTable and" should {
       "allow to call it only with index name" in {
-        r.table[JsonObject, String]("abc").indexCreate("code") shouldBe
+        r.table[JsonObject, PrimaryKey.String]("abc").indexCreate("code") shouldBe
           subtypeOf [ReqlIndexCreationResult] and serializedTo("""[75,[[15,["abc"]],"code"]]""")
       }
 
       "allow to call it with index name and all options" in {
-        r.table[JsonObject, String]("abc").indexCreate("code", SimpleIndex, RangeIndex) shouldBe
+        r.table[JsonObject, PrimaryKey.String]("abc").indexCreate("code", SimpleIndex, RangeIndex) shouldBe
           subtypeOf [ReqlIndexCreationResult] and serializedTo("""[75,[[15,["abc"]],"code"]]""")
 
-        r.table[JsonObject, String]("abc").indexCreate("code", MultiIndex, GeoIndex) shouldBe
+        r.table[JsonObject, PrimaryKey.String]("abc").indexCreate("code", MultiIndex, GeoIndex) shouldBe
           subtypeOf [ReqlIndexCreationResult] and
           serializedTo("""[75,[[15,["abc"]],"code"],{"multi":true,"geo":true}]""")
       }
 
       "allow to call it with index name and function" in {
-        r.table[JsonObject, String]("abc").indexCreate("code", _("code_name")) shouldBe
+        r.table[JsonObject, PrimaryKey.String]("abc").indexCreate("code", _("code_name")) shouldBe
           subtypeOf [ReqlIndexCreationResult] and
           serializedTo("""[75,[[15,["abc"]],"code",[69,[[2,[0]],[170,[[10,[0]],"code_name"]]]]]]""")
       }
 
       "allow to call it with index name, function and all options" in {
-        r.table[JsonObject, String]("abc").indexCreate("code", _("code_name"), SimpleIndex, RangeIndex) shouldBe
+        r.table[JsonObject, PrimaryKey.String]("abc").indexCreate("code", _("code_name"), SimpleIndex, RangeIndex) shouldBe
           subtypeOf [ReqlIndexCreationResult] and
           serializedTo("""[75,[[15,["abc"]],"code",[69,[[2,[0]],[170,[[10,[0]],"code_name"]]]]]]""")
 
-        r.table[JsonObject, String]("abc").indexCreate("code", _("code_name"), MultiIndex, GeoIndex) shouldBe
+        r.table[JsonObject, PrimaryKey.String]("abc").indexCreate("code", _("code_name"), MultiIndex, GeoIndex) shouldBe
           subtypeOf [ReqlIndexCreationResult] and
           serializedTo("""[75,[[15,["abc"]],"code",[69,[[2,[0]],[170,[[10,[0]],"code_name"]]]]],{"multi":true,"geo":true}]""")
       }

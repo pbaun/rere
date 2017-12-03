@@ -1,7 +1,5 @@
 package rere.ql.queries
 
-import java.util.UUID
-
 import rere.ql.data.{DatabaseConfig, TableConfig, TableStatus}
 import rere.ql.options.all._
 import rere.ql.options.{ComposableOptions, Options}
@@ -39,7 +37,7 @@ trait AdministrationQueries {
     }
   }
 
-  implicit class GrantOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class GrantOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     def grant(username: ReqlString,
               permissions: ReqlUserPermissions): GrantTableQuery = new GrantTableQuery {
       val command = TermType.GRANT
@@ -50,10 +48,10 @@ trait AdministrationQueries {
   }
 
   // config
-  trait ConfigTableQuery extends ReqlSelectionOfObject[TableConfig, UUID]
-  trait ConfigDbQuery extends ReqlSelectionOfObject[DatabaseConfig, UUID]
+  trait ConfigTableQuery extends ReqlSelectionOfObject[TableConfig, PrimaryKey.UUID]
+  trait ConfigDbQuery extends ReqlSelectionOfObject[DatabaseConfig, PrimaryKey.UUID]
 
-  implicit class ConfigOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class ConfigOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     def config(): ConfigTableQuery = new ConfigTableQuery {
       val command = TermType.CONFIG
       val string = "config"
@@ -77,7 +75,7 @@ trait AdministrationQueries {
   trait RebalanceTableQuery extends ReqlRebalancingResult
   trait RebalanceDbQuery extends ReqlRebalancingResult
 
-  implicit class RebalanceOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class RebalanceOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     def rebalance(): RebalanceTableQuery = new RebalanceTableQuery {
       val command = TermType.REBALANCE
       val string = "rebalance"
@@ -101,7 +99,7 @@ trait AdministrationQueries {
   trait ReconfigureDbQuery extends ReqlReconfiguringResult
   trait ReconfigureDryDbQuery extends ReqlReconfiguringDryResult
 
-  implicit class ReconfigureOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class ReconfigureOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     def reconfigure(shards: ShardsOptions,
                     replicas: VotingReplicasOptions,
                     dryRun: RealRun.type): ReconfigureTableQuery = new ReconfigureTableQuery {
@@ -159,9 +157,9 @@ trait AdministrationQueries {
 
   // status
   //TODO: it's not right to directly use class from data package?
-  trait StatusTableQuery extends ReqlSelectionOfObject[TableStatus, UUID]
+  trait StatusTableQuery extends ReqlSelectionOfObject[TableStatus, PrimaryKey.UUID]
 
-  implicit class StatusOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class StatusOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     def status(): StatusTableQuery = new StatusTableQuery {
       val command = TermType.STATUS
       val string = "status"
@@ -178,7 +176,7 @@ trait AdministrationQueries {
 
   //TODO: not by spec (.waitFor instead .wait)
   //TODO: docs says what it can be called on r like r.wait(r.table(...)), but js driver not allows it
-  implicit class WaitOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class WaitOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     def waitFor(status: WaitOptions, timeout: TimeoutOptions): WaitTableQuery = new WaitTableQuery {
       val command = TermType.WAIT
       val string = "wait"

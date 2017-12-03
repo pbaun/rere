@@ -7,25 +7,25 @@ import cats.free.Trampoline._
 import cats.instances.function._
 import io.circe._
 import rere.ql.types._
-import rere.ql.values.{ReqlJsonObjectQuery, ReqlJsonQuery, ReqlMakeObjFromPairsListQuery}
-import rere.ql.wire.{ReqlDecoder, ReqlEncoder}
+import rere.ql.values.{ReqlJsonObjectQuery, ReqlMakeObjFromPairsListQuery}
+import rere.ql.wire.ReqlDecoder
 import shapeless.ops.function.{FnFromProduct, FnToProduct}
 import shapeless.{::, HList, HNil}
 
-trait ModelShape[Model, PK] {
+trait ModelShape[Model, Key <: PrimaryKey] {
   def toReqlObject(model: Model): ReqlObject
   def toReqlUnidentifiableObject(model: Model): ReqlObject
   def fromJson(json: Json): ModelShape.DecodingResult[Model]
-
-  def toReqlPrimaryKey(primaryKey: PK): ReqlDatum
 }
 
 object ModelShape extends LowPriorityModelShape {
   type DecodingResult[Model] = Either[ShapeDecodingError, Model]
 
-  def apply[Model, PK](implicit shape: ModelShape[Model, PK]): ModelShape[Model, PK] = shape
+  def apply[Model, Key <: PrimaryKey](implicit shape: ModelShape[Model, Key]): ModelShape[Model, Key] = shape
 
-  implicit def shapableToShape[Model, PK](implicit shapable: ReqlShapable[Model, PK]): ModelShape[Model, PK] = {
+  implicit def shapableToShape[Model, Key <: PrimaryKey](
+    implicit shapable: ReqlShapable[Model, Key]
+  ): ModelShape[Model, Key] = {
     shapable.shape
   }
 
@@ -39,8 +39,8 @@ object ModelShape extends LowPriorityModelShape {
 
 trait LowPriorityModelShape {
   //TODO: make helper for custom shapes
-  implicit def defaultJsonObjectShape: ModelShape[JsonObject, String] = {
-    new ModelShape[JsonObject, String] {
+  implicit def defaultJsonObjectShape: ModelShape[JsonObject, PrimaryKey.String] = {
+    new ModelShape[JsonObject, PrimaryKey.String] {
       override def toReqlObject(model: JsonObject): ReqlObject = {
         new ReqlJsonObjectQuery(model)
       }
@@ -53,17 +53,16 @@ trait LowPriorityModelShape {
           case Left(err) => Left(ShapeDecodingError(err.message, json))
         }
       }
-      override def toReqlPrimaryKey(primaryKey: String): ReqlDatum = {
-        ReqlEncoder.stringEncoder.encode(primaryKey)
-      }
     }
   }
 }
 
 case class ShapeDecodingError(message: String, json: Json)
 
-abstract class Shape[Constructor <: AnyRef, Args <: HList, ModelType, PrimaryKeyType](
-    constructor: Constructor, shapePrimaryKey: ShapePrimaryKey[PrimaryKeyType])(
+abstract class Shape[Constructor <: AnyRef, Args <: HList, ModelType, PrimaryKeyType <: PrimaryKey](
+    constructor: Constructor,
+    shapePrimaryKey: PK[PrimaryKeyType]
+  )(
     implicit deconstruction: FnToProduct.Aux[Constructor, Args => ModelType]
   ) extends ModelShape[ModelType, PrimaryKeyType] {
 
@@ -100,13 +99,16 @@ abstract class Shape[Constructor <: AnyRef, Args <: HList, ModelType, PrimaryKey
     }
   }
 
-  type FieldAux[K, V] = Field[K] { type Value = V }
+  type FieldAux[K, V, D <: ReqlDatum] = Field[K] {
+    type Value = V
+    type Datum = D
+  }
 
   def field[FieldType, DatumType <: ReqlDatum](
     name: String,
     valueAccessor: Model => FieldType)(
     implicit fieldLift: FieldLift.Aux[FieldType, DatumType]
-  ): FieldAux[name.type, FieldType] = {
+  ): FieldAux[name.type, FieldType, DatumType] = {
     new Field[name.type] {
       override type Root = RootRef
       override type Value = FieldType
@@ -118,15 +120,15 @@ abstract class Shape[Constructor <: AnyRef, Args <: HList, ModelType, PrimaryKey
     }
   }
 
-  def sub[FieldType, PK](
+  def sub[FieldType, Key <: PrimaryKey](
     name: String,
     valueAccessor: Model => FieldType,
-    subShape: ModelShape[FieldType, PK]
-  ): FieldAux[name.type, FieldType] = {
+    subShape: ModelShape[FieldType, Key]
+  ): FieldAux[name.type, FieldType, ReqlModel[FieldType, Key]] = {
     new Field[name.type] {
       override type Root = RootRef
       override type Value = FieldType
-      override type Datum = ReqlObject
+      override type Datum = ReqlModel[FieldType, Key]
 
       override def key: String = name
       override def accessor: Model => Value = valueAccessor
@@ -134,26 +136,19 @@ abstract class Shape[Constructor <: AnyRef, Args <: HList, ModelType, PrimaryKey
     }
   }
 
-  trait PrimaryKeyShape[T] {
+  trait PrimaryKeyShape[ReqlPK <: ReqlDatum, ScalaPK] {
     def keyFields: Set[String]
-    def toReql(value: T): ReqlDatum
   }
 
-  def pk[Name, FieldType](field: FieldAux[Name, FieldType]): PrimaryKeyShape[FieldType] = {
-    new PrimaryKeyShape[FieldType] {
+  def pk[Name, FieldType, DatumType <: ReqlDatum](field: FieldAux[Name, FieldType, DatumType]): PrimaryKeyShape[DatumType, FieldType] = {
+    new PrimaryKeyShape[DatumType, FieldType] {
       override def keyFields = Set(field.key)
-      override def toReql(value: FieldType): ReqlDatum = {
-        field.lift.getEncoder.encode(value)
-      }
     }
   }
 
-  def auto: PrimaryKeyShape[UUID] = {
-    new PrimaryKeyShape[UUID] {
+  def auto: PrimaryKeyShape[ReqlUUID, UUID] = {
+    new PrimaryKeyShape[ReqlUUID, UUID] {
       override def keyFields = Set("id")
-      override def toReql(value: UUID): ReqlDatum = {
-        ReqlEncoder.uuidEncoder.encode(value)
-      }
     }
   }
 
@@ -181,17 +176,17 @@ abstract class Shape[Constructor <: AnyRef, Args <: HList, ModelType, PrimaryKey
   trait ShapeBlueprint[ArgsList <: HList] {
     type FunctionType
 
-    def simpleList: List[FieldAux[_, _]]
+    def simpleList: List[FieldAux[_, _, _ <: ReqlDatum]]
 
     def argsProducer(json: Json): Trampoline[ModelShape.DecodingResult[ArgsList]]
 
     def verifiableShape(f: FunctionType): VerifiableShape[ArgsList, FunctionType]
 
-    final def :-:[K, V, FnType](
-      field: FieldAux[K, V])(
+    final def :-:[K, V, D <: ReqlDatum, FnType](
+      field: FieldAux[K, V, D])(
       implicit fnConstruction: FnFromProduct.Aux[V :: ArgsList => Model, FnType]
     ): ShapeBlueprintAux[V :: ArgsList, FnType] = {
-      new ShapeBlueprintCons[K, V, ArgsList, FnType](field :: simpleList, field, this)
+      new ShapeBlueprintCons[K, V, D, ArgsList, FnType](field :: simpleList, field, this)
     }
   }
 
@@ -201,7 +196,7 @@ abstract class Shape[Constructor <: AnyRef, Args <: HList, ModelType, PrimaryKey
 
     override type FunctionType = Unit => Model
 
-    override def simpleList: List[FieldAux[_, _]] = Nil
+    override def simpleList: List[FieldAux[_, _, _ <: ReqlDatum]] = Nil
 
     override def argsProducer(json: Json): Trampoline[ModelShape.DecodingResult[HNil]] = {
       done(Right(HNil))
@@ -212,9 +207,9 @@ abstract class Shape[Constructor <: AnyRef, Args <: HList, ModelType, PrimaryKey
     }
   }
 
-  class ShapeBlueprintCons[HeadName, HeadValue, TailValues <: HList, FnType](
-      val simpleList: List[FieldAux[_, _]],
-      headField: FieldAux[HeadName, HeadValue],
+  class ShapeBlueprintCons[HeadName, HeadValue, HeadDatum <: ReqlDatum, TailValues <: HList, FnType](
+      val simpleList: List[FieldAux[_, _, _ <: ReqlDatum]],
+      headField: FieldAux[HeadName, HeadValue, HeadDatum],
       tailBlueprint: ShapeBlueprint[TailValues]
     ) extends ShapeBlueprint[HeadValue :: TailValues] {
 
@@ -263,21 +258,16 @@ abstract class Shape[Constructor <: AnyRef, Args <: HList, ModelType, PrimaryKey
     }
   }
 
-  final override def toReqlPrimaryKey(pk: PrimaryKeyType): ReqlDatum = {
-    primaryKey.toReql(pk)
-  }
-
-  def primaryKey: PrimaryKeyShape[PrimaryKeyType]
+  def primaryKey: PrimaryKeyShape[PrimaryKeyType#Reql, PrimaryKeyType#Scala]
 
   def projection: Projection
 
 }
 
-abstract class CirceShape[M, PK](
+abstract class CirceShape[M, Key <: PrimaryKey](
     implicit modelEncoder: ObjectEncoder[M],
-    modelDecoder: Decoder[M],
-    pkEncoder: Encoder[PK]
-  ) extends ModelShape[M, PK] {
+    modelDecoder: Decoder[M]
+  ) extends ModelShape[M, Key] {
 
   def primaryKey: Set[String] = Set("id")
 
@@ -294,9 +284,5 @@ abstract class CirceShape[M, PK](
       case Right(m) => Right(m)
       case Left(err) => Left(ShapeDecodingError(err.message, json))
     }
-  }
-
-  override def toReqlPrimaryKey(pk: PK): ReqlDatum = {
-    new ReqlJsonQuery(pkEncoder.apply(pk))
   }
 }

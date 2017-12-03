@@ -1,5 +1,7 @@
 package rere.ql.queries
 
+import java.util.UUID
+
 import io.circe.{Json, JsonObject}
 import org.scalatest.FlatSpec
 import rere.ql.types._
@@ -27,6 +29,9 @@ class ValueQueriesTest extends FlatSpec with ReqlMatchers {
     r.expr(BigDecimal(123.456)) shouldBe subtypeOf [ReqlFloat] and serializedTo("123.456")
 
     r.expr("test \"string\"") shouldBe subtypeOf [ReqlString] and serializedTo(""""test \"string\""""")
+
+    r.expr(UUID.fromString("e0c568f6-a901-4ebd-a373-53908b28c2f8")) shouldBe
+      subtypeOf [ReqlUUID] and serializedTo(""""e0c568f6-a901-4ebd-a373-53908b28c2f8"""")
 
     r.expr(Seq(r.expr(null), r.expr(true), r.expr(4815162342L), r.expr("yep"))) shouldBe
       subtypeOf [ReqlArray[ReqlDatum]] and serializedTo("""[2,[null,true,4815162342,"yep"]]""")

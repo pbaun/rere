@@ -8,7 +8,7 @@ trait PrimaryKeyOptions {
 
   case object DefaultPrimaryKey extends PrimaryKeyOptions with DefaultOption
 
-  case class PrimaryKey(primaryKey: String) extends PrimaryKeyOptions with NonDefaultOption {
+  case class PrimaryKeyField(primaryKey: String) extends PrimaryKeyOptions with NonDefaultOption {
     def view = "primary_key" -> values.expr(primaryKey) :: Nil
   }
 

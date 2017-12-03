@@ -1,12 +1,9 @@
 package rere.ql.typeclasses
 
-import java.util.UUID
-
 import io.circe.{Json, JsonObject}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import rere.ql.queries.values
-import rere.ql.shapes.ReqlModel
 import rere.ql.types._
 
 class ObjectProducerTest extends FlatSpec {
@@ -72,7 +69,7 @@ class ObjectProducerTest extends FlatSpec {
 
 
     class TestClass
-    val reqlModel: ReqlModel[TestClass, UUID] = null
+    val reqlModel: ReqlModel[TestClass, PrimaryKey.String] = null
 
     objectContainer.method(reqlModel)
     objectContainer.method2(reqlModel)
@@ -92,7 +89,7 @@ class ObjectProducerTest extends FlatSpec {
 
 
     class TestClass
-    val reqlModel: ReqlModel[TestClass, UUID] = null
+    val reqlModel: ReqlModel[TestClass, PrimaryKey.String] = null
 
     objectContainer.method({_: ReqlObject => reqlModel})
     objectContainer.method2({_: ReqlObject => reqlModel})

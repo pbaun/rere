@@ -6,10 +6,9 @@ import cats.instances.either._
 import cats.syntax.cartesian._
 import io.circe.syntax._
 import io.circe.{Decoder, Json, JsonObject, ObjectEncoder}
-import rere.ql.queries.values
 import rere.ql.shapes.ModelShape
 import rere.ql.shapes.ModelShape.DecodingResult
-import rere.ql.types.{ReqlDatum, ReqlObject}
+import rere.ql.types.{PrimaryKey, ReqlObject}
 import rere.ql.wire.{ReqlDecoder, ReqlEncoder}
 
 case class TableStatus(
@@ -111,7 +110,7 @@ object TableStatus {
     ))
   }
 
-  implicit val tableStatusShape = new ModelShape[TableStatus, UUID] {
+  implicit val tableStatusShape = new ModelShape[TableStatus, PrimaryKey.UUID] {
     override def toReqlObject(model: TableStatus): ReqlObject = {
       ReqlEncoder.reqlObjectFromCirce(tableStatusEncoder).encode(model)
     }
@@ -126,10 +125,6 @@ object TableStatus {
     override def fromJson(json: Json): DecodingResult[TableStatus] = {
       val result = ReqlDecoder.reqlFromCirce(tableStatusDecoder).decode(json)
       ModelShape.decodingResultConverter(result, json)
-    }
-
-    override def toReqlPrimaryKey(primaryKey: UUID): ReqlDatum = {
-      values.expr(primaryKey.asJson)
     }
   }
 

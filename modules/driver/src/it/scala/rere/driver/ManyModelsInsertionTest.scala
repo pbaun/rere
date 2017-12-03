@@ -5,6 +5,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Matchers, WordSpec}
 import rere.driver.pool.ConnectionPool
+import rere.ql.types.PrimaryKey
 
 import scala.concurrent.ExecutionContext
 import scala.util.Random
@@ -31,7 +32,7 @@ class ManyModelsInsertionTest extends WordSpec with ScalaFutures with Matchers {
       import rere.ql.shapes._
 
       case class Abc(id: String, name: Option[String])
-      object AbcShape extends CirceShape[Abc, String]
+      object AbcShape extends CirceShape[Abc, PrimaryKey.String]
 
       object TestDatabase extends DatabaseShape("test") {
         implicit val abc = table("abc", AbcShape)
@@ -46,7 +47,7 @@ class ManyModelsInsertionTest extends WordSpec with ScalaFutures with Matchers {
         r.expr(Seq(model, model2)),
         durability = Hard,
         returnChanges = DoReturnChanges,
-        conflict = ResolveOnConflict[Abc, String]((x, a, b) => b)
+        conflict = ResolveOnConflict[Abc, PrimaryKey.String]((x, a, b) => b)
       ).run(pool).future()) { result =>
         result.inserted shouldBe 0
         result.replaced shouldBe 2

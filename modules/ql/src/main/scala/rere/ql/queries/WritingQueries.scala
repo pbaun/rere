@@ -3,16 +3,15 @@ package rere.ql.queries
 import rere.ql.options.all._
 import rere.ql.options.{ComposableOptions, Options}
 import rere.ql.ql2.Term.TermType
-import rere.ql.shapes.ReqlModel
 import rere.ql.typeclasses.ObjectProducer
 import rere.ql.types._
 
 trait WritingQueries {
 
   // insert
-  trait InsertTableQuery[T, PK] extends ReqlModificationResult[T, PK]
+  trait InsertTableQuery[T, PK <: PrimaryKey] extends ReqlModificationResult[T, PK]
 
-  implicit class InsertOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class InsertOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     def insert(obj: ReqlModel[T, PK],
                durability: DurabilityOptions = DefaultDurability,
                returnChanges: ReturnChangesOptions = DoNotReturnChanges,
@@ -38,7 +37,7 @@ trait WritingQueries {
   /**
     * Insert new element with auto-generated id. Primary key fields will not be sent to the database.
     */
-  implicit class InsertAutoOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class InsertAutoOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     private implicit def modelShape = table.shape
 
     def insertAuto(
@@ -55,13 +54,13 @@ trait WritingQueries {
   }
 
   // update
-  trait UpdateTableQuery[T, PK] extends ReqlModificationResult[T, PK]
-  trait UpdateTableSliceQuery[T, PK] extends ReqlModificationResult[T, PK]
-  trait UpdateSelectionOfStreamQuery[T, PK] extends ReqlModificationResult[T, PK]
-  trait UpdateSelectionOfArrayQuery[T, PK] extends ReqlModificationResult[T, PK]
-  trait UpdateSelectionOfObjectQuery[T, PK] extends ReqlModificationResult[T, PK]
+  trait UpdateTableQuery[T, PK <: PrimaryKey] extends ReqlModificationResult[T, PK]
+  trait UpdateTableSliceQuery[T, PK <: PrimaryKey] extends ReqlModificationResult[T, PK]
+  trait UpdateSelectionOfStreamQuery[T, PK <: PrimaryKey] extends ReqlModificationResult[T, PK]
+  trait UpdateSelectionOfArrayQuery[T, PK <: PrimaryKey] extends ReqlModificationResult[T, PK]
+  trait UpdateSelectionOfObjectQuery[T, PK <: PrimaryKey] extends ReqlModificationResult[T, PK]
 
-  implicit class UpdateOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class UpdateOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     def update(producer: ObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
                durability: DurabilityOptions = DefaultDurability,
                returnChanges: ReturnChangesOptions = DoNotReturnChanges,
@@ -73,7 +72,7 @@ trait WritingQueries {
     }
   }
 
-  implicit class UpdateOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class UpdateOnTableSliceOp[T, PK <: PrimaryKey](val tableSlice: ReqlTableSlice[T, PK]) {
     def update(producer: ObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
                durability: DurabilityOptions = DefaultDurability,
                returnChanges: ReturnChangesOptions = DoNotReturnChanges,
@@ -85,7 +84,7 @@ trait WritingQueries {
     }
   }
 
-  implicit class UpdateOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+  implicit class UpdateOnSelectionOfStreamOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfStream[T, PK]) {
     def update(producer: ObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
                durability: DurabilityOptions = DefaultDurability,
                returnChanges: ReturnChangesOptions = DoNotReturnChanges,
@@ -97,7 +96,7 @@ trait WritingQueries {
     }
   }
 
-  implicit class UpdateOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+  implicit class UpdateOnSelectionOfArrayOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfArray[T, PK]) {
     def update(producer: ObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
                durability: DurabilityOptions = DefaultDurability,
                returnChanges: ReturnChangesOptions = DoNotReturnChanges,
@@ -109,7 +108,7 @@ trait WritingQueries {
     }
   }
 
-  implicit class UpdateOnSelectionOfObjectOp[T, PK](val sel: ReqlSelectionOfObject[T, PK]) {
+  implicit class UpdateOnSelectionOfObjectOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfObject[T, PK]) {
     def update(producer: ObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
                durability: DurabilityOptions = DefaultDurability,
                returnChanges: ReturnChangesOptions = DoNotReturnChanges,
@@ -122,13 +121,13 @@ trait WritingQueries {
   }
 
   // replace
-  trait ReplaceTableQuery[T, PK] extends ReqlModificationResult[T, PK]
-  trait ReplaceTableSliceQuery[T, PK] extends ReqlModificationResult[T, PK]
-  trait ReplaceSelectionOfStreamQuery[T, PK] extends ReqlModificationResult[T, PK]
-  trait ReplaceSelectionOfArrayQuery[T, PK] extends ReqlModificationResult[T, PK]
-  trait ReplaceSelectionOfObjectQuery[T, PK] extends ReqlModificationResult[T, PK]
+  trait ReplaceTableQuery[T, PK <: PrimaryKey] extends ReqlModificationResult[T, PK]
+  trait ReplaceTableSliceQuery[T, PK <: PrimaryKey] extends ReqlModificationResult[T, PK]
+  trait ReplaceSelectionOfStreamQuery[T, PK <: PrimaryKey] extends ReqlModificationResult[T, PK]
+  trait ReplaceSelectionOfArrayQuery[T, PK <: PrimaryKey] extends ReqlModificationResult[T, PK]
+  trait ReplaceSelectionOfObjectQuery[T, PK <: PrimaryKey] extends ReqlModificationResult[T, PK]
 
-  implicit class ReplaceOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class ReplaceOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     def replace(producer: ObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
                 durability: DurabilityOptions = DefaultDurability,
                 returnChanges: ReturnChangesOptions = DoNotReturnChanges,
@@ -140,7 +139,7 @@ trait WritingQueries {
     }
   }
 
-  implicit class ReplaceOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class ReplaceOnTableSliceOp[T, PK <: PrimaryKey](val tableSlice: ReqlTableSlice[T, PK]) {
     def replace(producer: ObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
                 durability: DurabilityOptions = DefaultDurability,
                 returnChanges: ReturnChangesOptions = DoNotReturnChanges,
@@ -152,7 +151,7 @@ trait WritingQueries {
     }
   }
 
-  implicit class ReplaceOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+  implicit class ReplaceOnSelectionOfStreamOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfStream[T, PK]) {
     def replace(producer: ObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
                 durability: DurabilityOptions = DefaultDurability,
                 returnChanges: ReturnChangesOptions = DoNotReturnChanges,
@@ -164,7 +163,7 @@ trait WritingQueries {
     }
   }
 
-  implicit class ReplaceOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+  implicit class ReplaceOnSelectionOfArrayOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfArray[T, PK]) {
     def replace(producer: ObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
                 durability: DurabilityOptions = DefaultDurability,
                 returnChanges: ReturnChangesOptions = DoNotReturnChanges,
@@ -176,7 +175,7 @@ trait WritingQueries {
     }
   }
 
-  implicit class ReplaceOnSelectionOfObjectOp[T, PK](val sel: ReqlSelectionOfObject[T, PK]) {
+  implicit class ReplaceOnSelectionOfObjectOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfObject[T, PK]) {
     def replace(producer: ObjectProducer[ReqlModel[T, PK], ReqlModel[T, PK]],
                 durability: DurabilityOptions = DefaultDurability,
                 returnChanges: ReturnChangesOptions = DoNotReturnChanges,
@@ -189,13 +188,13 @@ trait WritingQueries {
   }
 
   // delete
-  trait DeleteTableQuery[T, PK] extends ReqlModificationResult[T, PK]
-  trait DeleteTableSliceQuery[T, PK] extends ReqlModificationResult[T, PK]
-  trait DeleteSelectionOfStreamQuery[T, PK] extends ReqlModificationResult[T, PK]
-  trait DeleteSelectionOfArrayQuery[T, PK] extends ReqlModificationResult[T, PK]
-  trait DeleteSelectionOfObjectQuery[T, PK] extends ReqlModificationResult[T, PK]
+  trait DeleteTableQuery[T, PK <: PrimaryKey] extends ReqlModificationResult[T, PK]
+  trait DeleteTableSliceQuery[T, PK <: PrimaryKey] extends ReqlModificationResult[T, PK]
+  trait DeleteSelectionOfStreamQuery[T, PK <: PrimaryKey] extends ReqlModificationResult[T, PK]
+  trait DeleteSelectionOfArrayQuery[T, PK <: PrimaryKey] extends ReqlModificationResult[T, PK]
+  trait DeleteSelectionOfObjectQuery[T, PK <: PrimaryKey] extends ReqlModificationResult[T, PK]
 
-  implicit class DeleteOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class DeleteOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     def delete(durability: DurabilityOptions = DefaultDurability,
                returnChanges: ReturnChangesOptions = DoNotReturnChanges): DeleteTableQuery[T, PK] = new DeleteTableQuery[T, PK] {
       val command = TermType.DELETE
@@ -205,7 +204,7 @@ trait WritingQueries {
     }
   }
 
-  implicit class DeleteOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class DeleteOnTableSliceOp[T, PK <: PrimaryKey](val tableSlice: ReqlTableSlice[T, PK]) {
     def delete(durability: DurabilityOptions = DefaultDurability,
                returnChanges: ReturnChangesOptions = DoNotReturnChanges): DeleteTableSliceQuery[T, PK] = new DeleteTableSliceQuery[T, PK] {
       val command = TermType.DELETE
@@ -215,7 +214,7 @@ trait WritingQueries {
     }
   }
 
-  implicit class DeleteOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+  implicit class DeleteOnSelectionOfStreamOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfStream[T, PK]) {
     def delete(durability: DurabilityOptions = DefaultDurability,
                returnChanges: ReturnChangesOptions = DoNotReturnChanges): DeleteSelectionOfStreamQuery[T, PK] = new DeleteSelectionOfStreamQuery[T, PK] {
       val command = TermType.DELETE
@@ -225,7 +224,7 @@ trait WritingQueries {
     }
   }
 
-  implicit class DeleteOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+  implicit class DeleteOnSelectionOfArrayOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfArray[T, PK]) {
     def delete(durability: DurabilityOptions = DefaultDurability,
                returnChanges: ReturnChangesOptions = DoNotReturnChanges): DeleteSelectionOfArrayQuery[T, PK] = new DeleteSelectionOfArrayQuery[T, PK] {
       val command = TermType.DELETE
@@ -235,7 +234,7 @@ trait WritingQueries {
     }
   }
 
-  implicit class DeleteOnSelectionOfObjectOp[T, PK](val sel: ReqlSelectionOfObject[T, PK]) {
+  implicit class DeleteOnSelectionOfObjectOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfObject[T, PK]) {
     def delete(durability: DurabilityOptions = DefaultDurability,
                returnChanges: ReturnChangesOptions = DoNotReturnChanges): DeleteSelectionOfObjectQuery[T, PK] = new DeleteSelectionOfObjectQuery[T, PK] {
       val command = TermType.DELETE
@@ -248,7 +247,7 @@ trait WritingQueries {
   // sync
   trait SyncTableQuery extends ReqlSyncingResult
 
-  implicit class SyncOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class SyncOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     def sync(): SyncTableQuery = new SyncTableQuery {
       val command = TermType.SYNC
       val string = "sync"

@@ -2,7 +2,7 @@ package rere.ql.typeclasses
 
 import io.circe.JsonObject
 import rere.ql.queries.values
-import rere.ql.shapes.{ModelShape, ReqlModel}
+import rere.ql.shapes.ModelShape
 import rere.ql.types._
 import rere.ql.util.{FunctionProxyQuery, ProxyQuery}
 
@@ -41,7 +41,7 @@ object ObjectProducer {
   ](value: TargetType): ObjectProducer[SourceType, TargetType] =
     new ProxyQuery(value) with ObjectProducer[SourceType, TargetType]
 
-  implicit def reqlModelToObjectProducer[SourceType <: ReqlDatum, T, PK](
+  implicit def reqlModelToObjectProducer[SourceType <: ReqlDatum, T, PK <: PrimaryKey](
     value: T)(
     implicit shape: ModelShape[T, PK]
   ): ObjectProducer[SourceType, ReqlModel[T, PK]] =

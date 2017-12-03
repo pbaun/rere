@@ -3,7 +3,6 @@ package rere.ql.queries
 import rere.ql.options.all._
 import rere.ql.options.{ComposableOptions, Options}
 import rere.ql.ql2.Term.TermType
-import rere.ql.shapes.ReqlModel
 import rere.ql.typeclasses.{DatumSelector, ToPredicate, Transmuter}
 import rere.ql.types._
 
@@ -13,7 +12,7 @@ trait AggregationQueries {
   //TODO: rethink all that
   trait GroupTableQuery[K, R] extends ReqlGroupedStream[K, R]
 
-  implicit class GroupOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class GroupOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     //it returns immediately like array
     def group[U <: ReqlDatum](
       selector: DatumSelector[ReqlModel[T, PK], U]
@@ -177,7 +176,7 @@ trait AggregationQueries {
   trait ReduceSelectionOfStreamQuery extends ReqlDatum
   trait ReduceArrayQuery extends ReqlDatum
 
-  implicit class ReduceOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class ReduceOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     private implicit def modelShape = table.shape
 
     def reduce(
@@ -194,7 +193,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class ReduceOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class ReduceOnTableSliceOp[T, PK <: PrimaryKey](val tableSlice: ReqlTableSlice[T, PK]) {
     private implicit def modelShape = tableSlice.shape
 
     def reduce(
@@ -211,7 +210,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class ReduceOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+  implicit class ReduceOnSelectionOfArrayOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfArray[T, PK]) {
     private implicit def modelShape = sel.shape
 
     def reduce(
@@ -228,7 +227,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class ReduceOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+  implicit class ReduceOnSelectionOfStreamOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfStream[T, PK]) {
     private implicit def modelShape = sel.shape
 
     def reduce(
@@ -282,7 +281,7 @@ trait AggregationQueries {
   trait FoldToSeqArrayQuery[T <: ReqlDatum] extends ReqlArray[T]
 
   //TODO: find way to make .fold[R]: R not .fold[R]: Datum
-  implicit class FoldOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class FoldOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     private implicit def modelShape = table.shape
 
     def fold[
@@ -317,7 +316,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class FoldOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class FoldOnTableSliceOp[T, PK <: PrimaryKey](val tableSlice: ReqlTableSlice[T, PK]) {
     private implicit def modelShape = tableSlice.shape
 
     def fold[
@@ -351,7 +350,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class FoldOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+  implicit class FoldOnSelectionOfArrayOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfArray[T, PK]) {
     private implicit def modelShape = sel.shape
 
     def fold[
@@ -386,7 +385,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class FoldOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+  implicit class FoldOnSelectionOfStreamOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfStream[T, PK]) {
     private implicit def modelShape = sel.shape
 
     def fold[
@@ -506,7 +505,7 @@ trait AggregationQueries {
   trait CountObjectQuery extends ReqlInteger
   trait CountGroupedStreamQuery extends ReqlGroupedData
 
-  implicit class CountOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class CountOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     private implicit def modelShape = table.shape
 
     def count(): CountTableQuery = new CountTableQuery {
@@ -538,7 +537,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class CountOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class CountOnTableSliceOp[T, PK <: PrimaryKey](val tableSlice: ReqlTableSlice[T, PK]) {
     private implicit def modelShape = tableSlice.shape
 
     def count(): CountTableSliceQuery = new CountTableSliceQuery {
@@ -570,7 +569,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class CountOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+  implicit class CountOnSelectionOfArrayOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfArray[T, PK]) {
     private implicit def modelShape = sel.shape
 
     def count(): CountSelectionOfArrayQuery = new CountSelectionOfArrayQuery {
@@ -602,7 +601,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class CountOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+  implicit class CountOnSelectionOfStreamOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfStream[T, PK]) {
     private implicit def modelShape = sel.shape
 
     def count(): CountSelectionOfStreamQuery = new CountSelectionOfStreamQuery {
@@ -760,7 +759,7 @@ trait AggregationQueries {
   trait SumFiniteStreamQuery extends ReqlFloat
   trait SumArrayQuery extends ReqlFloat
 
-  implicit class SumOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class SumOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     private implicit def modelShape = table.shape
 
     def sum(field: ReqlString): SumTableQuery = new SumTableQuery {
@@ -778,7 +777,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class SumOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class SumOnTableSliceOp[T, PK <: PrimaryKey](val tableSlice: ReqlTableSlice[T, PK]) {
     private implicit def modelShape = tableSlice.shape
 
     def sum(field: ReqlString): SubTableSliceQuery = new SubTableSliceQuery {
@@ -796,7 +795,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class SumOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+  implicit class SumOnSelectionOfArrayOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfArray[T, PK]) {
     private implicit def modelShape = sel.shape
 
     def sum(field: ReqlString): SumSelectionOfArrayQuery = new SumSelectionOfArrayQuery {
@@ -814,7 +813,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class SumOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+  implicit class SumOnSelectionOfStreamOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfStream[T, PK]) {
     private implicit def modelShape = sel.shape
 
     def sum(field: ReqlString): SumSelectionOfStreamQuery = new SumSelectionOfStreamQuery {
@@ -887,7 +886,7 @@ trait AggregationQueries {
   trait AvgFiniteStreamQuery extends ReqlFloat
   trait AvgArrayQuery extends ReqlFloat
 
-  implicit class AvgOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class AvgOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     private implicit def modelShape = table.shape
 
     def avg(field: ReqlString): AvgTableQuery = new AvgTableQuery {
@@ -905,7 +904,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class AvgOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class AvgOnTableSliceOp[T, PK <: PrimaryKey](val tableSlice: ReqlTableSlice[T, PK]) {
     private implicit def modelShape = tableSlice.shape
 
     def avg(field: ReqlString): AvgTableSliceQuery = new AvgTableSliceQuery {
@@ -923,7 +922,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class AvgOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+  implicit class AvgOnSelectionOfArrayOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfArray[T, PK]) {
     private implicit def modelShape = sel.shape
 
     def avg(field: ReqlString): AvgSelectionOfArrayQuery = new AvgSelectionOfArrayQuery {
@@ -941,7 +940,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class AvgOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+  implicit class AvgOnSelectionOfStreamOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfStream[T, PK]) {
     private implicit def modelShape = sel.shape
 
     def avg(field: ReqlString): AvgSelectionOfStreamQuery = new AvgSelectionOfStreamQuery {
@@ -1014,7 +1013,7 @@ trait AggregationQueries {
   trait MinFiniteStreamQuery extends ReqlDatum
   trait MinArrayQuery extends ReqlDatum
 
-  implicit class MinOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class MinOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     private implicit def modelShape = table.shape
 
     def min(index: IndexOptions = DefaultIndex): ReqlModel[T, PK] = {
@@ -1051,7 +1050,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class MinOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class MinOnTableSliceOp[T, PK <: PrimaryKey](val tableSlice: ReqlTableSlice[T, PK]) {
     private implicit def modelShape = tableSlice.shape
 
     def min(): ReqlModel[T, PK] = {
@@ -1088,7 +1087,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class MinOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+  implicit class MinOnSelectionOfArrayOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfArray[T, PK]) {
     private implicit def modelShape = sel.shape
 
     def min(): ReqlModel[T, PK] = {
@@ -1125,7 +1124,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class MinOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+  implicit class MinOnSelectionOfStreamOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfStream[T, PK]) {
     private implicit def modelShape = sel.shape
 
     def min(): ReqlModel[T, PK] = {
@@ -1241,7 +1240,7 @@ trait AggregationQueries {
   trait MaxFiniteStreamQuery extends ReqlDatum
   trait MaxArrayQuery extends ReqlDatum
 
-  implicit class MaxOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class MaxOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     private implicit def modelShape = table.shape
 
     def max(index: IndexOptions = DefaultIndex): ReqlModel[T, PK] = {
@@ -1278,7 +1277,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class MaxOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class MaxOnTableSliceOp[T, PK <: PrimaryKey](val tableSlice: ReqlTableSlice[T, PK]) {
     private implicit def modelShape = tableSlice.shape
 
     def max(): ReqlModel[T, PK] = {
@@ -1315,7 +1314,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class MaxOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+  implicit class MaxOnSelectionOfArrayOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfArray[T, PK]) {
     private implicit def modelShape = sel.shape
 
     def max(): ReqlModel[T, PK] = {
@@ -1352,7 +1351,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class MaxOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+  implicit class MaxOnSelectionOfStreamOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfStream[T, PK]) {
     private implicit def modelShape = sel.shape
 
     def max(): ReqlModel[T, PK] = {
@@ -1468,7 +1467,7 @@ trait AggregationQueries {
   trait DistinctArrayQuery[T <: ReqlDatum] extends ReqlArray[T]
 
   //Stream with and without index
-  implicit class DistinctOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class DistinctOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     def distinct(indexOptions: IndexOptions = DefaultIndex): DistinctTableQuery[ReqlModel[T, PK]] = new DistinctTableQuery[ReqlModel[T, PK]] {
       val command = TermType.DISTINCT
       val string = "distinct"
@@ -1488,7 +1487,7 @@ trait AggregationQueries {
     }
   }*/
 
-  implicit class DistinctOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+  implicit class DistinctOnSelectionOfArrayOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfArray[T, PK]) {
     def distinct(): DistinctSelectionOfArrayQuery[ReqlModel[T, PK]] = new DistinctSelectionOfArrayQuery[ReqlModel[T, PK]] {
       val command = TermType.DISTINCT
       val string = "distinct"
@@ -1497,7 +1496,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class DistinctOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+  implicit class DistinctOnSelectionOfStreamOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfStream[T, PK]) {
     def distinct(): DistinctSelectionOfStreamQuery[ReqlModel[T, PK]] = new DistinctSelectionOfStreamQuery[ReqlModel[T, PK]] {
       val command = TermType.DISTINCT
       val string = "distinct"
@@ -1522,7 +1521,7 @@ trait AggregationQueries {
   trait ContainsSelectionOfStreamQuery extends ReqlBoolean
   trait ContainsArrayQuery extends ReqlBoolean
 
-  implicit class ContainsOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class ContainsOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     def contains(predicates: ReqlPredicate[ReqlModel[T, PK]]*): ContainsTableQuery = new ContainsTableQuery {
       val command = TermType.CONTAINS
       val string = "contains"
@@ -1531,7 +1530,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class ContainsOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class ContainsOnTableSliceOp[T, PK <: PrimaryKey](val tableSlice: ReqlTableSlice[T, PK]) {
     def contains(predicates: ReqlPredicate[ReqlModel[T, PK]]*): ContainsTableSliceQuery = new ContainsTableSliceQuery {
       val command = TermType.CONTAINS
       val string = "contains"
@@ -1540,7 +1539,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class ContainsOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+  implicit class ContainsOnSelectionOfArrayOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfArray[T, PK]) {
     def contains(predicates: ReqlPredicate[ReqlModel[T, PK]]*): ContainsSelectionOfArrayQuery = new ContainsSelectionOfArrayQuery {
       val command = TermType.CONTAINS
       val string = "contains"
@@ -1549,7 +1548,7 @@ trait AggregationQueries {
     }
   }
 
-  implicit class ContainsOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+  implicit class ContainsOnSelectionOfStreamOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfStream[T, PK]) {
     def contains(predicates: ReqlPredicate[ReqlModel[T, PK]]*): ContainsSelectionOfStreamQuery = new ContainsSelectionOfStreamQuery {
       val command = TermType.CONTAINS
       val string = "contains"

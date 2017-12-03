@@ -6,10 +6,9 @@ import cats.instances.either._
 import cats.syntax.cartesian._
 import io.circe._
 import io.circe.syntax._
-import rere.ql.queries.values
 import rere.ql.shapes.ModelShape
 import rere.ql.shapes.ModelShape.DecodingResult
-import rere.ql.types.{ReqlDatum, ReqlObject}
+import rere.ql.types.{PrimaryKey, ReqlObject}
 import rere.ql.wire.{ReqlDecoder, ReqlEncoder}
 
 //TODO: enums for writeAcks and durability?
@@ -54,7 +53,7 @@ object TableConfig {
       ))
   }
 
-  implicit val tableConfigShape = new ModelShape[TableConfig, UUID] {
+  implicit val tableConfigShape = new ModelShape[TableConfig, PrimaryKey.UUID] {
     override def toReqlObject(model: TableConfig): ReqlObject = {
       ReqlEncoder.reqlObjectFromCirce(tableConfigEncoder).encode(model)
     }
@@ -69,10 +68,6 @@ object TableConfig {
     override def fromJson(json: Json): DecodingResult[TableConfig] = {
       val result = ReqlDecoder.reqlFromCirce(tableConfigDecoder).decode(json)
       ModelShape.decodingResultConverter(result, json)
-    }
-
-    override def toReqlPrimaryKey(primaryKey: UUID): ReqlDatum = {
-      values.expr(primaryKey.asJson)
     }
   }
 }

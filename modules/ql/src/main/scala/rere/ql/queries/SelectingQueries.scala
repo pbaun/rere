@@ -3,39 +3,38 @@ package rere.ql.queries
 import rere.ql.options.all._
 import rere.ql.options.{ComposableOptions, Options}
 import rere.ql.ql2.Term.TermType
-import rere.ql.shapes.ReqlModel
 import rere.ql.typeclasses.{ToFilterPredicate, Transmuter}
 import rere.ql.types._
 
 trait SelectingQueries {
 
   // get
-  trait GetQuery[T, PK] extends ReqlSelectionOfObject[T, PK]
+  trait GetQuery[T, PK <: PrimaryKey] extends ReqlSelectionOfObject[T, PK]
 
-  implicit class GetOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class GetOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     private implicit def modelShape = table.shape
 
-    def get(key: PK): GetQuery[T, PK] = new GetQuery[T, PK] {
+    def get(key: PK#Reql): GetQuery[T, PK] = new GetQuery[T, PK] {
       val command = TermType.GET
       val string = "get"
-      val arguments = table :: modelShape.toReqlPrimaryKey(key) :: Nil
+      val arguments = table :: key :: Nil
       val options = Options.empty
       def shape = modelShape
     }
   }
 
   // get_all
-  trait GetAllQuery[T, PK] extends ReqlSelectionOfStream[T, PK]
+  trait GetAllQuery[T, PK <: PrimaryKey] extends ReqlSelectionOfStream[T, PK]
   //TODO:  An orderBy command that uses a secondary index cannot be chained after getAll. You can only chain it after a table command. However, you can chain orderBy after a between command provided it uses the same index
 
-  implicit class GetAllOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class GetAllOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     private implicit def modelShape = table.shape
 
     //TODO: make index option type safe (RqlIndexExpr???, r.index???)
-    def getAll(keys: PK*): GetAllQuery[T, PK] = new GetAllQuery[T, PK] {
+    def getAll(keys: PK#Reql*): GetAllQuery[T, PK] = new GetAllQuery[T, PK] {
       val command = TermType.GET_ALL
       val string = "get_all"
-      val arguments = table :: keys.map(modelShape.toReqlPrimaryKey).toList
+      val arguments = table :: keys.toList
       val options = Options.empty
       def shape = modelShape
     }
@@ -68,10 +67,10 @@ trait SelectingQueries {
   }
 
   // between
-  trait BetweenTableQuery[T, PK] extends ReqlTableSlice[T, PK]
-  trait BetweenTableSliceQuery[T, PK] extends ReqlTableSlice[T, PK]
+  trait BetweenTableQuery[T, PK <: PrimaryKey] extends ReqlTableSlice[T, PK]
+  trait BetweenTableSliceQuery[T, PK <: PrimaryKey] extends ReqlTableSlice[T, PK]
 
-  implicit class BetweenOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class BetweenOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     def between(lowerKey: ReqlValue,
                 upperKey: ReqlValue,
                 boundsOptions: BoundsOptions = DefaultBounds,
@@ -84,7 +83,7 @@ trait SelectingQueries {
     }
   }
 
-  implicit class BetweenOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class BetweenOnTableSliceOp[T, PK <: PrimaryKey](val tableSlice: ReqlTableSlice[T, PK]) {
     //use index on tableSlice is not safe - if index differs from what has been used in previous step whole query will fail
     def between(lowerKey: ReqlValue,
                 upperKey: ReqlValue,
@@ -124,15 +123,15 @@ trait SelectingQueries {
   }
 
   // filter
-  trait FilterTableQuery[T, PK] extends ReqlSelectionOfStream[T, PK]
-  trait FilterTableSliceQuery[T, PK] extends ReqlSelectionOfStream[T, PK]
-  trait FilterSelectionOfArrayQuery[T, PK] extends ReqlSelectionOfArray[T, PK]
-  trait FilterSelectionOfStreamQuery[T, PK] extends ReqlSelectionOfStream[T, PK]
+  trait FilterTableQuery[T, PK <: PrimaryKey] extends ReqlSelectionOfStream[T, PK]
+  trait FilterTableSliceQuery[T, PK <: PrimaryKey] extends ReqlSelectionOfStream[T, PK]
+  trait FilterSelectionOfArrayQuery[T, PK <: PrimaryKey] extends ReqlSelectionOfArray[T, PK]
+  trait FilterSelectionOfStreamQuery[T, PK <: PrimaryKey] extends ReqlSelectionOfStream[T, PK]
   trait FilterInfiniteStreamQuery[T <: ReqlDatum] extends ReqlInfiniteStream[T]
   trait FilterFiniteStreamQuery[T <: ReqlDatum] extends ReqlFiniteStream[T]
   trait FilterArrayQuery[T <: ReqlDatum] extends ReqlArray[T]
 
-  implicit class FilterOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class FilterOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     private implicit def modelShape = table.shape
 
     def filter(obj: ReqlModel[T, PK]): FilterTableQuery[T, PK] = new FilterTableQuery[T, PK] {
@@ -206,7 +205,7 @@ trait SelectingQueries {
     }
   }
 
-  implicit class FilterOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class FilterOnTableSliceOp[T, PK <: PrimaryKey](val tableSlice: ReqlTableSlice[T, PK]) {
     private implicit def modelShape = tableSlice.shape
 
     def filter(obj: ReqlModel[T, PK]): FilterTableSliceQuery[T, PK] = new FilterTableSliceQuery[T, PK] {
@@ -280,7 +279,7 @@ trait SelectingQueries {
     }
   }
 
-  implicit class FilterOnSelectionOfArrayOp[T, PK](val sel: ReqlSelectionOfArray[T, PK]) {
+  implicit class FilterOnSelectionOfArrayOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfArray[T, PK]) {
     private implicit def modelShape = sel.shape
 
     def filter(obj: ReqlModel[T, PK]): FilterSelectionOfArrayQuery[T, PK] = new FilterSelectionOfArrayQuery[T, PK] {
@@ -354,7 +353,7 @@ trait SelectingQueries {
     }
   }
 
-  implicit class FilterOnSelectionOfStreamOp[T, PK](val sel: ReqlSelectionOfStream[T, PK]) {
+  implicit class FilterOnSelectionOfStreamOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfStream[T, PK]) {
     private implicit def modelShape = sel.shape
 
     def filter(obj: ReqlModel[T, PK]): FilterSelectionOfStreamQuery[T, PK] = new FilterSelectionOfStreamQuery[T, PK] {

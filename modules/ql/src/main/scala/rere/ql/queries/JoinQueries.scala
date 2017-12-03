@@ -110,7 +110,7 @@ trait JoinQueries {
   //TODO: maybe make index argument explicit and remove selector wrapper ??? pass default index is easy, find wrapped - hard
 
   implicit class EqJoinOnInfiniteStreamLikeOp[T0 <: ReqlDatum](val infiniteStreamLike: ReqlInfiniteStreamLike[T0]) {
-    def eqJoin[T1, PK1, Selected <: ReqlDatum](
+    def eqJoin[T1, PK1 <: PrimaryKey, Selected <: ReqlDatum](
       selector: DatumSelector[T0, Selected],
       secondTable: ReqlTable[T1, PK1],
       secondTableIndex: IndexOptions = DefaultIndex,
@@ -124,7 +124,7 @@ trait JoinQueries {
   }
 
   implicit class EqJoinOnFiniteStreamLikeOp[T0 <: ReqlDatum](val finiteStreamLike: ReqlFiniteStreamLike[T0]) {
-    def eqJoin[T1, PK1, Selected <: ReqlDatum](
+    def eqJoin[T1, PK1 <: PrimaryKey, Selected <: ReqlDatum](
       selector: DatumSelector[T0, Selected],
       secondTable: ReqlTable[T1, PK1],
       secondTableIndex: IndexOptions = DefaultIndex,
@@ -138,7 +138,7 @@ trait JoinQueries {
   }
 
   implicit class EqJoinOnArrayLikeOp[T0 <: ReqlDatum](val arrayLike: ReqlFiniteArrayLike[T0]) {
-    def eqJoin[T1, PK1, Selected <: ReqlDatum](
+    def eqJoin[T1, PK1 <: PrimaryKey, Selected <: ReqlDatum](
       selector: DatumSelector[T0, Selected],
       table: ReqlTable[T1, PK1],
       tableIndex: IndexOptions = DefaultIndex,

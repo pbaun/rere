@@ -4,7 +4,7 @@ import java.time.ZonedDateTime
 
 import io.circe.JsonObject
 import rere.ql.data._
-import rere.ql.shapes.{ModelShape, ReqlModel}
+import rere.ql.shapes.ModelShape
 import rere.ql.types._
 import rere.ql.wire.ReqlDecoder
 
@@ -39,7 +39,7 @@ object AutoInference extends LowPriorityAutoInference {
   implicit val reqlJsonObjectAutoInference: Aux[ReqlJsonObject, JsonObject] =
     fromDecoder(ReqlDecoder.jsonObjectReqlDecoder)
 
-  implicit def reqlModelAutoInferenceFromDecoder[M : ReqlDecoder, PK]: Aux[ReqlModel[M, PK], M] =
+  implicit def reqlModelAutoInferenceFromDecoder[M : ReqlDecoder, PK <: PrimaryKey]: Aux[ReqlModel[M, PK], M] =
     fromDecoder(ReqlDecoder[M])
 
   implicit def reqlArrayAutoInference[T <: ReqlDatum, Scala](
@@ -47,18 +47,17 @@ object AutoInference extends LowPriorityAutoInference {
   ): Aux[ReqlArray[T], Seq[Scala]] =
     fromDecoder(ReqlDecoder.seqReqlDecoder[Scala](inner.getDecoder))
 
-  implicit def reqlChangefeedNotificationOnModelAutoInference[
-    ModelType,
-    PK
-  ](
+  implicit def reqlChangefeedNotificationOnModelAutoInference[ModelType](
     implicit optionTReqlDecoder: ReqlDecoder[Option[ModelType]]
   ): Aux[ReqlChangefeedNotification[ModelType], ChangefeedNotification[ModelType]] =
     fromDecoder(ReqlDecoder.changefeedNotificationReqlDecoder(optionTReqlDecoder))
 
   implicit def reqlModificationResultOnModelAutoInference[
     ModelType : ReqlDecoder,
-    PK : ReqlDecoder
-  ]: Aux[ReqlModificationResult[ModelType, PK], ModificationResult[ModelType, PK]] =
+    PK <: PrimaryKey
+  ](
+    implicit dec: ReqlDecoder[PK#Scala]
+  ): Aux[ReqlModificationResult[ModelType, PK], ModificationResult[ModelType, PK#Scala]] =
     fromDecoder(ReqlDecoder.insertionResultReqlDecoder[ModelType, PK])
 
   implicit val reqlDatabaseCreationResultAutoInference: Aux[ReqlDatabaseCreationResult, DatabaseCreationResult] =
@@ -122,7 +121,9 @@ object AutoInference extends LowPriorityAutoInference {
 trait LowPriorityAutoInference extends LowerPriorityAutoInference {
   import AutoInference.{Aux, fromDecoder}
 
-  implicit def reqlModelAutoInferenceFromShape[M, PK](implicit shape: ModelShape[M, PK]): Aux[ReqlModel[M, PK], M] =
+  implicit def reqlModelAutoInferenceFromShape[M, PK <: PrimaryKey](
+    implicit shape: ModelShape[M, PK]
+  ): Aux[ReqlModel[M, PK], M] =
     fromDecoder(ReqlDecoder.modelReqlDecoder[M, PK])
 
   implicit def reqlChangefeedNotificationAutoInference[
@@ -134,8 +135,10 @@ trait LowPriorityAutoInference extends LowerPriorityAutoInference {
 
   implicit def reqlModificationResultAutoInference[
     T : ReqlDecoder,
-    PK : ReqlDecoder
-  ]: Aux[ReqlModificationResult[T, PK], ModificationResult[T, PK]] =
+    PK <: PrimaryKey
+  ](
+    implicit scalaDec: ReqlDecoder[PK#Scala]
+  ): Aux[ReqlModificationResult[T, PK], ModificationResult[T, PK#Scala]] =
     fromDecoder(ReqlDecoder.insertionResultReqlDecoder[T, PK])
 }
 

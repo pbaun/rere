@@ -3,7 +3,7 @@ package rere.ql.queries
 import rere.ql.options.all._
 import rere.ql.options.{ComposableOptions, Options}
 import rere.ql.ql2.Term.TermType
-import rere.ql.shapes.{ModelShape, ReqlModel}
+import rere.ql.shapes.ModelShape
 import rere.ql.typeclasses.{ToUpper, Transmuter}
 import rere.ql.types._
 
@@ -188,18 +188,18 @@ trait ControlQueries {
   }
 
   // for_each
-  trait ForEachTableQuery[T, PK] extends ReqlModificationResult[T, PK]
-  trait ForEachTableSliceQuery[T, PK] extends ReqlModificationResult[T, PK]
-  trait ForEachSelectionOfArrayQuery[T, PK] extends ReqlModificationResult[T, PK]
-  trait ForEachSelectionOfStreamQuery[T, PK] extends ReqlModificationResult[T, PK]
-  trait ForEachFiniteStreamQuery[T, PK] extends ReqlModificationResult[T, PK]
-  trait ForEachArrayQuery[T, PK] extends ReqlModificationResult[T, PK]
+  trait ForEachTableQuery[T, PK <: PrimaryKey] extends ReqlModificationResult[T, PK]
+  trait ForEachTableSliceQuery[T, PK <: PrimaryKey] extends ReqlModificationResult[T, PK]
+  trait ForEachSelectionOfArrayQuery[T, PK <: PrimaryKey] extends ReqlModificationResult[T, PK]
+  trait ForEachSelectionOfStreamQuery[T, PK <: PrimaryKey] extends ReqlModificationResult[T, PK]
+  trait ForEachFiniteStreamQuery[T, PK <: PrimaryKey] extends ReqlModificationResult[T, PK]
+  trait ForEachArrayQuery[T, PK <: PrimaryKey] extends ReqlModificationResult[T, PK]
   //TODO: server implementation allows write_function: ReqlValue => Seq[Write_Op]
 
-  implicit class ForEachOnTableOp[T0, PK0](val table: ReqlTable[T0, PK0])(
+  implicit class ForEachOnTableOp[T0, PK0 <: PrimaryKey](val table: ReqlTable[T0, PK0])(
     implicit shape: ModelShape[T0, PK0]
   ) {
-    def forEach[T1, PK1](
+    def forEach[T1, PK1 <: PrimaryKey](
       writeFunction: ReqlModel[T0, PK0] => ReqlModificationResult[T1, PK1]
     ): ForEachTableQuery[T1, PK1] = new ForEachTableQuery[T1, PK1] {
       val command = TermType.FOR_EACH
@@ -209,10 +209,10 @@ trait ControlQueries {
     }
   }
 
-  implicit class ForEachOnTableSliceOp[T0, PK0](val tableSlice: ReqlTableSlice[T0, PK0])(
+  implicit class ForEachOnTableSliceOp[T0, PK0 <: PrimaryKey](val tableSlice: ReqlTableSlice[T0, PK0])(
     implicit shape: ModelShape[T0, PK0]
   ) {
-    def forEach[T1, PK1](
+    def forEach[T1, PK1 <: PrimaryKey](
       writeFunction: ReqlModel[T0, PK0] => ReqlModificationResult[T1, PK1]
     ): ForEachTableSliceQuery[T1, PK1] = new ForEachTableSliceQuery[T1, PK1] {
       val command = TermType.FOR_EACH
@@ -222,10 +222,10 @@ trait ControlQueries {
     }
   }
 
-  implicit class ForEachOnSelectionOfArrayOp[T0, PK0](val sel: ReqlSelectionOfArray[T0, PK0])(
+  implicit class ForEachOnSelectionOfArrayOp[T0, PK0 <: PrimaryKey](val sel: ReqlSelectionOfArray[T0, PK0])(
     implicit shape: ModelShape[T0, PK0]
   ) {
-    def forEach[T1, PK1](
+    def forEach[T1, PK1 <: PrimaryKey](
       writeFunction: ReqlModel[T0, PK0] => ReqlModificationResult[T1, PK1]
     ): ForEachSelectionOfArrayQuery[T1, PK1] = new ForEachSelectionOfArrayQuery[T1, PK1] {
       val command = TermType.FOR_EACH
@@ -235,10 +235,10 @@ trait ControlQueries {
     }
   }
 
-  implicit class ForEachOnSelectionOfStreamOp[T0, PK0](val sel: ReqlSelectionOfStream[T0, PK0])(
+  implicit class ForEachOnSelectionOfStreamOp[T0, PK0 <: PrimaryKey](val sel: ReqlSelectionOfStream[T0, PK0])(
     implicit shape: ModelShape[T0, PK0]
   ) {
-    def forEach[T1, PK1](
+    def forEach[T1, PK1 <: PrimaryKey](
       writeFunction: ReqlModel[T0, PK0] => ReqlModificationResult[T1, PK1]
     ): ForEachSelectionOfStreamQuery[T1, PK1] = new ForEachSelectionOfStreamQuery[T1, PK1] {
       val command = TermType.FOR_EACH
@@ -249,7 +249,7 @@ trait ControlQueries {
   }
 
   implicit class ForEachOnFiniteStreamOp[T0 <: ReqlDatum : Transmuter](val finiteStream: ReqlFiniteStream[T0]) {
-    def forEach[T1, PK1](
+    def forEach[T1, PK1 <: PrimaryKey](
       writeFunction: T0 => ReqlModificationResult[T1, PK1]
     ): ForEachFiniteStreamQuery[T1, PK1] = new ForEachFiniteStreamQuery[T1, PK1] {
       val command = TermType.FOR_EACH
@@ -260,7 +260,7 @@ trait ControlQueries {
   }
 
   implicit class ForEachOnArrayOp[T0 <: ReqlDatum : Transmuter](val array: ReqlArray[T0]) {
-    def forEach[T1, PK1](
+    def forEach[T1, PK1 <: PrimaryKey](
       writeFunction: T0 => ReqlModificationResult[T1, PK1]
     ): ForEachArrayQuery[T1, PK1] = new ForEachArrayQuery[T1, PK1] {
       val command = TermType.FOR_EACH
@@ -469,7 +469,7 @@ trait ControlQueries {
     }
   }
 
-  implicit class CoerceToOnSingleSelectionOp[T, PK](val sel: ReqlSelectionOfObject[T, PK]) {
+  implicit class CoerceToOnSingleSelectionOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfObject[T, PK]) {
     def coerceTo(to: `string`.type): ReqlString = {
       Transmuter.transmute[ReqlString](
         new CoerceToQuery(sel :: to.typeName :: Nil)

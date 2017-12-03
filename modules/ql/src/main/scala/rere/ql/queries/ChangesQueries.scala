@@ -12,7 +12,7 @@ trait ChangesQueries {
   trait ChangesTableSliceQuery[T] extends ReqlInfiniteStream[ReqlChangefeedNotification[T]]
   trait ChangesSelectionOfObjectQuery[T] extends ReqlInfiniteStream[ReqlChangefeedNotification[T]]
 
-  implicit class ChangesOnTableOp[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class ChangesOnTableOp[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     def changes(
       squash: SquashOptions = NotSquash,
       changefeedQueueSize: ChangefeedQueueSizeOptions = DefaultChangefeedQueueSize,
@@ -35,7 +35,7 @@ trait ChangesQueries {
     }
   }
 
-  implicit class ChangesOnTableSliceOp[T, PK](val tableSlice: ReqlTableSlice[T, PK]) {
+  implicit class ChangesOnTableSliceOp[T, PK <: PrimaryKey](val tableSlice: ReqlTableSlice[T, PK]) {
     def changes(
       squash: SquashOptions = NotSquash,
       changefeedQueueSize: ChangefeedQueueSizeOptions = DefaultChangefeedQueueSize,
@@ -58,7 +58,7 @@ trait ChangesQueries {
     }
   }
 
-  implicit class ChangesOnSelectionOfObjectOp[T, PK](val sel: ReqlSelectionOfObject[T, PK]) {
+  implicit class ChangesOnSelectionOfObjectOp[T, PK <: PrimaryKey](val sel: ReqlSelectionOfObject[T, PK]) {
     def changes(
       squash: SquashOptions = NotSquash,
       changefeedQueueSize: ChangefeedQueueSizeOptions = DefaultChangefeedQueueSize,

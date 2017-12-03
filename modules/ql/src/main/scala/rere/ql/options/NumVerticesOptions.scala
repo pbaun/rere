@@ -8,7 +8,7 @@ trait NumVerticesOptions {
 
   case object DefaultNumVertices extends NumVerticesOptions with DefaultOption
 
-  case class NumVertices(n: Integer) extends NumVerticesOptions with NonDefaultOption {
+  case class NumVertices(n: Int) extends NumVerticesOptions with NonDefaultOption {
     def view = "num_vertices" -> values.expr(n) :: Nil
   }
 

@@ -8,11 +8,12 @@ import akka.util.ByteString
 import io.circe.{Json, JsonObject}
 import org.scalatest.{FlatSpec, Inside, Matchers}
 import rere.ql.rasterization.ByteStringRenderer
-import rere.ql.types.{ReqlObject, ReqlTable}
+import rere.ql.types._
 
 class ShapeTest extends FlatSpec with Matchers with Inside {
 
   case class Sample(
+    n: Null,
     flag: Boolean,
     i: Int,
     l: Long,
@@ -29,7 +30,8 @@ class ShapeTest extends FlatSpec with Matchers with Inside {
     tags: Seq[String]
   )
 
-  object SampleShape extends Shape(Sample.apply _, PrimaryKey[UUID]) with IdeaTypeHint[Sample] {
+  object SampleShape extends Shape(Sample.apply _, PK[PrimaryKey.UUID]) {
+    implicit val n = field("null", _.n)
     implicit val flag = field("flag", _.flag)
     implicit val i = field("i", _.i)
     implicit val l = field("l", _.l)
@@ -46,7 +48,7 @@ class ShapeTest extends FlatSpec with Matchers with Inside {
     implicit val tags = field("tags", _.tags)
 
     def primaryKey = pk(uuid)
-    def projection = flag :-: i :-: l :-: bi :-: d :-: bd :-: name :-:
+    def projection = n :-: flag :-: i :-: l :-: bi :-: d :-: bd :-: name :-:
       zonedDateTime :-: uuid :-: json :-: binary :-: tag :-: maybeDate :-: tags :-: SNil
   }
 
@@ -60,8 +62,13 @@ class ShapeTest extends FlatSpec with Matchers with Inside {
     val jsonValue: Json = Json.obj("a" -> Json.fromInt(123), "b" -> Json.fromString("test"))
     val binaryValue = ByteString("unicode string π")
     val tagsValue = Seq("s", "m", "p", "l")
-    val model = Sample(true, 2, 3L, 12345, 123.45, 12345.67, "abc",
+    val model = Sample(null, true, 2, 3L, 12345, 123.45, 12345.67, "abc",
       date, uuidValue, jsonValue, binaryValue, Some("smpl"), Some(date), tagsValue)
+
+    // Null
+    shape.n shouldBe an[shape.Field[_]]
+    val n: Null = shape.getField(model, "null")
+    inside(shape.getField(model, "null")) { case null => }
 
     // Boolean
     shape.flag shouldBe an[shape.Field[_]]
@@ -197,10 +204,7 @@ class ShapeTest extends FlatSpec with Matchers with Inside {
 
   case class Nickname(name: String)
 
-  object NicknameShape
-    extends Shape(Nickname.apply _, PrimaryKey[String])
-    with IdeaTypeHint[Nickname] {
-
+  object NicknameShape extends Shape(Nickname.apply _, PK[PrimaryKey.String]) {
     implicit val name = field("name", _.name)
 
     def primaryKey = pk(name)
@@ -209,10 +213,7 @@ class ShapeTest extends FlatSpec with Matchers with Inside {
 
   case class User(id: Long, a: Int, b: String, c: Boolean, d: Option[String], e: Option[String], nick: Nickname)
 
-  object UserShape
-    extends Shape(User.apply _, PrimaryKey[Long])
-    with IdeaTypeHint[User] {
-
+  object UserShape extends Shape(User.apply _, PK[PrimaryKey.Long]) {
     implicit val id = field("id", _.id)
     implicit val a = field("a", _.a)
     implicit val b = field("b", _.b)
@@ -226,10 +227,10 @@ class ShapeTest extends FlatSpec with Matchers with Inside {
   }
 
   import io.circe.generic.auto._
-  object UserCirceShape extends CirceShape[User, Long]
+  object UserCirceShape extends CirceShape[User, PrimaryKey.Long]
 
   case class Rights(user: User, userRights: Seq[String])
-  object RightsShape extends CirceShape[Rights, UUID]
+  object RightsShape extends CirceShape[Rights, PrimaryKey.String]
 
   object TestDatabase extends DatabaseShape("test") {
 
@@ -307,7 +308,7 @@ class ShapeTest extends FlatSpec with Matchers with Inside {
     val rightsReqlObj = RightsShape.toReqlObject(rightsSample)
     toJsonString(rightsReqlObj) shouldBe """{"user":{"id":42,"a":123,"b":"bcd","c":false,"d":"def","e":null,"nick":{"name":"user"}},"userRights":[2,["moderator","manager","viewer"]]}"""
 
-    val t: ReqlTable[User, Long] = TestDatabase.users.table()
+    val t: ReqlTable[User, PrimaryKey.Long] = TestDatabase.users.table()
   }
 
 }

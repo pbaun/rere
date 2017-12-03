@@ -2,7 +2,6 @@ package rere.ql.types
 
 import rere.ql.options.Options
 import rere.ql.rasterization.{recursive, trampolined}
-import rere.ql.shapes.{ModelShape, ReqlModel}
 
 /**
   *
@@ -25,10 +24,6 @@ trait ReqlExpr {
   }
 }
 
-  trait ReqlShapable[T, PK] {
-    def shape: ModelShape[T, PK]
-  }
-
   // Something that can be appended to array and checked by .contains
   trait ReqlDatum extends ReqlExpr
 
@@ -39,6 +34,7 @@ trait ReqlExpr {
         trait ReqlInteger extends ReqlNumber
         trait ReqlFloat extends ReqlNumber
       trait ReqlString extends ReqlValue
+        trait ReqlUUID extends ReqlString
       trait ReqlArray[+T <: ReqlDatum] extends ReqlValue with ReqlFiniteArrayLike[T]
       trait ReqlObject extends ReqlValue
       trait ReqlJson extends ReqlValue
@@ -91,9 +87,9 @@ trait ReqlExpr {
       /**
         * Implementations
         */
-      trait ReqlTable[T, PK] extends ReqlFiniteStreamLike[ReqlModel[T, PK]] with ReqlShapable[T, PK]
+      trait ReqlTable[T, PK <: PrimaryKey] extends ReqlFiniteStreamLike[ReqlModel[T, PK]] with ReqlShapable[T, PK]
 
-      trait ReqlTableSlice[T, PK] extends ReqlFiniteStreamLike[ReqlModel[T, PK]] with ReqlShapable[T, PK]
+      trait ReqlTableSlice[T, PK <: PrimaryKey] extends ReqlFiniteStreamLike[ReqlModel[T, PK]] with ReqlShapable[T, PK]
       //TODO: table_slice not always behave same way - if it was created in operation with index it can behave differently (.between + .distinct)
       //TODO: maybe between without index should work like selection of array???
       //r.table("tv_shows").between(1,7,{index: "code"}).typeOf() -> "TABLE_SLICE"
@@ -105,11 +101,11 @@ trait ReqlExpr {
       //TODO: selection of array can be used in .union as array (in concatMap it also work like array)
       //TODO: after orderBy will be returned array that can be used for modification of state
       // SELECTION<ARRAY>
-      trait ReqlSelectionOfArray[T, PK] extends ReqlFiniteArrayLike[ReqlModel[T, PK]] with ReqlShapable[T, PK]
+      trait ReqlSelectionOfArray[T, PK <: PrimaryKey] extends ReqlFiniteArrayLike[ReqlModel[T, PK]] with ReqlShapable[T, PK]
 
       //TODO: selection of stream can be used in .union as stream
       // SELECTION<STREAM>
-      trait ReqlSelectionOfStream[T, PK] extends ReqlFiniteStreamLike[ReqlModel[T, PK]] with ReqlShapable[T, PK]
+      trait ReqlSelectionOfStream[T, PK <: PrimaryKey] extends ReqlFiniteStreamLike[ReqlModel[T, PK]] with ReqlShapable[T, PK]
 
       //infinite - .changes() - can't call .count() on it
       trait ReqlInfiniteStream[+T <: ReqlDatum] extends ReqlInfiniteStreamLike[T]
@@ -122,7 +118,7 @@ trait ReqlExpr {
       trait ReqlGroupedData extends ReqlSpecific
 
     // SELECTION<OBJECT>
-    trait ReqlSelectionOfObject[T, PK] extends ReqlSpecific with ReqlDatum with ReqlShapable[T, PK]
+    trait ReqlSelectionOfObject[T, PK <: PrimaryKey] extends ReqlSpecific with ReqlDatum with ReqlShapable[T, PK]
 
     trait ReqlFunction extends ReqlSpecific
 

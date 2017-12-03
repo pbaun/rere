@@ -123,9 +123,9 @@ trait GeospatialQueries {
   }
 
   // get_intersecting
-  trait GetIntersectingTableQuery[T, PK] extends ReqlSelectionOfStream[T, PK]
+  trait GetIntersectingTableQuery[T, PK <: PrimaryKey] extends ReqlSelectionOfStream[T, PK]
 
-  implicit class GetIntersectingOpOnTable[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class GetIntersectingOpOnTable[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     def getIntersecting(
       geometry: ReqlGeometry,
       geoIndex: Index
@@ -141,7 +141,7 @@ trait GeospatialQueries {
   // get_nearest
   trait GetNearestQuery[T] extends ReqlArray[ReqlDistanceResult[T]]
 
-  implicit class GetNearestOpOnTable[T, PK](val table: ReqlTable[T, PK]) {
+  implicit class GetNearestOpOnTable[T, PK <: PrimaryKey](val table: ReqlTable[T, PK]) {
     def getNearest(
       point: ReqlPoint,
       geoIndex: Index,

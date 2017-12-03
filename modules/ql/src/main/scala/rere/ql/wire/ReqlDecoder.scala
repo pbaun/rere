@@ -7,6 +7,7 @@ import akka.util.ByteString
 import io.circe._
 import rere.ql.data._
 import rere.ql.shapes.ModelShape
+import rere.ql.types.PrimaryKey
 
 import scala.collection.mutable
 import scala.util.control.NonFatal
@@ -44,6 +45,17 @@ object ReqlDecoder {
       case _ =>
         // not object
         None
+    }
+  }
+
+  implicit val nullReqlDecoder: ReqlDecoder[Null] = {
+    new ReqlDecoder[Null] {
+      override def decode(json: Json): Result[Null] = {
+        json.isNull match {
+          case true => Right(null)
+          case _ => Left(DecodingError("Not a null", json))
+        }
+      }
     }
   }
 
@@ -311,7 +323,7 @@ object ReqlDecoder {
     }
   }
 
-  implicit def modelReqlDecoder[M, PK](implicit modelShape: ModelShape[M, PK]): ReqlDecoder[M] = {
+  implicit def modelReqlDecoder[M, PK <: PrimaryKey](implicit modelShape: ModelShape[M, PK]): ReqlDecoder[M] = {
     new ReqlDecoder[M] {
       override def decode(json: Json): Result[M] = {
         modelShape.fromJson(json) match {
@@ -323,7 +335,7 @@ object ReqlDecoder {
   }
 
   implicit def changefeedNotificationReqlDecoder[T](
-                                                     implicit innerReqlDecoder: ReqlDecoder[Option[T]]
+    implicit innerReqlDecoder: ReqlDecoder[Option[T]]
   ): ReqlDecoder[ChangefeedNotification[T]] = {
     new ReqlDecoder[ChangefeedNotification[T]] {
       override def decode(json: Json): Result[ChangefeedNotification[T]] = {
@@ -367,8 +379,13 @@ object ReqlDecoder {
     )
   }
 
-  private implicit def insertionResultDecoder[T : ReqlDecoder, PK : ReqlDecoder]: Decoder[ModificationResult[T, PK]] = {
-    implicit val pkDecoder: Decoder[PK] = circeFromReql(ReqlDecoder[PK])
+  private implicit def insertionResultDecoder[
+    T : ReqlDecoder,
+    PK <: PrimaryKey
+  ](
+    implicit dec: ReqlDecoder[PK#Scala]
+  ): Decoder[ModificationResult[T, PK#Scala]] = {
+    implicit val pkDecoder: Decoder[PK#Scala] = circeFromReql(ReqlDecoder[PK#Scala])
     Decoder.instance(c =>
       for {
         inserted <- c.downField("inserted").as[Long]
@@ -378,15 +395,17 @@ object ReqlDecoder {
         firstError <- c.downField("first_error").as[Option[String]]
         deleted <- c.downField("deleted").as[Long]
         skipped <- c.downField("skipped").as[Long]
-        generatedKeys <- c.downField("generated_keys").as[Option[List[PK]]]
+        generatedKeys <- c.downField("generated_keys").as[Option[List[PK#Scala]]]
         warnings <- c.downField("warnings").as[Option[String]]
         changes <- c.downField("changes").as[Option[List[ChangefeedNotification[T]]]]
-      } yield ModificationResult[T, PK](inserted, replaced, unchanged, errors, firstError, deleted, skipped, generatedKeys, warnings, changes)
+      } yield ModificationResult[T, PK#Scala](inserted, replaced, unchanged, errors, firstError, deleted, skipped, generatedKeys, warnings, changes)
     )
   }
 
-  implicit def insertionResultReqlDecoder[T : ReqlDecoder, PK : ReqlDecoder]: ReqlDecoder[ModificationResult[T, PK]] = {
-    reqlFromCirce[ModificationResult[T, PK]](insertionResultDecoder)
+  implicit def insertionResultReqlDecoder[T : ReqlDecoder, PK <: PrimaryKey](
+    implicit dec: ReqlDecoder[PK#Scala]
+  ): ReqlDecoder[ModificationResult[T, PK#Scala]] = {
+    reqlFromCirce[ModificationResult[T, PK#Scala]](insertionResultDecoder)
   }
 
   private implicit val databaseCreationResultDecoder: Decoder[DatabaseCreationResult] = Decoder.instance(c =>

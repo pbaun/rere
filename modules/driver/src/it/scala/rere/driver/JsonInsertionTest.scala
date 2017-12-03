@@ -5,6 +5,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Matchers, WordSpec}
 import rere.driver.pool.ConnectionPool
+import rere.ql.types.PrimaryKey
 
 import scala.concurrent.ExecutionContext
 
@@ -29,14 +30,14 @@ class JsonInsertionTest extends WordSpec with ScalaFutures with Matchers {
 
       val model = JsonObject.fromMap(Map("field" -> Json.fromString("data")))
 
-      whenReady(r.db("test").table[JsonObject, String]("abc").insert(model).run(pool).future()) { result =>
+      whenReady(r.db("test").table[JsonObject, PrimaryKey.String]("abc").insert(model).run(pool).future()) { result =>
         result.inserted shouldBe 1
         result.generatedKeys shouldBe an[Some[Seq[String]]]
         result.generatedKeys.get should have size 1
         val generatedKey = result.generatedKeys.get.head
 
         whenReady(
-          r.db("test").table[JsonObject, String]("abc").get(generatedKey).run(pool).future()
+          r.db("test").table[JsonObject, PrimaryKey.String]("abc").get(generatedKey).run(pool).future()
         ) { result =>
           result("field") shouldBe Some(Json.fromString("data"))
           result("id") shouldBe Some(Json.fromString(generatedKey))

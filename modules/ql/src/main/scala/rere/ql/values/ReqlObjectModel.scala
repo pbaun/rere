@@ -2,9 +2,10 @@ package rere.ql.values
 
 import rere.ql.options.Options
 import rere.ql.rasterization.{recursive, trampolined}
-import rere.ql.shapes.{ModelShape, ReqlModel}
+import rere.ql.shapes.ModelShape
+import rere.ql.types.{PrimaryKey, ReqlModel}
 
-class ReqlObjectModel[M, PK](model: M, val shape: ModelShape[M, PK]) extends ReqlModel[M, PK] {
+class ReqlObjectModel[M, PK <: PrimaryKey](model: M, val shape: ModelShape[M, PK]) extends ReqlModel[M, PK] {
   private val obj = shape.toReqlObject(model)
 
   override def command = -1

@@ -6,10 +6,9 @@ import cats.instances.either._
 import cats.syntax.cartesian._
 import io.circe.syntax._
 import io.circe.{Decoder, Json, JsonObject, ObjectEncoder}
-import rere.ql.queries.values
 import rere.ql.shapes.ModelShape
 import rere.ql.shapes.ModelShape.DecodingResult
-import rere.ql.types.{ReqlDatum, ReqlObject}
+import rere.ql.types.{PrimaryKey, ReqlObject}
 import rere.ql.wire.ReqlDecoder.reqlFromCirce
 import rere.ql.wire.{ReqlDecoder, ReqlEncoder}
 
@@ -36,7 +35,7 @@ object DatabaseConfig {
     ))
   }
 
-  implicit val databaseConfigShape = new ModelShape[DatabaseConfig, UUID] {
+  implicit val databaseConfigShape = new ModelShape[DatabaseConfig, PrimaryKey.UUID] {
     override def toReqlObject(model: DatabaseConfig): ReqlObject = {
       ReqlEncoder.reqlObjectFromCirce(databaseConfigEncoder).encode(model)
     }
@@ -51,10 +50,6 @@ object DatabaseConfig {
     override def fromJson(json: Json): DecodingResult[DatabaseConfig] = {
       val result = ReqlDecoder.reqlFromCirce(databaseConfigDecoder).decode(json)
       ModelShape.decodingResultConverter(result, json)
-    }
-
-    override def toReqlPrimaryKey(primaryKey: UUID): ReqlDatum = {
-      values.expr(primaryKey.asJson)
     }
   }
 
