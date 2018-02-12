@@ -69,13 +69,13 @@ lazy val noPublishSettings = Seq(
 )
 
 
-val akkaVersion = "2.5.6"
-val circeVersion = "0.8.0"
-val catsVersion = "0.9.0"
+val akkaVersion = "2.5.9"
+val circeVersion = "0.9.1"
+val catsVersion = "1.0.1"
 
 lazy val parboiled    = "org.parboiled"          %% "parboiled"                   % "2.1.4"             // Apache 2
 
-lazy val shapeless    = "com.chuusai"            %% "shapeless"                   % "2.3.2"             // Apache 2
+lazy val shapeless    = "com.chuusai"            %% "shapeless"                   % "2.3.3"             // Apache 2
 
 lazy val circeCore    = "io.circe"               %% "circe-core"                  % circeVersion        // Apache 2
 lazy val circeGeneric = "io.circe"               %% "circe-generic"               % circeVersion        // Apache 2
@@ -83,14 +83,15 @@ lazy val circeParser  = "io.circe"               %% "circe-parser"              
 lazy val circeLiteral = "io.circe"               %% "circe-literal"               % circeVersion        // Apache 2
 lazy val circeShapes  = "io.circe"               %% "circe-shapes"                % circeVersion        // Apache 2
 
-lazy val cats         = "org.typelevel"          %% "cats"                        % catsVersion         // MIT
+lazy val catsKernel   = "org.typelevel"          %% "cats-kernel"                 % catsVersion         // MIT
+lazy val catsFree     = "org.typelevel"          %% "cats-free"                   % catsVersion         // MIT
 
 lazy val akkaActor    = "com.typesafe.akka"      %% "akka-actor"                  % akkaVersion         // ApacheV2
 lazy val akkaStream   = "com.typesafe.akka"      %% "akka-stream"                 % akkaVersion         // ApacheV2
 
 lazy val logback      = "ch.qos.logback"         % "logback-classic"              % "1.2.3"             // EPL/LGPL
 
-lazy val scalatest    = "org.scalatest"          %% "scalatest"                   % "3.0.4"             // ApacheV2
+lazy val scalatest    = "org.scalatest"          %% "scalatest"                   % "3.0.5"             // ApacheV2
 lazy val scalamock    = "org.scalamock"          %% "scalamock-scalatest-support" % "3.6.0"             // MIT
 lazy val akkaTK       = "com.typesafe.akka"      %% "akka-testkit"                % akkaVersion         // ApacheV2
 lazy val akkaStreamTK = "com.typesafe.akka"      %% "akka-stream-testkit"         % akkaVersion         // ApacheV2
@@ -133,7 +134,8 @@ lazy val ql = (project in modules / "ql")
       circeParser,
       circeLiteral,
       circeShapes,
-      cats,
+      catsKernel,
+      catsFree,
       akkaActor,
       scalatest % Test
     )
@@ -157,7 +159,8 @@ lazy val driver = (project in modules / "driver")
       circeParser,
       circeLiteral,
       circeShapes,
-      cats,
+      catsKernel,
+      catsFree,
       akkaActor,
       akkaStream,
       logback,

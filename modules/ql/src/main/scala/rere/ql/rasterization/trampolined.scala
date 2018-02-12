@@ -51,7 +51,7 @@ object trampolined {
         r <- done(renderer ~~ "[" ~~ query.command.toString ~~ ",[")
         r <- rasterizeArgs(r)
         r <- done(r ~~ "]")
-        r <- suspend {
+        r <- defer {
           if (!query.options.isEmpty) {
             for {
               r <- done(r ~~ ",")

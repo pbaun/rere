@@ -1,7 +1,7 @@
 package rere.ql.data
 
 import cats.instances.either._
-import cats.syntax.cartesian._
+import cats.syntax.apply._
 import io.circe.syntax._
 import io.circe.{Decoder, JsonObject, ObjectEncoder}
 
@@ -14,10 +14,10 @@ case class Shard(
 object Shard {
   implicit val shardDecoder: Decoder[Shard] = Decoder.instance { c =>
     (
-      c.downField("primary_replica").as[String] |@|
-      c.downField("replicas").as[List[String]] |@|
+      c.downField("primary_replica").as[String],
+      c.downField("replicas").as[List[String]],
       c.downField("nonvoting_replicas").as[List[String]]
-    ).map(Shard.apply)
+    ).mapN(Shard.apply)
   }
 
   implicit val shardEncoder: ObjectEncoder[Shard] = ObjectEncoder.instance {

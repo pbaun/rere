@@ -18,13 +18,13 @@ object JsonToReql {
     json.arrayOrObject(
       Trampoline.done(json),
       array => {
-        val traversed = array.traverse[Trampoline, Json](value => Trampoline.suspend(transformArrays(value)))
+        val traversed = array.traverse[Trampoline, Json](value => Trampoline.defer(transformArrays(value)))
         traversed map { values =>
           Json.fromValues(transformArraysToReql(values))
         }
       },
       obj => {
-        val traversed = obj.traverse[Trampoline](value => Trampoline.suspend(transformArrays(value)))
+        val traversed = obj.traverse[Trampoline](value => Trampoline.defer(transformArrays(value)))
         traversed map Json.fromJsonObject
       }
     )

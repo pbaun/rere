@@ -3,7 +3,7 @@ package rere.ql.data
 import java.util.UUID
 
 import cats.instances.either._
-import cats.syntax.cartesian._
+import cats.syntax.apply._
 import io.circe.syntax._
 import io.circe.{Decoder, Json, JsonObject, ObjectEncoder}
 import rere.ql.shapes.ModelShape
@@ -43,9 +43,9 @@ object TableStatus {
 
   private implicit val tableReplicaStatusDecoder: Decoder[TableReplicaStatus] = Decoder.instance { c =>
     (
-      c.downField("server").as[String] |@|
+      c.downField("server").as[String],
       c.downField("state").as[String]
-    ).map(TableReplicaStatus.apply)
+    ).mapN(TableReplicaStatus.apply)
   }
 
   private implicit val tableReplicaStatusEncoder: ObjectEncoder[TableReplicaStatus] = ObjectEncoder.instance {
@@ -57,9 +57,9 @@ object TableStatus {
 
   private implicit val tableShardStatusDecoder: Decoder[TableShardStatus] = Decoder.instance { c =>
     (
-      c.downField("primary_replicas").as[List[String]] |@|
+      c.downField("primary_replicas").as[List[String]],
       c.downField("replicas").as[List[TableReplicaStatus]]
-    ).map(TableShardStatus.apply)
+    ).mapN(TableShardStatus.apply)
   }
 
   private implicit val tableShardStatusEncoder: ObjectEncoder[TableShardStatus] = ObjectEncoder.instance {
@@ -71,11 +71,11 @@ object TableStatus {
 
   private implicit val tableStatusFlagsDecoder: Decoder[TableStatusFlags] = Decoder.instance { c =>
     (
-      c.downField("ready_for_outdated_reads").as[Boolean] |@|
-      c.downField("ready_for_reads").as[Boolean] |@|
-      c.downField("ready_for_writes").as[Boolean] |@|
+      c.downField("ready_for_outdated_reads").as[Boolean],
+      c.downField("ready_for_reads").as[Boolean],
+      c.downField("ready_for_writes").as[Boolean],
       c.downField("all_replicas_ready").as[Boolean]
-    ).map(TableStatusFlags.apply)
+    ).mapN(TableStatusFlags.apply)
   }
 
   private implicit val tableStatusFlagsEncoder: ObjectEncoder[TableStatusFlags] = ObjectEncoder.instance {
@@ -90,13 +90,13 @@ object TableStatus {
 
   private implicit val tableStatusDecoder: Decoder[TableStatus] = Decoder.instance { c =>
     (
-      c.downField("id").as[UUID] |@|
-      c.downField("name").as[String] |@|
-      c.downField("db").as[String] |@|
-      c.downField("status").as[TableStatusFlags] |@|
-      c.downField("shards").as[List[TableShardStatus]] |@|
+      c.downField("id").as[UUID],
+      c.downField("name").as[String],
+      c.downField("db").as[String],
+      c.downField("status").as[TableStatusFlags],
+      c.downField("shards").as[List[TableShardStatus]],
       c.downField("raft_leader").as[String]
-    ).map(TableStatus.apply)
+    ).mapN(TableStatus.apply)
   }
 
   private implicit val tableStatusEncoder: ObjectEncoder[TableStatus] = ObjectEncoder.instance {

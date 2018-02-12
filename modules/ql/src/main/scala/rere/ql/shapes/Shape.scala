@@ -218,7 +218,7 @@ abstract class Shape[Constructor <: AnyRef, Args <: HList, ModelType, PrimaryKey
     override def argsProducer(json: Json): Trampoline[ModelShape.DecodingResult[HeadValue :: TailValues]] = {
       for {
         head <- done(headField.fromJson(json))
-        tail <- suspend(tailBlueprint.argsProducer(json))
+        tail <- defer(tailBlueprint.argsProducer(json))
         list <- done {
           head match {
             case Right(headValue) =>

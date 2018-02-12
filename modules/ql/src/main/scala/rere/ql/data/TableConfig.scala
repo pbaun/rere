@@ -3,7 +3,7 @@ package rere.ql.data
 import java.util.UUID
 
 import cats.instances.either._
-import cats.syntax.cartesian._
+import cats.syntax.apply._
 import io.circe._
 import io.circe.syntax._
 import rere.ql.shapes.ModelShape
@@ -28,15 +28,15 @@ object TableConfig {
 
   implicit val tableConfigDecoder: Decoder[TableConfig] = Decoder.instance { c =>
     (
-      c.downField("id").as[UUID] |@|
-      c.downField("name").as[String] |@|
-      c.downField("db").as[String] |@|
-      c.downField("primary_key").as[String] |@|
-      c.downField("shards").as[List[Shard]] |@|
-      c.downField("indexes").as[List[String]] |@|
-      c.downField("write_acks").as[String] |@|
+      c.downField("id").as[UUID],
+      c.downField("name").as[String],
+      c.downField("db").as[String],
+      c.downField("primary_key").as[String],
+      c.downField("shards").as[List[Shard]],
+      c.downField("indexes").as[List[String]],
+      c.downField("write_acks").as[String],
       c.downField("durability").as[String]
-    ).map(TableConfig.apply)
+    ).mapN(TableConfig.apply)
   }
 
   implicit val tableConfigEncoder: ObjectEncoder[TableConfig] = ObjectEncoder.instance {

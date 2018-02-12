@@ -3,7 +3,7 @@ package rere.ql.data
 import java.util.UUID
 
 import cats.instances.either._
-import cats.syntax.cartesian._
+import cats.syntax.apply._
 import io.circe.syntax._
 import io.circe.{Decoder, Json, JsonObject, ObjectEncoder}
 import rere.ql.shapes.ModelShape
@@ -19,9 +19,9 @@ object DatabaseConfig {
 
   implicit val databaseConfigDecoder: Decoder[DatabaseConfig] = Decoder.instance { c =>
     (
-      c.downField("id").as[UUID] |@|
+      c.downField("id").as[UUID],
       c.downField("name").as[String]
-    ).map(DatabaseConfig.apply)
+    ).mapN(DatabaseConfig.apply)
   }
 
   implicit val databaseConfigReqlDecoder: ReqlDecoder[DatabaseConfig] = {

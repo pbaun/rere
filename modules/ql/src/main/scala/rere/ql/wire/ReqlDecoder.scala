@@ -667,9 +667,8 @@ object ReqlDecoder {
     }
 
     val seqOfCoordinatesPairDecoder: Decoder[Seq[GeoPoint]] = Decoder.instance { c =>
-      c.as[Seq[GeoPoint]](Decoder.decodeCanBuildFrom[GeoPoint, Seq](
-        coordinatesPairDecoder,
-        Seq.canBuildFrom
+      c.as[Seq[GeoPoint]](Decoder.decodeSeq[GeoPoint](
+        coordinatesPairDecoder
       ))
     }
 
@@ -787,9 +786,8 @@ object ReqlDecoder {
     }
 
     val seqOfGeoLinearRingDecoder: Decoder[Seq[GeoLinearRing]] = Decoder.instance { c =>
-      c.as[Seq[GeoLinearRing]](Decoder.decodeCanBuildFrom[GeoLinearRing, Seq](
-        geoLinearRingDecoder,
-        Seq.canBuildFrom
+      c.as[Seq[GeoLinearRing]](Decoder.decodeSeq[GeoLinearRing](
+        geoLinearRingDecoder
       ))
     }
 
