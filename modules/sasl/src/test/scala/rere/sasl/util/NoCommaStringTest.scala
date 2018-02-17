@@ -9,6 +9,7 @@ class NoCommaStringTest extends FlatSpec {
 
   it should "provide correct equals implementation" in {
     new NoCommaString("abc") shouldBe new NoCommaString("abc")
+    new NoCommaString("abc").equals("abc") shouldBe false
   }
 
   it should "provide correct hashCode implementation" in {

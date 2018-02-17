@@ -9,6 +9,7 @@ class PrintableStringTest extends FlatSpec {
 
   it should "provide correct equals implementation" in {
     new PrintableString("abc") shouldBe new PrintableString("abc")
+    new PrintableString("abc").equals("abc") shouldBe false
   }
 
   it should "provide correct hashCode implementation" in {

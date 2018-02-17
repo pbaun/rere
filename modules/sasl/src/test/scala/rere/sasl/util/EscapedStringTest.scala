@@ -21,6 +21,10 @@ class EscapedStringTest extends FlatSpec {
     withUpperCaseReplacement shouldBe withLowerCaseReplacement
   }
 
+  it should "treat regular string with same content as not equal" in {
+    new EscapedString("abc").equals("abc") shouldBe false
+  }
+
   it should "return unescaped value as result of toString method" in {
     new EscapedString("abc=2Cdef").toString shouldBe "abc,def"
   }

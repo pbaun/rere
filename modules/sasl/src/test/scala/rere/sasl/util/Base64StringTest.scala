@@ -9,6 +9,7 @@ class Base64StringTest extends FlatSpec {
 
   it should "provide correct equals implementation" in {
     new Base64String("abc") shouldBe new Base64String("abc")
+    new Base64String("abc").equals("abc") shouldBe false
   }
 
   it should "provide correct hashCode implementation" in {
