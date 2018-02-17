@@ -59,8 +59,7 @@ object EscapedString {
               builder.append(',')
               i += 3
             } else {
-              builder.append(ch1)
-              i += 1
+              throw new IllegalArgumentException(s"Invalid character sequence: '$ch1$ch2$ch3'")
             }
 
           case '3' =>
@@ -69,12 +68,11 @@ object EscapedString {
               builder.append('=')
               i += 3
             } else {
-              builder.append(ch1)
-              i += 1
+              throw new IllegalArgumentException(s"Invalid character sequence: '$ch1$ch2$ch3'")
             }
 
-          case c =>
-            throw new IllegalArgumentException(s"Invalid character sequence: '=$c'")
+          case _ =>
+            throw new IllegalArgumentException(s"Invalid character sequence: '$ch1$ch2'")
         }
       } else {
         builder.append(ch1)

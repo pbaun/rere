@@ -70,5 +70,13 @@ class EscapedStringTest extends FlatSpec {
     intercept[IllegalArgumentException] {
       EscapedString.from(new EscapedString("abc=4e=3D"))
     }.getMessage should include("=4")
+
+    intercept[IllegalArgumentException] {
+      EscapedString.from(new EscapedString("abc=2d=3D"))
+    }.getMessage should include("=2d")
+
+    intercept[IllegalArgumentException] {
+      EscapedString.from(new EscapedString("abc=3c=3D"))
+    }.getMessage should include("=3c")
   }
 }
