@@ -69,11 +69,11 @@ lazy val noPublishSettings = Seq(
 )
 
 
-val akkaVersion = "2.5.9"
-val circeVersion = "0.9.1"
-val catsVersion = "1.0.1"
+val akkaVersion = "2.5.17"
+val circeVersion = "0.10.0"
+val catsVersion = "1.4.0"
 
-lazy val parboiled    = "org.parboiled"          %% "parboiled"                   % "2.1.4"             // Apache 2
+lazy val parboiled    = "org.parboiled"          %% "parboiled"                   % "2.1.5"             // Apache 2
 
 lazy val shapeless    = "com.chuusai"            %% "shapeless"                   % "2.3.3"             // Apache 2
 
