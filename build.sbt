@@ -69,9 +69,9 @@ lazy val noPublishSettings = Seq(
 )
 
 
-val akkaVersion = "2.5.17"
-val circeVersion = "0.10.0"
-val catsVersion = "1.4.0"
+val akkaVersion = "2.5.21"
+val circeVersion = "0.11.1"
+val catsVersion = "1.6.0"
 
 lazy val parboiled    = "org.parboiled"          %% "parboiled"                   % "2.1.5"             // Apache 2
 
@@ -91,8 +91,8 @@ lazy val akkaStream   = "com.typesafe.akka"      %% "akka-stream"               
 
 lazy val logback      = "ch.qos.logback"         % "logback-classic"              % "1.2.3"             // EPL/LGPL
 
-lazy val scalatest    = "org.scalatest"          %% "scalatest"                   % "3.0.5"             // ApacheV2
-lazy val scalamock    = "org.scalamock"          %% "scalamock-scalatest-support" % "3.6.0"             // MIT
+lazy val scalatest    = "org.scalatest"          %% "scalatest"                   % "3.0.6"             // ApacheV2
+lazy val scalamock    = "org.scalamock"          %% "scalamock"                   % "4.1.0"             // MIT
 lazy val akkaTK       = "com.typesafe.akka"      %% "akka-testkit"                % akkaVersion         // ApacheV2
 lazy val akkaStreamTK = "com.typesafe.akka"      %% "akka-stream-testkit"         % akkaVersion         // ApacheV2
 
